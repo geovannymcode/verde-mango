@@ -22,7 +22,7 @@ CREATE INDEX idx_users_active ON users(active);
 INSERT INTO users (email, password_hash, first_name, last_name, role, email_verified)
 VALUES (
            'admin@verdemango.com',
-           '$2a$10$N9qo8uLOickgx2ZMRZoMy.Mrq4H6QoHCfHLbNJq.sPBrwHuKe.pMO',
+           '$2a$10$jgI.OYN/.gsqc18uZKffUuJ37dXyvFLXML2rnmq4dVzLvPz6esy.a',
            'Admin',
            'Verde Mango',
            'SUPER_ADMIN',
