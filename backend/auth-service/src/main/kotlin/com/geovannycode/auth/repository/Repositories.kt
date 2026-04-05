@@ -1,5 +1,6 @@
 package com.geovannycode.auth.repository
 
+import com.geovannycode.auth.entity.PasswordResetToken
 import com.geovannycode.auth.entity.RefreshToken
 import com.geovannycode.auth.entity.User
 import com.geovannycode.shared.constant.Role
