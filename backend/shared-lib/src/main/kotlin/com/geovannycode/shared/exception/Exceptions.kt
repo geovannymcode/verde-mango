@@ -1,4 +1,4 @@
-package com.geovannycode.shared.dto
+package com.geovannycode.shared.exception
 
 /**
  * Clase base sellada para todas las excepciones del dominio.

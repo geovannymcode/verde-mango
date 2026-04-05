@@ -1,4 +1,4 @@
-package com.geovannycode.shared.dto
+package com.geovannycode.shared.util
 
 import java.time.Instant
 import java.time.LocalDateTime

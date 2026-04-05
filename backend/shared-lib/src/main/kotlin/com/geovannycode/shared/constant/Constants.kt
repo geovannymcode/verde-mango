@@ -1,4 +1,4 @@
-package com.geovannycode.shared.dto
+package com.geovannycode.shared.constant
 
 /**
  * Constantes de paginación
