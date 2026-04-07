@@ -53,8 +53,8 @@ class RatingService(
      */
     @Transactional(readOnly = true)
     fun getRatingStats(productId: Long): RatingStatsResponse {
-        val stats = ratingRepository.getRatingStatistics(productId)
-        return RatingStatsResponse.from(stats)
+        logger.debug("Obteniendo estadísticas de ratings del producto: $productId")
+        return RatingStatsResponse.from(ratingRepository.getRatingStatistics(productId))
     }
 
     /**
