@@ -25,18 +25,18 @@ interface ProductRatingRepository : JpaRepository<ProductRating, Long> {
     // ============== Estadísticas por producto ==============
 
     @Query("""
-        SELECT 
-            COUNT(r), 
-            AVG(r.rating), 
-            SUM(CASE WHEN r.rating = 5 THEN 1 ELSE 0 END),
-            SUM(CASE WHEN r.rating = 4 THEN 1 ELSE 0 END),
-            SUM(CASE WHEN r.rating = 3 THEN 1 ELSE 0 END),
-            SUM(CASE WHEN r.rating = 2 THEN 1 ELSE 0 END),
-            SUM(CASE WHEN r.rating = 1 THEN 1 ELSE 0 END)
-        FROM ProductRating r 
-        WHERE r.product.id = :productId AND r.approved = true
-    """)
-    fun getRatingStatistics(productId: Long): Array<Any>?
+    SELECT 
+        COUNT(r) AS total,
+        AVG(r.rating) AS average,
+        SUM(CASE WHEN r.rating = 5 THEN 1 ELSE 0 END) AS fiveStars,
+        SUM(CASE WHEN r.rating = 4 THEN 1 ELSE 0 END) AS fourStars,
+        SUM(CASE WHEN r.rating = 3 THEN 1 ELSE 0 END) AS threeStars,
+        SUM(CASE WHEN r.rating = 2 THEN 1 ELSE 0 END) AS twoStars,
+        SUM(CASE WHEN r.rating = 1 THEN 1 ELSE 0 END) AS oneStar
+    FROM ProductRating r 
+    WHERE r.product.id = :productId AND r.approved = true
+""")
+    fun getRatingStatistics(productId: Long): RatingStatsProjection
 
     // ============== Por usuario ==============
 

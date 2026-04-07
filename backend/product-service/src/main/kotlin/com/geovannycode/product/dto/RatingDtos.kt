@@ -1,6 +1,7 @@
 package com.geovannycode.product.dto
 
 import com.geovannycode.product.entity.ProductRating
+import com.geovannycode.product.repository.RatingStatsProjection
 import jakarta.validation.constraints.Max
 import jakarta.validation.constraints.Min
 import jakarta.validation.constraints.Size
@@ -89,25 +90,25 @@ data class RatingStatsResponse(
     val oneStarPercentage: Int
 ) {
     companion object {
-        fun from(stats: Array<Any>?): RatingStatsResponse {
-            if (stats == null || (stats[0] as Long) == 0L) {
+        fun from(stats: RatingStatsProjection): RatingStatsResponse {
+            val total = stats.getTotal().toInt()
+
+            if (total == 0) {
                 return empty()
             }
 
-            val total = (stats[0] as Long).toInt()
-            val avg = stats[1] as Double?
-            val five = (stats[2] as Long).toInt()
-            val four = (stats[3] as Long).toInt()
-            val three = (stats[4] as Long).toInt()
-            val two = (stats[5] as Long).toInt()
-            val one = (stats[6] as Long).toInt()
+            val five = (stats.getFiveStars() ?: 0L).toInt()
+            val four = (stats.getFourStars() ?: 0L).toInt()
+            val three = (stats.getThreeStars() ?: 0L).toInt()
+            val two = (stats.getTwoStars() ?: 0L).toInt()
+            val one = (stats.getOneStar() ?: 0L).toInt()
 
             fun percentage(count: Int): Int =
                 if (total > 0) (count * 100 / total) else 0
 
             return RatingStatsResponse(
                 totalRatings = total,
-                averageRating = avg,
+                averageRating = stats.getAverage(),
                 fiveStarCount = five,
                 fourStarCount = four,
                 threeStarCount = three,
