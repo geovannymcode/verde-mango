@@ -2,11 +2,11 @@ package com.geovannycode.auth.security
 
 import com.geovannycode.auth.entity.User
 import com.geovannycode.shared.constant.Role
+import com.geovannycode.shared.security.JwtKeyFactory
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.ExpiredJwtException
 import io.jsonwebtoken.JwtException
 import io.jsonwebtoken.Jwts
-import io.jsonwebtoken.security.Keys
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
@@ -34,7 +34,7 @@ class JwtService(
 
     // Key generada una sola vez (lazy initialization)
     private val signingKey: SecretKey by lazy {
-        Keys.hmacShaKeyFor(secret.toByteArray())
+        JwtKeyFactory.buildHs384Key(secret)
     }
 
     /**

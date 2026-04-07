@@ -43,9 +43,9 @@ spring:
 
 # Configuración JWT
 jwt:
-  secret: ${JWT_SECRET:tu-secreto-super-largo-minimo-256-bits-para-hs256}
-  access-token-expiration: ${JWT_ACCESS_EXPIRATION:900000}      # 15 minutos
-  refresh-token-expiration: ${JWT_REFRESH_EXPIRATION:604800000} # 7 días
+  secret: ${JWT_SECRET:dev-secret-do-not-use-in-production-at-least-48-bytes-required}
+  access-token-expiration: ${JWT_ACCESS_EXPIRATION:900000}
+  refresh-token-expiration: ${JWT_REFRESH_EXPIRATION:604800000}
   issuer: verde-mango-auth
 
 # Actuator
