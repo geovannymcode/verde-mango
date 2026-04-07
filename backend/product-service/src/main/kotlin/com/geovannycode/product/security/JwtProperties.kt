@@ -21,8 +21,8 @@ data class JwtProperties(
 
     @field:NotBlank(message = "jwt.secret no puede estar vacío. Define la variable de entorno JWT_SECRET.")
     @field:Size(
-        min = 32,
-        message = "jwt.secret debe tener al menos 32 caracteres (HS256 requiere claves de 256 bits)."
+        min = 48,
+        message = "jwt.secret debe tener al menos 48 caracteres (HS384 requiere claves de 384 bits)."
     )
     val secret: String,
 
