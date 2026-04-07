@@ -2,16 +2,16 @@ package com.geovannycode.product.security
 
 import com.geovannycode.shared.constant.Role
 import com.geovannycode.shared.constant.SecurityConstants
+import com.geovannycode.shared.security.JwtKeyFactory
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.ExpiredJwtException
 import io.jsonwebtoken.JwtException
 import io.jsonwebtoken.Jwts
-import io.jsonwebtoken.security.Keys
+import io.jsonwebtoken.security.SignatureException
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.context.SecurityContextHolder
@@ -23,18 +23,17 @@ import javax.crypto.SecretKey
 
 /**
  * Filtro JWT para validar tokens emitidos por el Auth Service.
- * No autentica usuarios, solo valida tokens existentes.
+ * No autentica usuarios contra BD, solo valida la firma del token y extrae los claims.
  */
 @Component
 class JwtAuthenticationFilter(
-    @Value("\${jwt.secret}")
-    private val secret: String
+    private val jwtProperties: JwtProperties
 ) : OncePerRequestFilter() {
 
     private val log = LoggerFactory.getLogger(javaClass)
 
     private val signingKey: SecretKey by lazy {
-        Keys.hmacShaKeyFor(secret.toByteArray())
+        JwtKeyFactory.buildHs384Key(jwtProperties.secret)
     }
 
     override fun doFilterInternal(
@@ -45,62 +44,87 @@ class JwtAuthenticationFilter(
         try {
             val token = extractToken(request)
 
-            if (token != null && validateToken(token)) {
-                val claims = extractAllClaims(token)
-                val email = claims.subject
-                val userId = claims.get("userId", java.lang.Long::class.java)?.toLong()
-                val roleStr = claims.get("role", String::class.java)
-
-                if (email != null && userId != null && roleStr != null) {
-                    val role = Role.fromString(roleStr)
-                    val authorities = listOf(SimpleGrantedAuthority("ROLE_${role.name}"))
-
-                    val authentication = UsernamePasswordAuthenticationToken(
-                        UserPrincipal(userId, email, role),
-                        null,
-                        authorities
-                    )
-                    authentication.details = WebAuthenticationDetailsSource().buildDetails(request)
-                    SecurityContextHolder.getContext().authentication = authentication
-
-                    // Agregar headers para uso en controllers
-                    request.setAttribute("userId", userId)
-                    request.setAttribute("userEmail", email)
-                    request.setAttribute("userRole", role)
-
-                    log.debug("Usuario autenticado: $email (ID: $userId)")
-                }
+            if (token != null) {
+                authenticate(token, request)
             }
+        } catch (e: ExpiredJwtException) {
+            log.debug("Token expirado: {}", e.message)
+        } catch (e: SignatureException) {
+            log.warn("Firma JWT inválida: {}", e.message)
+        } catch (e: JwtException) {
+            log.warn("Token JWT inválido: {}", e.message)
         } catch (e: Exception) {
-            log.error("Error en autenticación JWT: ${e.message}")
+            log.error("Error inesperado en autenticación JWT", e)
         }
 
         filterChain.doFilter(request, response)
     }
 
+    private fun authenticate(token: String, request: HttpServletRequest) {
+        val claims = parseClaims(token)
+
+        if (claims.expiration.before(Date())) {
+            log.debug("Token expirado para subject: {}", claims.subject)
+            return
+        }
+
+        val email = claims.subject ?: run {
+            log.warn("Token sin subject (email)")
+            return
+        }
+
+        val userId = extractUserId(claims) ?: run {
+            log.warn("Token sin claim userId válido")
+            return
+        }
+
+        val role = extractRole(claims) ?: run {
+            log.warn("Token sin claim role válido")
+            return
+        }
+
+        val authorities = listOf(SimpleGrantedAuthority("ROLE_${role.name}"))
+        val principal = UserPrincipal(id = userId, email = email, role = role)
+
+        val authentication = UsernamePasswordAuthenticationToken(
+            principal,
+            null,
+            authorities
+        )
+        authentication.details = WebAuthenticationDetailsSource().buildDetails(request)
+        SecurityContextHolder.getContext().authentication = authentication
+
+        // Atributos disponibles para controllers
+        request.setAttribute("userId", userId)
+        request.setAttribute("userEmail", email)
+        request.setAttribute("userRole", role)
+
+        log.debug("Usuario autenticado: {} (ID: {}, rol: {})", email, userId, role)
+    }
+
     private fun extractToken(request: HttpServletRequest): String? {
-        val header = request.getHeader(SecurityConstants.HEADER_AUTHORIZATION)
-        return if (header != null && header.startsWith(SecurityConstants.TOKEN_PREFIX)) {
+        val header = request.getHeader(SecurityConstants.HEADER_AUTHORIZATION) ?: return null
+        return if (header.startsWith(SecurityConstants.TOKEN_PREFIX)) {
             header.substring(SecurityConstants.TOKEN_PREFIX.length)
         } else {
             null
         }
     }
 
-    private fun validateToken(token: String): Boolean {
-        return try {
-            val claims = extractAllClaims(token)
-            !claims.expiration.before(Date())
-        } catch (e: ExpiredJwtException) {
-            log.debug("Token expirado")
-            false
-        } catch (e: JwtException) {
-            log.warn("Token inválido: ${e.message}")
-            false
-        }
-    }
+    /**
+     * Extrae `userId` del token aceptando tanto Integer como Long.
+     *
+     * JJWT deserializa números JSON como Integer cuando caben en 32 bits,
+     * pero el claim puede venir como Long si es un ID grande. Usamos Number
+     * como tipo común y convertimos a Long de forma segura.
+     */
+    private fun extractUserId(claims: Claims): Long? =
+        claims.get("userId", Number::class.java)?.toLong()
 
-    private fun extractAllClaims(token: String): Claims =
+    private fun extractRole(claims: Claims): Role? =
+        claims.get("role", String::class.java)?.let { runCatching { Role.fromString(it) }.getOrNull() }
+
+    private fun parseClaims(token: String): Claims =
         Jwts.parser()
             .verifyWith(signingKey)
             .build()

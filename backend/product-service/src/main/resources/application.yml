@@ -62,9 +62,10 @@ spring:
     default-property-inclusion: non_null
 
 # JWT Configuration (solo para validar tokens)
+# El default solo aplica para desarrollo local. En profile prod, JWT_SECRET es obligatorio.
 jwt:
-  secret: ${JWT_SECRET:verdemango-super-secret-key-that-should-be-changed-in-production-2024}
-  issuer: verde-mango-auth
+  secret: ${JWT_SECRET:dev-secret-do-not-use-in-production-minimum-32-chars-long}
+  issuer: ${JWT_ISSUER:verde-mango-auth}
 
 # Product Service Configuration
 product:
@@ -118,6 +119,11 @@ spring:
   cache:
     type: none
 
+# Secret específico para tests (heredaría el default si no se especifica)
+jwt:
+  secret: ${JWT_SECRET:dev-secret-do-not-use-in-production-at-least-48-bytes-required}
+  issuer: ${JWT_ISSUER:verde-mango-auth}
+
 ---
 spring:
   config:
@@ -126,6 +132,12 @@ spring:
 
   jpa:
     show-sql: false
+
+# JWT Configuration en producción: SIN default. Si JWT_SECRET no está seteado,
+# Spring falla en el arranque por la validación @NotBlank de JwtProperties.
+jwt:
+  secret: ${JWT_SECRET}
+  issuer: ${JWT_ISSUER}
 
 logging:
   level:
