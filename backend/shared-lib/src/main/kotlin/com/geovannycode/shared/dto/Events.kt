@@ -33,10 +33,16 @@ data class OrderCreatedEvent(
     override val occurredAt: Instant = Instant.now(),
     override val eventType: String = "ORDER_CREATED",
     val orderId: Long,
+    val orderNumber: String,
     val userId: Long,
     val totalAmount: Long,
-    val items: List<OrderItemDto>
-) : DomainEvent
+    val items: List<OrderItemEvent>
+) : DomainEvent {
+    data class OrderItemEvent(
+        val productId: Long,
+        val quantity: Int
+    )
+}
 
 data class OrderItemDto(
     val productId: Long,
@@ -52,8 +58,12 @@ data class OrderPaidEvent(
     override val occurredAt: Instant = Instant.now(),
     override val eventType: String = "ORDER_PAID",
     val orderId: Long,
+    val orderNumber: String,
+    val userId: Long,
+    val totalAmount: Long,
     val paymentId: Long,
-    val amount: Long
+    val paymentMethod: String,
+    val amount: Long = totalAmount
 ) : DomainEvent
 
 /**
@@ -68,6 +78,20 @@ data class OrderCancelledEvent(
 ) : DomainEvent
 
 /**
+ * Orden con cambio de estado
+ */
+data class OrderStatusChangedEvent(
+    override val eventId: String,
+    override val occurredAt: Instant = Instant.now(),
+    override val eventType: String = "ORDER_STATUS_CHANGED",
+    val orderId: Long,
+    val orderNumber: String,
+    val userId: Long,
+    val newStatus: String,
+    val trackingNumber: String? = null
+) : DomainEvent
+
+/**
  * Pago completado
  */
 data class PaymentCompletedEvent(
@@ -77,7 +101,9 @@ data class PaymentCompletedEvent(
     val paymentId: Long,
     val orderId: Long,
     val amount: Long,
-    val providerReference: String
+    val paymentMethod: String = "",
+    val transactionReference: String? = null,
+    val providerReference: String = transactionReference ?: ""
 ) : DomainEvent
 
 /**
