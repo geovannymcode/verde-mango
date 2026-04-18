@@ -47,12 +47,13 @@ spring:
 
 # JWT
 jwt:
-  secret: ${JWT_SECRET:verdemango-super-secret-key-2024}
+  # Updated the fallback string to be 64 characters long to pass validation
+  secret: ${JWT_SECRET:verdemango-super-secret-key-2026-development-only-do-not-use-in-prod}
   issuer: verde-mango-auth
 
 # Order Config
 order:
-  number-prefix: VM
+
   cart-expiration-hours: 24
   cancellation-window-hours: 2
   tax-rate: 0.19
