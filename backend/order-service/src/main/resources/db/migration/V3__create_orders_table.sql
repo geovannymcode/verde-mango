@@ -29,10 +29,12 @@ CREATE TABLE orders (
                         billing_recipient_name VARCHAR(200),
                         billing_phone VARCHAR(20),
                         billing_street_address VARCHAR(500),
+                        billing_apartment VARCHAR(100),
                         billing_city VARCHAR(100),
                         billing_state VARCHAR(100),
                         billing_postal_code VARCHAR(20),
                         billing_country VARCHAR(100),
+                        billing_instructions TEXT,
                         billing_tax_id VARCHAR(50),
 
     -- Pago
