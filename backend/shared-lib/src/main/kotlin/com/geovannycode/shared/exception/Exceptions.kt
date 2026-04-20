@@ -91,11 +91,30 @@ class PaymentException(
 /**
  * Stock insuficiente (HTTP 409)
  */
-class InsufficientStockException(
-    productId: Long,
-    requested: Int,
-    available: Int
+class InsufficientStockException : VerdeMangException {
+    constructor(
+        productId: Long,
+        requested: Int,
+        available: Int
+    ) : super(
+        message = "Stock insuficiente para producto $productId. Solicitado: $requested, Disponible: $available",
+        errorCode = "INSUFFICIENT_STOCK"
+    )
+
+    constructor(message: String) : super(
+        message = message,
+        errorCode = "INSUFFICIENT_STOCK"
+    )
+}
+
+/**
+ * Servicio externo no disponible (HTTP 503)
+ */
+class ServiceUnavailableException(
+    message: String,
+    cause: Throwable? = null
 ) : VerdeMangException(
-    message = "Stock insuficiente para producto $productId. Solicitado: $requested, Disponible: $available",
-    errorCode = "INSUFFICIENT_STOCK"
+    message = message,
+    errorCode = "SERVICE_UNAVAILABLE",
+    cause = cause
 )

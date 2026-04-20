@@ -33,14 +33,14 @@ data class OrderCreatedEvent(
     override val occurredAt: Instant = Instant.now(),
     override val eventType: String = "ORDER_CREATED",
     val orderId: Long,
-    val orderNumber: String,
-    val userId: Long,
-    val totalAmount: Long,
-    val items: List<OrderItemEvent>
+    val orderNumber: String = "",
+    val userId: Long = 0,
+    val totalAmount: Long = 0,
+    val items: List<OrderItemEvent> = emptyList()
 ) : DomainEvent {
     data class OrderItemEvent(
-        val productId: Long,
-        val quantity: Int
+        val productId: Long = 0,
+        val quantity: Int = 0
     )
 }
 
@@ -58,11 +58,11 @@ data class OrderPaidEvent(
     override val occurredAt: Instant = Instant.now(),
     override val eventType: String = "ORDER_PAID",
     val orderId: Long,
-    val orderNumber: String,
-    val userId: Long,
-    val totalAmount: Long,
-    val paymentId: Long,
-    val paymentMethod: String,
+    val orderNumber: String = "",
+    val userId: Long = 0,
+    val totalAmount: Long = 0,
+    val paymentId: Long = 0,
+    val paymentMethod: String = "",
     val amount: Long = totalAmount
 ) : DomainEvent
 
@@ -85,9 +85,9 @@ data class OrderStatusChangedEvent(
     override val occurredAt: Instant = Instant.now(),
     override val eventType: String = "ORDER_STATUS_CHANGED",
     val orderId: Long,
-    val orderNumber: String,
-    val userId: Long,
-    val newStatus: String,
+    val orderNumber: String = "",
+    val userId: Long = 0,
+    val newStatus: String = "",
     val trackingNumber: String? = null
 ) : DomainEvent
 

@@ -85,5 +85,5 @@ springdoc:
 # Logging
 logging:
   level:
-    com.verdemango: DEBUG
+    com.geovannycode: DEBUG
     org.hibernate.SQL: DEBUG
