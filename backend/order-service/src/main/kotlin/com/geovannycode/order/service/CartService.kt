@@ -121,7 +121,7 @@ class CartService(
 
     @Transactional
     fun mergeGuestCart(userId: Long, sessionId: String): CartResponse {
-        logger.info("Fusionando carrito de sesión $sessionId con usuario $userId")
+        logger.debug("Fusionando carrito de sesión {}*** con usuario {}", sessionId.take(8), userId)
 
         val guestCart = cartRepository.findBySessionIdAndStatusWithItemsFetch(sessionId, CartStatus.ACTIVE)
             .orElse(null)

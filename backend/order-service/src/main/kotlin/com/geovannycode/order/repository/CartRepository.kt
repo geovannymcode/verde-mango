@@ -40,7 +40,7 @@ interface CartRepository : JpaRepository<Cart, Long> {
     @Query("SELECT c FROM Cart c WHERE c.status = :status AND c.expiresAt < :now")
     fun findExpiredCarts(
         @Param("now") now: Instant,
-        @Param("status") status: CartStatus = CartStatus.ACTIVE
+        @Param("status") status: CartStatus
     ): List<Cart>
 
     @Modifying(clearAutomatically = true)
@@ -50,7 +50,7 @@ interface CartRepository : JpaRepository<Cart, Long> {
     """)
     fun markExpiredCarts(
         @Param("now") now: Instant,
-        @Param("activeStatus") activeStatus: CartStatus = CartStatus.ACTIVE,
-        @Param("expiredStatus") expiredStatus: CartStatus = CartStatus.EXPIRED
+        @Param("activeStatus") activeStatus: CartStatus,
+        @Param("expiredStatus") expiredStatus: CartStatus
     ): Int
 }

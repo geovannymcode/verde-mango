@@ -10,11 +10,15 @@ CREATE UNIQUE INDEX uq_carts_user_active_partial ON carts(user_id)
     WHERE status = 'ACTIVE' AND user_id IS NOT NULL;
 
 -- 2. Add CHECK constraint on order_items.discount_amount to prevent negative values
-ALTER TABLE order_items ADD CONSTRAINT chk_order_items_discount_amount
-    CHECK (discount_amount >= 0);
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'chk_order_items_discount_amount') THEN
+        ALTER TABLE order_items ADD CONSTRAINT chk_order_items_discount_amount CHECK (discount_amount >= 0);
+    END IF;
+END $$;
 
 -- 3. Composite index on order_status_history for efficient lookups
-CREATE INDEX idx_order_status_history_order_created
+CREATE INDEX IF NOT EXISTS idx_order_status_history_order_created
     ON order_status_history(order_id, created_at DESC);
 
 -- 4. Replace generate_order_number with advisory lock version to prevent race conditions
@@ -39,3 +43,6 @@ BEGIN
     RETURN prefix || '-' || today_date || '-' || LPAD(seq_num::TEXT, 4, '0');
 END;
 $$ LANGUAGE plpgsql;
+
+-- 5. Add version column to orders for optimistic locking
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS version BIGINT NOT NULL DEFAULT 0;

@@ -1,5 +1,6 @@
 package com.geovannycode.order.config
 
+import io.netty.channel.ChannelOption
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -23,6 +24,7 @@ class WebClientConfig(
     @Bean
     fun productServiceWebClient(): WebClient {
         val httpClient = HttpClient.create()
+            .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, productServiceTimeout.toInt())
             .responseTimeout(Duration.ofMillis(productServiceTimeout))
 
         return WebClient.builder()
@@ -34,6 +36,7 @@ class WebClientConfig(
     @Bean
     fun paymentServiceWebClient(): WebClient {
         val httpClient = HttpClient.create()
+            .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, paymentServiceTimeout.toInt())
             .responseTimeout(Duration.ofMillis(paymentServiceTimeout))
 
         return WebClient.builder()

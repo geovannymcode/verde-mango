@@ -1,5 +1,6 @@
 package com.geovannycode.order.service
 
+import com.geovannycode.order.entity.CartStatus
 import com.geovannycode.order.repository.CartRepository
 import org.slf4j.LoggerFactory
 import org.springframework.scheduling.annotation.Scheduled
@@ -20,7 +21,7 @@ class CartCleanupService(
     @Transactional
     fun cleanupExpiredCarts() {
         val now = Instant.now()
-        val count = cartRepository.markExpiredCarts(now)
+        val count = cartRepository.markExpiredCarts(now, CartStatus.ACTIVE, CartStatus.EXPIRED)
 
         if (count > 0) {
             logger.info("$count carritos marcados como expirados")

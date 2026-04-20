@@ -98,5 +98,7 @@ object MessagingConstants {
     // Queue names
     const val ORDER_CREATED_QUEUE = "order.created.queue"
     const val ORDER_PAID_QUEUE = "order.paid.queue"
+    const val ORDER_STATUS_CHANGED_QUEUE = "order.status.changed.queue"
+    const val ORDER_CANCELLED_QUEUE = "order.cancelled.queue"
     const val PAYMENT_COMPLETED_ORDER_QUEUE = "payment.completed.order.queue"
 }

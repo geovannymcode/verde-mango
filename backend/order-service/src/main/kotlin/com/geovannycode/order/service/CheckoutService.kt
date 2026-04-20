@@ -12,6 +12,7 @@ import com.geovannycode.order.entity.Order
 import com.geovannycode.order.entity.OrderItem
 import com.geovannycode.order.messaging.OrderEventPublisher
 import com.geovannycode.order.repository.OrderRepository
+import com.geovannycode.shared.dto.OrderCreatedEvent
 import com.geovannycode.shared.exception.BusinessRuleException
 import com.geovannycode.shared.exception.InsufficientStockException
 import org.slf4j.LoggerFactory
@@ -120,10 +121,22 @@ class CheckoutService(
         cartService.markAsConverted(cart.id)
 
         // 8. Schedule payment creation and event publishing AFTER transaction commits
+        // Extract all needed primitives BEFORE afterCommit to avoid capturing a detached JPA entity
         val orderId = savedOrder.id
         val savedOrderNumber = savedOrder.orderNumber
         val savedTotalAmount = savedOrder.totalAmount
+        val savedUserId = savedOrder.userId
         val paymentMethod = request.paymentMethod
+        val orderCreatedEvent = OrderCreatedEvent(
+            eventId = java.util.UUID.randomUUID().toString(),
+            orderId = orderId,
+            orderNumber = savedOrderNumber,
+            userId = savedUserId,
+            totalAmount = savedTotalAmount,
+            items = savedOrder.items.map {
+                OrderCreatedEvent.OrderItemEvent(it.productId, it.quantity)
+            }
+        )
 
         TransactionSynchronizationManager.registerSynchronization(object : TransactionSynchronization {
             override fun afterCommit() {
@@ -140,7 +153,7 @@ class CheckoutService(
                 }
 
                 try {
-                    orderEventPublisher.publishOrderCreated(savedOrder)
+                    orderEventPublisher.publishOrderCreatedEvent(orderCreatedEvent)
                 } catch (e: Exception) {
                     logger.error("Error publicando evento ORDER_CREATED para orden $savedOrderNumber", e)
                 }

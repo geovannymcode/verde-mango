@@ -12,6 +12,7 @@ import jakarta.persistence.Enumerated
 import jakarta.persistence.OneToMany
 import jakarta.persistence.OrderBy
 import jakarta.persistence.Table
+import jakarta.persistence.Version
 import java.time.Instant
 import java.util.Locale
 
@@ -135,6 +136,10 @@ class Order(
 
     @Column(name = "cart_id")
     var cartId: Long? = null,
+
+    @Version
+    @Column(name = "version")
+    var version: Long = 0,
 
     // Relaciones
     @OneToMany(mappedBy = "order", cascade = [CascadeType.ALL], orphanRemoval = true)

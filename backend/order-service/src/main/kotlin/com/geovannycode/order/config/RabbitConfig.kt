@@ -33,6 +33,22 @@ class RabbitConfig {
     fun orderPaidBinding(orderPaidQueue: Queue, orderExchange: TopicExchange): Binding =
         BindingBuilder.bind(orderPaidQueue).to(orderExchange).with(MessagingConstants.ORDER_PAID)
 
+    // Cola para cambios de estado de órdenes
+    @Bean
+    fun orderStatusChangedQueue(): Queue = Queue(MessagingConstants.ORDER_STATUS_CHANGED_QUEUE, true)
+
+    @Bean
+    fun orderStatusChangedBinding(orderStatusChangedQueue: Queue, orderExchange: TopicExchange): Binding =
+        BindingBuilder.bind(orderStatusChangedQueue).to(orderExchange).with(MessagingConstants.ORDER_STATUS_CHANGED)
+
+    // Cola para órdenes canceladas
+    @Bean
+    fun orderCancelledQueue(): Queue = Queue(MessagingConstants.ORDER_CANCELLED_QUEUE, true)
+
+    @Bean
+    fun orderCancelledBinding(orderCancelledQueue: Queue, orderExchange: TopicExchange): Binding =
+        BindingBuilder.bind(orderCancelledQueue).to(orderExchange).with(MessagingConstants.ORDER_CANCELLED)
+
     // Cola para escuchar pagos completados
     @Bean
     fun paymentCompletedQueue(): Queue = Queue(MessagingConstants.PAYMENT_COMPLETED_ORDER_QUEUE, true)

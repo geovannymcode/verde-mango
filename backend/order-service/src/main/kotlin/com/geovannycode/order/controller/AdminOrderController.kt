@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.time.Instant
+import java.time.temporal.ChronoUnit
 
 @RestController
 @RequestMapping("/api/v1/admin/orders")
@@ -73,10 +74,12 @@ class AdminOrderController(
     @GetMapping("/stats")
     @Operation(summary = "Obtener estadísticas")
     fun getStats(
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) fromDate: Instant,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) toDate: Instant
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) fromDate: Instant?,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) toDate: Instant?
     ): ResponseEntity<ApiResponse<OrderStatsResponse>> {
-        val stats = orderService.getOrderStats(fromDate, toDate)
+        val resolvedTo = toDate ?: Instant.now()
+        val resolvedFrom = fromDate ?: resolvedTo.minus(30, ChronoUnit.DAYS)
+        val stats = orderService.getOrderStats(resolvedFrom, resolvedTo)
         return ResponseEntity.ok(ApiResponse.success(stats))
     }
 }

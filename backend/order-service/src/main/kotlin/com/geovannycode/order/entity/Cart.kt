@@ -54,7 +54,7 @@ class Cart(
 
     val isActive: Boolean get() = status == CartStatus.ACTIVE
 
-    val isExpired: Boolean get() = expiresAt?.let { Instant.now().isAfter(it) } ?: false
+    fun isExpired(now: Instant = Instant.now()): Boolean = expiresAt?.let { now.isAfter(it) } ?: false
 
     val totalQuantity: Int get() = items.sumOf { it.quantity }
 

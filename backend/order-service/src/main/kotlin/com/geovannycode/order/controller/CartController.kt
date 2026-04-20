@@ -52,7 +52,7 @@ class CartController(
         val userId = principal?.id
         val sessionId = getOrCreateSessionId(request, userId)
         val summary = cartService.getCartSummary(userId, sessionId)
-        return ResponseEntity.ok(ApiResponse.success(summary))
+        return buildResponseWithSessionId(ApiResponse.success(summary), sessionId)
     }
 
     @PostMapping("/items")
@@ -65,7 +65,10 @@ class CartController(
         val userId = principal?.id
         val sessionId = getOrCreateSessionId(httpRequest, userId)
         val cart = cartService.addItem(userId, sessionId, request)
-        return ResponseEntity.ok(ApiResponse.success(cart, "Producto agregado al carrito"))
+        return buildResponseWithSessionId(
+            ApiResponse.success(cart, "Producto agregado al carrito"),
+            sessionId
+        )
     }
 
     @PutMapping("/items/{productId}")
@@ -79,7 +82,7 @@ class CartController(
         val userId = principal?.id
         val sessionId = getOrCreateSessionId(httpRequest, userId)
         val cart = cartService.updateItemQuantity(userId, sessionId, productId, request)
-        return ResponseEntity.ok(ApiResponse.success(cart, "Cantidad actualizada"))
+        return buildResponseWithSessionId(ApiResponse.success(cart, "Cantidad actualizada"), sessionId)
     }
 
     @DeleteMapping("/items/{productId}")
@@ -92,7 +95,7 @@ class CartController(
         val userId = principal?.id
         val sessionId = getOrCreateSessionId(httpRequest, userId)
         val cart = cartService.removeItem(userId, sessionId, productId)
-        return ResponseEntity.ok(ApiResponse.success(cart, "Producto eliminado"))
+        return buildResponseWithSessionId(ApiResponse.success(cart, "Producto eliminado"), sessionId)
     }
 
     @DeleteMapping
@@ -104,7 +107,7 @@ class CartController(
         val userId = principal?.id
         val sessionId = getOrCreateSessionId(request, userId)
         val cart = cartService.clearCart(userId, sessionId)
-        return ResponseEntity.ok(ApiResponse.success(cart, "Carrito vaciado"))
+        return buildResponseWithSessionId(ApiResponse.success(cart, "Carrito vaciado"), sessionId)
     }
 
     @PostMapping("/merge")
@@ -114,16 +117,22 @@ class CartController(
         request: HttpServletRequest
     ): ResponseEntity<ApiResponse<CartResponse>> {
         val userId = principal.id
-        val sessionId = request.getHeader("X-Session-Id") ?: return ResponseEntity.ok(
-            ApiResponse.success(cartService.getCart(userId, null))
-        )
+        val sessionId = request.getHeader("X-Session-Id")
+            ?.trim()
+            ?.takeIf { it.isNotEmpty() }
+            ?: return ResponseEntity.ok(
+                ApiResponse.success(cartService.getCart(userId, null))
+            )
         val cart = cartService.mergeGuestCart(userId, sessionId)
         return ResponseEntity.ok(ApiResponse.success(cart, "Carrito fusionado"))
     }
 
     private fun getOrCreateSessionId(request: HttpServletRequest, userId: Long?): String? {
         if (userId != null) return null
-        return request.getHeader("X-Session-Id") ?: UUID.randomUUID().toString()
+        return request.getHeader("X-Session-Id")
+            ?.trim()
+            ?.takeIf { it.isNotEmpty() }
+            ?: UUID.randomUUID().toString()
     }
 
     private fun <T> buildResponseWithSessionId(

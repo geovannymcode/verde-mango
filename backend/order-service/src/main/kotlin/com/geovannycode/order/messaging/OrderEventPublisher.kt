@@ -32,6 +32,11 @@ class OrderEventPublisher(
         logger.info("Evento ORDER_CREATED publicado: ${order.orderNumber}")
     }
 
+    fun publishOrderCreatedEvent(event: OrderCreatedEvent) {
+        publish(MessagingConstants.ORDER_CREATED, event)
+        logger.info("Evento ORDER_CREATED publicado: ${event.orderNumber}")
+    }
+
     fun publishOrderPaid(order: Order) {
         val event = OrderPaidEvent(
             eventId = UUID.randomUUID().toString(),
