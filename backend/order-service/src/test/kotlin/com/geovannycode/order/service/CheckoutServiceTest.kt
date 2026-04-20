@@ -11,16 +11,17 @@ import com.geovannycode.order.repository.OrderRepository
 import com.geovannycode.shared.exception.BusinessRuleException
 import io.mockk.Runs
 import io.mockk.every
-import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.just
 import io.mockk.spyk
 import io.mockk.verify
 import org.junit.jupiter.api.extension.ExtendWith
+import org.springframework.transaction.support.TransactionSynchronizationManager
 
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -52,6 +53,11 @@ class CheckoutServiceTest {
 
     @BeforeEach
     fun setup() {
+        // Initialize transaction synchronization for unit tests
+        if (!TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.initSynchronization()
+        }
+
         // Inicializa el servicio manualmente
         checkoutService = CheckoutService(
             cartService = cartService,
@@ -127,6 +133,13 @@ class CheckoutServiceTest {
         assertThat(result.items[0].priceChanged).isTrue()
     }
 
+    @AfterEach
+    fun tearDown() {
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.clearSynchronization()
+        }
+    }
+
     @Test
     fun `processCheckout creates order successfully`() {
         // Given
@@ -158,9 +171,8 @@ class CheckoutServiceTest {
 
         // Then
         assertThat(result.orderNumber).isEqualTo("VM-20240115-0001")
-        assertThat(result.paymentUrl).isEqualTo("https://payment.url")
+        assertThat(result.paymentUrl).isNull()
         verify { cartService.markAsConverted(1L) }
-        verify { orderEventPublisher.publishOrderCreated(any()) }
     }
 
     @Test

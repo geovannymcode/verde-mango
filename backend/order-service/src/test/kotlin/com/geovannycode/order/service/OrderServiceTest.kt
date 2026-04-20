@@ -11,7 +11,6 @@ import com.geovannycode.shared.exception.BusinessRuleException
 import com.geovannycode.shared.exception.ResourceNotFoundException
 import io.mockk.Runs
 import io.mockk.every
-import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.just
@@ -122,7 +121,7 @@ class OrderServiceTest {
         every { mockedOrder.status } returns OrderStatus.PENDING
         every { mockedOrder.userId } returns 1L
         // Forzamos que la orden sea vieja (3 horas atrás)
-        every { mockedOrder.createdAt } returns Instant.now().minus(3, java.time.temporal.ChronoUnit.HOURS)
+        every { mockedOrder.createdAt } returns Instant.now().minus(3, ChronoUnit.HOURS)
         every { mockedOrder.canBeCancelled } returns false
 
         every { orderRepository.findByOrderNumberAndUserId("VM-20240115-0001", 1L) } returns Optional.of(mockedOrder)
