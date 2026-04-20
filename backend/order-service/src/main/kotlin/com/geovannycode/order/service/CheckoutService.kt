@@ -13,10 +13,13 @@ import com.geovannycode.order.entity.OrderItem
 import com.geovannycode.order.messaging.OrderEventPublisher
 import com.geovannycode.order.repository.OrderRepository
 import com.geovannycode.shared.exception.BusinessRuleException
+import com.geovannycode.shared.exception.InsufficientStockException
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.transaction.support.TransactionSynchronization
+import org.springframework.transaction.support.TransactionSynchronizationManager
 
 @Service
 class CheckoutService(
@@ -36,6 +39,123 @@ class CheckoutService(
     @Transactional(readOnly = true)
     fun validateCart(userId: Long): CheckoutValidationResponse {
         val cart = cartService.getCartForCheckout(userId)
+        return validateCartInternal(cart)
+    }
+
+    @Transactional
+    fun processCheckout(userId: Long, userEmail: String, request: CheckoutRequest): CheckoutResponse {
+        logger.info("Procesando checkout para usuario $userId")
+
+        // 1. Validar carrito (loads cart internally)
+        val cart = cartService.getCartForCheckout(userId)
+        val validation = validateCartInternal(cart)
+        if (!validation.valid) {
+            throw BusinessRuleException("No se puede procesar: ${validation.errors.joinToString(", ")}")
+        }
+
+        // 2. Validate billing address when not same as shipping
+        if (!request.billingSameAsShipping && request.billingAddress == null) {
+            throw BusinessRuleException("La dirección de facturación es requerida cuando difiere de la de envío")
+        }
+
+        // 3. Generar número de orden
+        val orderNumber = orderNumberGenerator.generate()
+
+        // 4. Crear direcciones
+        val shippingAddress = request.shippingAddress.toAddress()
+        val billingAddress = if (request.billingSameAsShipping) null else request.billingAddress?.toAddress()
+
+        // 5. Calcular totales y crear items (re-check stock at order creation time)
+        var subtotal = 0L
+        val orderItems = mutableListOf<OrderItem>()
+
+        for (cartItem in cart.items) {
+            val product = productClient.getProduct(cartItem.productId)
+                ?: throw BusinessRuleException("Producto ${cartItem.productId} no disponible")
+
+            if (product.stock < cartItem.quantity) {
+                throw InsufficientStockException(
+                    "Stock insuficiente para '${product.name}'. Disponible: ${product.stock}, solicitado: ${cartItem.quantity}"
+                )
+            }
+
+            val orderItem = OrderItem(
+                productId = product.id,
+                productName = product.name,
+                productSlug = product.slug,
+                productSku = product.sku,
+                productImageUrl = product.primaryImageUrl,
+                quantity = cartItem.quantity,
+                unitPrice = product.price
+            )
+            orderItems.add(orderItem)
+            subtotal += orderItem.subtotal
+        }
+
+        val taxAmount = (subtotal * taxRate).toLong()
+        val totalAmount = subtotal + defaultShippingCost + taxAmount
+
+        // 6. Crear orden
+        val order = Order(
+            orderNumber = orderNumber,
+            userId = userId,
+            userEmail = userEmail,
+            subtotal = subtotal,
+            shippingCost = defaultShippingCost,
+            taxAmount = taxAmount,
+            totalAmount = totalAmount,
+            shippingAddress = shippingAddress,
+            billingSameAsShipping = request.billingSameAsShipping,
+            billingAddress = billingAddress,
+            billingTaxId = request.billingTaxId,
+            customerNotes = request.customerNotes,
+            cartId = cart.id
+        )
+
+        orderItems.forEach { order.addItem(it) }
+        val savedOrder = orderRepository.save(order)
+        logger.info("Orden creada: ${savedOrder.orderNumber}")
+
+        // 7. Marcar carrito como convertido
+        cartService.markAsConverted(cart.id)
+
+        // 8. Schedule payment creation and event publishing AFTER transaction commits
+        val orderId = savedOrder.id
+        val savedOrderNumber = savedOrder.orderNumber
+        val savedTotalAmount = savedOrder.totalAmount
+        val paymentMethod = request.paymentMethod
+
+        TransactionSynchronizationManager.registerSynchronization(object : TransactionSynchronization {
+            override fun afterCommit() {
+                try {
+                    paymentClient.createPayment(
+                        orderId = orderId,
+                        orderNumber = savedOrderNumber,
+                        amount = savedTotalAmount,
+                        paymentMethod = paymentMethod,
+                        customerEmail = userEmail
+                    )
+                } catch (e: Exception) {
+                    logger.error("Error creando pago para orden $savedOrderNumber", e)
+                }
+
+                try {
+                    orderEventPublisher.publishOrderCreated(savedOrder)
+                } catch (e: Exception) {
+                    logger.error("Error publicando evento ORDER_CREATED para orden $savedOrderNumber", e)
+                }
+            }
+        })
+
+        return CheckoutResponse(
+            orderNumber = savedOrder.orderNumber,
+            status = savedOrder.status.name,
+            paymentUrl = null,
+            message = "Orden creada exitosamente. El pago se procesará en breve."
+        )
+    }
+
+    private fun validateCartInternal(cart: com.geovannycode.order.entity.Cart): CheckoutValidationResponse {
         val errors = mutableListOf<String>()
         val itemValidations = mutableListOf<CheckoutItemValidation>()
 
@@ -86,98 +206,6 @@ class CheckoutService(
             valid = errors.isEmpty(), items = itemValidations,
             subtotal = subtotal, shippingCost = defaultShippingCost,
             taxAmount = taxAmount, total = total, errors = errors
-        )
-    }
-
-    @Transactional
-    fun processCheckout(userId: Long, userEmail: String, request: CheckoutRequest): CheckoutResponse {
-        logger.info("Procesando checkout para usuario $userId")
-
-        // 1. Validar carrito
-        val validation = validateCart(userId)
-        if (!validation.valid) {
-            throw BusinessRuleException("No se puede procesar: ${validation.errors.joinToString(", ")}")
-        }
-
-        val cart = cartService.getCartForCheckout(userId)
-
-        // 2. Generar número de orden
-        val orderNumber = orderNumberGenerator.generate()
-
-        // 3. Crear direcciones
-        val shippingAddress = request.shippingAddress.toAddress()
-        val billingAddress = if (request.billingSameAsShipping) null else request.billingAddress?.toAddress()
-
-        // 4. Calcular totales y crear items
-        var subtotal = 0L
-        val orderItems = mutableListOf<OrderItem>()
-
-        for (cartItem in cart.items) {
-            val product = productClient.getProduct(cartItem.productId)
-                ?: throw BusinessRuleException("Producto ${cartItem.productId} no disponible")
-
-            val orderItem = OrderItem(
-                productId = product.id,
-                productName = product.name,
-                productSlug = product.slug,
-                productSku = product.sku,
-                productImageUrl = product.primaryImageUrl,
-                quantity = cartItem.quantity,
-                unitPrice = product.price
-            )
-            orderItems.add(orderItem)
-            subtotal += orderItem.subtotal
-        }
-
-        val taxAmount = (subtotal * taxRate).toLong()
-        val totalAmount = subtotal + defaultShippingCost + taxAmount
-
-        // 5. Crear orden
-        val order = Order(
-            orderNumber = orderNumber,
-            userId = userId,
-            userEmail = userEmail,
-            subtotal = subtotal,
-            shippingCost = defaultShippingCost,
-            taxAmount = taxAmount,
-            totalAmount = totalAmount,
-            shippingAddress = shippingAddress,
-            billingSameAsShipping = request.billingSameAsShipping,
-            billingAddress = billingAddress,
-            billingTaxId = request.billingTaxId,
-            customerNotes = request.customerNotes,
-            cartId = cart.id
-        )
-
-        orderItems.forEach { order.addItem(it) }
-        val savedOrder = orderRepository.save(order)
-        logger.info("Orden creada: ${savedOrder.orderNumber}")
-
-        // 6. Marcar carrito como convertido
-        cartService.markAsConverted(cart.id)
-
-        // 7. Iniciar pago
-        val paymentUrl = try {
-            paymentClient.createPayment(
-                orderId = savedOrder.id,
-                orderNumber = savedOrder.orderNumber,
-                amount = savedOrder.totalAmount,
-                paymentMethod = request.paymentMethod,
-                customerEmail = userEmail
-            )
-        } catch (e: Exception) {
-            logger.error("Error creando pago para orden ${savedOrder.orderNumber}", e)
-            null
-        }
-
-        // 8. Publicar evento
-        orderEventPublisher.publishOrderCreated(savedOrder)
-
-        return CheckoutResponse(
-            orderNumber = savedOrder.orderNumber,
-            status = savedOrder.status.name,
-            paymentUrl = paymentUrl,
-            message = "Orden creada exitosamente. Procede al pago."
         )
     }
 

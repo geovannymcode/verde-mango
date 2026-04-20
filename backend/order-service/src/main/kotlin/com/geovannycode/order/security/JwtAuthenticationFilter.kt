@@ -18,7 +18,6 @@ import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource
 import org.springframework.stereotype.Component
 import org.springframework.web.filter.OncePerRequestFilter
-import java.util.Date
 import javax.crypto.SecretKey
 
 /**
@@ -63,11 +62,6 @@ class JwtAuthenticationFilter(
     private fun authenticate(token: String, request: HttpServletRequest) {
         val claims = parseClaims(token)
 
-        if (claims.expiration.before(Date())) {
-            log.debug("Token expirado para subject: {}", claims.subject)
-            return
-        }
-
         val email = claims.subject ?: run {
             log.warn("Token sin subject (email)")
             return
@@ -93,11 +87,6 @@ class JwtAuthenticationFilter(
         )
         authentication.details = WebAuthenticationDetailsSource().buildDetails(request)
         SecurityContextHolder.getContext().authentication = authentication
-
-        // Atributos disponibles para controllers
-        request.setAttribute("userId", userId)
-        request.setAttribute("userEmail", email)
-        request.setAttribute("userRole", role)
 
         log.debug("Usuario autenticado: {} (ID: {}, rol: {})", email, userId, role)
     }

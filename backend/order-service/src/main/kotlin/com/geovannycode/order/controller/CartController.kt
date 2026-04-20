@@ -40,7 +40,7 @@ class CartController(
         val userId = principal?.id
         val sessionId = getOrCreateSessionId(request, userId)
         val cart = cartService.getCart(userId, sessionId)
-        return ResponseEntity.ok(ApiResponse.success(cart))
+        return buildResponseWithSessionId(ApiResponse.success(cart), sessionId)
     }
 
     @GetMapping("/summary")
@@ -124,5 +124,16 @@ class CartController(
     private fun getOrCreateSessionId(request: HttpServletRequest, userId: Long?): String? {
         if (userId != null) return null
         return request.getHeader("X-Session-Id") ?: UUID.randomUUID().toString()
+    }
+
+    private fun <T> buildResponseWithSessionId(
+        body: ApiResponse<T>,
+        sessionId: String?
+    ): ResponseEntity<ApiResponse<T>> {
+        val builder = ResponseEntity.ok()
+        if (sessionId != null) {
+            builder.header("X-Session-Id", sessionId)
+        }
+        return builder.body(body)
     }
 }

@@ -96,7 +96,6 @@ class ProductController(
     fun getById(
         @PathVariable id: Long
     ): ResponseEntity<ApiResponse<ProductResponse>> {
-        // Asegúrate de que tu ProductService tenga implementado el método getById
         val product = productService.getById(id)
         return ResponseEntity.ok(ApiResponse.success(product))
     }

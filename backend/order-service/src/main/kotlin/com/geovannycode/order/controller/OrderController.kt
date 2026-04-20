@@ -5,6 +5,7 @@ import com.geovannycode.order.dto.OrderListResponse
 import com.geovannycode.order.dto.OrderResponse
 import com.geovannycode.order.security.UserPrincipal
 import com.geovannycode.order.service.OrderService
+import com.geovannycode.shared.constant.AppConstants
 import com.geovannycode.shared.constant.OrderStatus
 import com.geovannycode.shared.dto.ApiResponse
 import com.geovannycode.shared.dto.PageResponse
@@ -40,7 +41,9 @@ class OrderController(
         @RequestParam(defaultValue = "0") page: Int,
         @RequestParam(defaultValue = "10") size: Int
     ): ResponseEntity<ApiResponse<PageResponse<OrderListResponse>>> {
-        val orders = orderService.getUserOrders(principal.id, status, page, size)
+        require(page >= 0) { "El número de página no puede ser negativo" }
+        val clampedSize = size.coerceIn(1, AppConstants.MAX_PAGE_SIZE)
+        val orders = orderService.getUserOrders(principal.id, status, page, clampedSize)
         return ResponseEntity.ok(ApiResponse.success(orders))
     }
 

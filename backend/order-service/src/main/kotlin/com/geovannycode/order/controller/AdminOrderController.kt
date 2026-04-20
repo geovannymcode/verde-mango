@@ -5,6 +5,7 @@ import com.geovannycode.order.dto.OrderListResponse
 import com.geovannycode.order.dto.OrderResponse
 import com.geovannycode.order.dto.OrderStatsResponse
 import com.geovannycode.order.dto.UpdateOrderStatusRequest
+import com.geovannycode.order.security.UserPrincipal
 import com.geovannycode.order.service.OrderService
 import com.geovannycode.shared.constant.OrderStatus
 import com.geovannycode.shared.dto.ApiResponse
@@ -63,9 +64,9 @@ class AdminOrderController(
     fun updateStatus(
         @PathVariable id: Long,
         @Valid @RequestBody request: UpdateOrderStatusRequest,
-        @AuthenticationPrincipal adminId: Long
+        @AuthenticationPrincipal principal: UserPrincipal
     ): ResponseEntity<ApiResponse<OrderResponse>> {
-        val order = orderService.updateOrderStatus(id, request, adminId)
+        val order = orderService.updateOrderStatus(id, request, principal.id)
         return ResponseEntity.ok(ApiResponse.success(order, "Estado actualizado"))
     }
 

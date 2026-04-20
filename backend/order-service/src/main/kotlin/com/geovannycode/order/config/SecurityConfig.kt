@@ -34,9 +34,6 @@ class SecurityConfig(
                     // Actuator
                     .requestMatchers("/actuator/health").permitAll()
 
-                    // Webhooks de pago
-                    .requestMatchers("/api/v1/webhooks/**").permitAll()
-
                     // Admin
                     .requestMatchers("/api/v1/admin/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
 

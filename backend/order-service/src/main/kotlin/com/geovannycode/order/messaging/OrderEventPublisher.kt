@@ -2,6 +2,7 @@ package com.geovannycode.order.messaging
 
 import com.geovannycode.order.entity.Order
 import com.geovannycode.shared.constant.MessagingConstants
+import com.geovannycode.shared.dto.OrderCancelledEvent
 import com.geovannycode.shared.dto.OrderCreatedEvent
 import com.geovannycode.shared.dto.OrderPaidEvent
 import com.geovannycode.shared.dto.OrderStatusChangedEvent
@@ -54,20 +55,17 @@ class OrderEventPublisher(
             newStatus = order.status.name,
             trackingNumber = order.trackingNumber
         )
-        publish("order.status.changed", event)
+        publish(MessagingConstants.ORDER_STATUS_CHANGED, event)
         logger.info("Evento STATUS_CHANGED publicado: ${order.orderNumber} -> ${order.status}")
     }
 
     fun publishOrderCancelled(order: Order, reason: String) {
-        val event = mapOf(
-            "eventId" to UUID.randomUUID().toString(),
-            "orderId" to order.id,
-            "orderNumber" to order.orderNumber,
-            "userId" to order.userId,
-            "reason" to reason,
-            "items" to order.items.map { mapOf("productId" to it.productId, "quantity" to it.quantity) }
+        val event = OrderCancelledEvent(
+            eventId = UUID.randomUUID().toString(),
+            orderId = order.id,
+            reason = reason
         )
-        publish("order.cancelled", event)
+        publish(MessagingConstants.ORDER_CANCELLED, event)
         logger.info("Evento ORDER_CANCELLED publicado: ${order.orderNumber}")
     }
 
@@ -76,6 +74,7 @@ class OrderEventPublisher(
             rabbitTemplate.convertAndSend(MessagingConstants.ORDER_EXCHANGE, routingKey, event)
         } catch (e: Exception) {
             logger.error("Error publicando evento $routingKey: ${e.message}", e)
+            throw e
         }
     }
 }

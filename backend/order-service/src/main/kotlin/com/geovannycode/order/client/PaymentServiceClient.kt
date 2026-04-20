@@ -3,6 +3,7 @@ package com.geovannycode.order.client
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
+import org.springframework.web.reactive.function.client.WebClientResponseException
 import org.springframework.web.reactive.function.client.bodyToMono
 
 @Component
@@ -35,8 +36,11 @@ class PaymentServiceClient(
                 .block()
 
             response?.paymentUrl
+        } catch (e: WebClientResponseException) {
+            logger.error("Error HTTP ${e.statusCode} creando pago para orden $orderNumber: ${e.responseBodyAsString}")
+            null
         } catch (e: Exception) {
-            logger.error("Error creando pago para orden $orderNumber: ${e.message}")
+            logger.error("Servicio de pagos no disponible para orden $orderNumber: ${e.message}")
             null
         }
     }

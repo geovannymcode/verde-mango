@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.Instant
 import java.time.temporal.ChronoUnit
+import java.util.Locale
 
 @Service
 class OrderService(
@@ -96,8 +97,9 @@ class OrderService(
 
     @Transactional(readOnly = true)
     fun getOrderById(id: Long): OrderResponse {
-        val order = orderRepository.findByIdWithDetails(id)
+        val order = orderRepository.findByIdWithItems(id)
             .orElseThrow { ResourceNotFoundException("Orden", "id", id) }
+        orderRepository.findByIdWithStatusHistory(id)
         return OrderResponse.from(order)
     }
 
@@ -127,14 +129,15 @@ class OrderService(
 
     @Transactional(readOnly = true)
     fun getOrderStats(fromDate: Instant, toDate: Instant): OrderStatsResponse {
+        val revenue = orderRepository.getTotalRevenue(fromDate, toDate)
         return OrderStatsResponse(
             totalOrders = orderRepository.count(),
             pendingOrders = orderRepository.countByStatus(OrderStatus.PENDING),
             processingOrders = orderRepository.countByStatus(OrderStatus.PROCESSING),
             deliveredOrders = orderRepository.countByStatus(OrderStatus.DELIVERED),
             cancelledOrders = orderRepository.countByStatus(OrderStatus.CANCELLED),
-            totalRevenue = orderRepository.getTotalRevenue(fromDate, toDate),
-            totalRevenueFormatted = "$${String.format("%,d", orderRepository.getTotalRevenue(fromDate, toDate))}",
+            totalRevenue = revenue,
+            totalRevenueFormatted = "$${String.format(Locale.US, "%,d", revenue)}",
             averageOrderValue = orderRepository.getAverageOrderValue()
         )
     }

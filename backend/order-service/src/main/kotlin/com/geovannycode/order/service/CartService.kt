@@ -55,6 +55,14 @@ class CartService(
 
         val cart = findActiveCart(userId, sessionId) ?: createCart(userId, sessionId)
 
+        val existingQty = cart.getItem(request.productId)?.quantity ?: 0
+        val totalQty = existingQty + request.quantity
+        if (product.stock < totalQty) {
+            throw BusinessRuleException(
+                "Stock insuficiente. Ya tienes $existingQty en el carrito, disponible: ${product.stock}"
+            )
+        }
+
         cart.addItem(
             productId = product.id,
             productName = product.name,

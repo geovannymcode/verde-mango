@@ -2,9 +2,11 @@ package com.geovannycode.order.exception
 
 import com.geovannycode.shared.dto.ErrorResponse
 import com.geovannycode.shared.dto.FieldError
+import com.geovannycode.shared.exception.AccessDeniedException
 import com.geovannycode.shared.exception.BusinessRuleException
 import com.geovannycode.shared.exception.InsufficientStockException
 import com.geovannycode.shared.exception.ResourceNotFoundException
+import com.geovannycode.shared.exception.ServiceUnavailableException
 import jakarta.servlet.http.HttpServletRequest
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
@@ -38,6 +40,13 @@ class GlobalExceptionHandler {
     fun handleInsufficientStock(ex: InsufficientStockException, request: HttpServletRequest): ResponseEntity<ErrorResponse> {
         logger.warn("Stock insuficiente: ${ex.message}")
         return ResponseEntity.status(HttpStatus.CONFLICT)
+            .body(ErrorResponse.of(ex.message, ex.errorCode, request.requestURI))
+    }
+
+    @ExceptionHandler(ServiceUnavailableException::class)
+    fun handleServiceUnavailable(ex: ServiceUnavailableException, request: HttpServletRequest): ResponseEntity<ErrorResponse> {
+        logger.error("Servicio externo no disponible: ${ex.message}")
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
             .body(ErrorResponse.of(ex.message, ex.errorCode, request.requestURI))
     }
 

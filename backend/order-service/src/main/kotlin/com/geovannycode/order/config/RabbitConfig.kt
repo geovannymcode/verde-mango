@@ -19,7 +19,7 @@ class RabbitConfig {
 
     // Cola para órdenes creadas
     @Bean
-    fun orderCreatedQueue(): Queue = Queue("order.created.queue", true)
+    fun orderCreatedQueue(): Queue = Queue(MessagingConstants.ORDER_CREATED_QUEUE, true)
 
     @Bean
     fun orderCreatedBinding(orderCreatedQueue: Queue, orderExchange: TopicExchange): Binding =
@@ -27,7 +27,7 @@ class RabbitConfig {
 
     // Cola para órdenes pagadas
     @Bean
-    fun orderPaidQueue(): Queue = Queue("order.paid.queue", true)
+    fun orderPaidQueue(): Queue = Queue(MessagingConstants.ORDER_PAID_QUEUE, true)
 
     @Bean
     fun orderPaidBinding(orderPaidQueue: Queue, orderExchange: TopicExchange): Binding =
@@ -35,7 +35,7 @@ class RabbitConfig {
 
     // Cola para escuchar pagos completados
     @Bean
-    fun paymentCompletedQueue(): Queue = Queue("payment.completed.order.queue", true)
+    fun paymentCompletedQueue(): Queue = Queue(MessagingConstants.PAYMENT_COMPLETED_ORDER_QUEUE, true)
 
     // 1. Registramos explícitamente el exchange como un Bean
     @Bean

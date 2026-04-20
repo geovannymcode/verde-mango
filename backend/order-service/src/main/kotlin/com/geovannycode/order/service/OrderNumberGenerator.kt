@@ -26,14 +26,16 @@ class OrderNumberGenerator(
             sequence.set(0)
         }
 
-        val seq = sequence.incrementAndGet()
-        val orderNumber = "$prefix-$today-${seq.toString().padStart(4, '0')}"
+        val maxAttempts = 100
+        repeat(maxAttempts) {
+            val seq = sequence.incrementAndGet()
+            val orderNumber = "$prefix-$today-${seq.toString().padStart(4, '0')}"
 
-        // Verificar unicidad (en caso de reinicio del servicio)
-        return if (orderRepository.existsByOrderNumber(orderNumber)) {
-            generate() // Recursivo si ya existe
-        } else {
-            orderNumber
+            if (!orderRepository.existsByOrderNumber(orderNumber)) {
+                return orderNumber
+            }
         }
+
+        throw IllegalStateException("No se pudo generar número de orden único después de $maxAttempts intentos")
     }
 }
