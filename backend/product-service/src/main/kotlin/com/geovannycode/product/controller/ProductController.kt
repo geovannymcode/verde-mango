@@ -90,4 +90,13 @@ class ProductController(
         val products = productService.getRelated(id)
         return ResponseEntity.ok(ApiResponse.success(products))
     }
+
+    @GetMapping("/id/{id}")
+    @Operation(summary = "Obtener producto por ID (Uso interno/Inter-service)")
+    fun getById(
+        @PathVariable id: Long
+    ): ResponseEntity<ApiResponse<ProductResponse>> {
+        val product = productService.getById(id)
+        return ResponseEntity.ok(ApiResponse.success(product))
+    }
 }

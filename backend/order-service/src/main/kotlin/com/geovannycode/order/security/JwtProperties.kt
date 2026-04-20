@@ -1,0 +1,31 @@
+package com.geovannycode.order.security
+
+import jakarta.validation.constraints.NotBlank
+import jakarta.validation.constraints.Size
+import org.springframework.boot.context.properties.ConfigurationProperties
+import org.springframework.validation.annotation.Validated
+
+/**
+ * Propiedades de configuración JWT mapeadas desde `application.yml`.
+ *
+ * Validaciones:
+ * - [secret]: no puede estar vacío y debe tener al menos 48 caracteres
+ *   (HS384 requiere claves de mínimo 384 bits = 48 bytes ASCII).
+ * - [issuer]: no puede estar vacío.
+ *
+ * Spring valida estas restricciones en el arranque y falla fast si no se cumplen.
+ */
+@ConfigurationProperties(prefix = "jwt")
+@Validated
+data class JwtProperties(
+
+    @field:NotBlank(message = "jwt.secret no puede estar vacío. Define la variable de entorno JWT_SECRET.")
+    @field:Size(
+        min = 48,
+        message = "jwt.secret debe tener al menos 48 caracteres (HS384 requiere claves de 384 bits)."
+    )
+    val secret: String,
+
+    @field:NotBlank(message = "jwt.issuer no puede estar vacío.")
+    val issuer: String
+)
