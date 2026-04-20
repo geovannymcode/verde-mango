@@ -8,6 +8,7 @@ import com.geovannycode.shared.constant.OrderStatus
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Size
 import java.time.Instant
+import java.util.Locale
 
 // ==================== REQUEST DTOs ====================
 
@@ -76,7 +77,7 @@ data class OrderResponse(
             items = order.items.map { OrderItemResponse.from(it) },
             itemCount = order.itemCount,
             subtotal = order.subtotal,
-            subtotalFormatted = "$${String.format("%,d", order.subtotal)}",
+            subtotalFormatted = "$${String.format(Locale.US, "%,d", order.subtotal)}",
             shippingCost = order.shippingCost,
             taxAmount = order.taxAmount,
             discountAmount = order.discountAmount,

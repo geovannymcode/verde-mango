@@ -13,6 +13,7 @@ import jakarta.persistence.OneToMany
 import jakarta.persistence.OrderBy
 import jakarta.persistence.Table
 import java.time.Instant
+import java.util.Locale
 
 @Entity
 @Table(name = "orders")
@@ -156,7 +157,7 @@ class Order(
 
     val isTerminal: Boolean get() = status in listOf(OrderStatus.DELIVERED, OrderStatus.CANCELLED, OrderStatus.REFUNDED)
 
-    val totalFormatted: String get() = "$${String.format("%,d", totalAmount)}"
+    val totalFormatted: String get() = "$${String.format(Locale.US, "%,d", totalAmount)}"
 
     // ==================== Métodos de negocio ====================
 
@@ -230,7 +231,7 @@ class Order(
         check(canBeRefunded) { "La orden no puede ser reembolsada" }
         require(amount > 0 && amount <= totalAmount) { "Monto de reembolso inválido" }
         this.refundAmount = amount
-        updateStatus(OrderStatus.REFUNDED, "Reembolso de $${String.format("%,d", amount)}", refundedBy, "ADMIN")
+        updateStatus(OrderStatus.REFUNDED, "Reembolso de $${String.format(Locale.US, "%,d", amount)}", refundedBy, "ADMIN")
     }
 
     fun recalculateTotals() {

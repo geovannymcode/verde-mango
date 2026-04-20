@@ -6,6 +6,7 @@ import jakarta.persistence.FetchType
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
+import java.util.Locale
 
 @Entity
 @Table(name = "order_items")
@@ -41,11 +42,11 @@ class OrderItem(
 
 ) : BaseEntity() {
 
-    val subtotal: Long get() = (quantity * unitPrice) - discountAmount
+    val subtotal: Long get() = ((quantity * unitPrice) - discountAmount).coerceAtLeast(0)
 
-    val unitPriceFormatted: String get() = "$${String.format("%,d", unitPrice)}"
+    val unitPriceFormatted: String get() = "$${String.format(Locale.US, "%,d", unitPrice)}"
 
-    val subtotalFormatted: String get() = "$${String.format("%,d", subtotal)}"
+    val subtotalFormatted: String get() = "$${String.format(Locale.US, "%,d", subtotal)}"
 
     companion object {
         fun fromCartItem(cartItem: CartItem, productSku: String? = null) = OrderItem(

@@ -8,6 +8,7 @@ import jakarta.persistence.Enumerated
 import jakarta.persistence.OneToMany
 import jakarta.persistence.OrderBy
 import jakarta.persistence.Table
+import jakarta.persistence.Version
 import java.time.Instant
 
 @Entity
@@ -35,7 +36,11 @@ class Cart(
 
     @OneToMany(mappedBy = "cart", cascade = [CascadeType.ALL], orphanRemoval = true)
     @OrderBy("createdAt ASC")
-    val items: MutableList<CartItem> = mutableListOf()
+    val items: MutableList<CartItem> = mutableListOf(),
+
+    @Version
+    @Column(name = "version")
+    var version: Long = 0
 
 ) : BaseEntity() {
 
@@ -122,6 +127,7 @@ class Cart(
         require(this.isUserCart) { "Solo se puede fusionar hacia un carrito de usuario" }
         require(guestCart.isGuestCart) { "Solo se puede fusionar desde un carrito de visitante" }
         check(isActive) { "No se puede fusionar con un carrito inactivo" }
+        check(guestCart.isActive) { "El carrito de visitante no está activo" }
 
         guestCart.items.forEach { guestItem ->
             addItem(

@@ -7,6 +7,7 @@ import jakarta.validation.constraints.Min
 import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Positive
 import java.time.Instant
+import java.util.Locale
 
 // ==================== REQUEST DTOs ====================
 
@@ -47,18 +48,21 @@ data class CartResponse(
             itemCount = cart.itemCount,
             totalQuantity = cart.totalQuantity,
             subtotal = cart.subtotal,
-            subtotalFormatted = "$${String.format("%,d", cart.subtotal)}",
+            subtotalFormatted = "$${String.format(Locale.US, "%,d", cart.subtotal)}",
             expiresAt = cart.expiresAt,
             createdAt = cart.createdAt,
             updatedAt = cart.updatedAt
         )
 
-        fun empty() = CartResponse(
-            id = 0, status = CartStatus.ACTIVE, items = emptyList(),
-            itemCount = 0, totalQuantity = 0, subtotal = 0,
-            subtotalFormatted = "$0", expiresAt = null,
-            createdAt = Instant.now(), updatedAt = Instant.now()
-        )
+        fun empty(): CartResponse {
+            val now = Instant.now()
+            return CartResponse(
+                id = 0, status = CartStatus.ACTIVE, items = emptyList(),
+                itemCount = 0, totalQuantity = 0, subtotal = 0,
+                subtotalFormatted = "$0", expiresAt = null,
+                createdAt = now, updatedAt = now
+            )
+        }
     }
 }
 
@@ -101,7 +105,7 @@ data class CartSummaryResponse(
             itemCount = cart.itemCount,
             totalQuantity = cart.totalQuantity,
             subtotal = cart.subtotal,
-            subtotalFormatted = "$${String.format("%,d", cart.subtotal)}"
+            subtotalFormatted = "$${String.format(Locale.US, "%,d", cart.subtotal)}"
         )
 
         fun empty() = CartSummaryResponse(0, 0, 0, "$0")

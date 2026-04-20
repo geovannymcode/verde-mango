@@ -20,7 +20,7 @@ interface CartRepository : JpaRepository<Cart, Long> {
     fun existsByUserIdAndStatus(userId: Long, status: CartStatus): Boolean
 
     @Query("""
-        SELECT c FROM Cart c LEFT JOIN FETCH c.items 
+        SELECT DISTINCT c FROM Cart c LEFT JOIN FETCH c.items 
         WHERE c.userId = :userId AND c.status = :status
     """)
     fun findByUserIdAndStatusWithItemsFetch(
@@ -29,7 +29,7 @@ interface CartRepository : JpaRepository<Cart, Long> {
     ): Optional<Cart>
 
     @Query("""
-        SELECT c FROM Cart c LEFT JOIN FETCH c.items 
+        SELECT DISTINCT c FROM Cart c LEFT JOIN FETCH c.items 
         WHERE c.sessionId = :sessionId AND c.status = :status
     """)
     fun findBySessionIdAndStatusWithItemsFetch(
@@ -37,13 +37,20 @@ interface CartRepository : JpaRepository<Cart, Long> {
         @Param("status") status: CartStatus
     ): Optional<Cart>
 
-    @Query("SELECT c FROM Cart c WHERE c.status = 'ACTIVE' AND c.expiresAt < :now")
-    fun findExpiredCarts(@Param("now") now: Instant): List<Cart>
+    @Query("SELECT c FROM Cart c WHERE c.status = :status AND c.expiresAt < :now")
+    fun findExpiredCarts(
+        @Param("now") now: Instant,
+        @Param("status") status: CartStatus = CartStatus.ACTIVE
+    ): List<Cart>
 
-    @Modifying
+    @Modifying(clearAutomatically = true)
     @Query("""
-        UPDATE Cart c SET c.status = 'EXPIRED', c.updatedAt = CURRENT_TIMESTAMP 
-        WHERE c.status = 'ACTIVE' AND c.expiresAt < :now
+        UPDATE Cart c SET c.status = :expiredStatus, c.updatedAt = CURRENT_TIMESTAMP 
+        WHERE c.status = :activeStatus AND c.expiresAt < :now
     """)
-    fun markExpiredCarts(@Param("now") now: Instant): Int
+    fun markExpiredCarts(
+        @Param("now") now: Instant,
+        @Param("activeStatus") activeStatus: CartStatus = CartStatus.ACTIVE,
+        @Param("expiredStatus") expiredStatus: CartStatus = CartStatus.EXPIRED
+    ): Int
 }

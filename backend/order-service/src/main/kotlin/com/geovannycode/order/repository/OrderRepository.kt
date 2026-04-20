@@ -21,8 +21,11 @@ interface OrderRepository : JpaRepository<Order, Long> {
 
     fun findByOrderNumberAndUserId(orderNumber: String, userId: Long): Optional<Order>
 
-    @Query("SELECT o FROM Order o LEFT JOIN FETCH o.items LEFT JOIN FETCH o.statusHistory WHERE o.id = :id")
-    fun findByIdWithDetails(@Param("id") id: Long): Optional<Order>
+    @Query("SELECT DISTINCT o FROM Order o LEFT JOIN FETCH o.items WHERE o.id = :id")
+    fun findByIdWithItems(@Param("id") id: Long): Optional<Order>
+
+    @Query("SELECT DISTINCT o FROM Order o LEFT JOIN FETCH o.statusHistory WHERE o.id = :id")
+    fun findByIdWithStatusHistory(@Param("id") id: Long): Optional<Order>
 
     fun findByUserIdOrderByCreatedAtDesc(userId: Long, pageable: Pageable): Page<Order>
 
@@ -55,20 +58,36 @@ interface OrderRepository : JpaRepository<Order, Long> {
 
     @Query("""
         SELECT COALESCE(SUM(o.totalAmount), 0) FROM Order o 
-        WHERE o.status IN ('CONFIRMED', 'PROCESSING', 'SHIPPED', 'DELIVERED') 
+        WHERE o.status IN :statuses
         AND o.createdAt BETWEEN :from AND :to
     """)
-    fun getTotalRevenue(@Param("from") from: Instant, @Param("to") to: Instant): Long
+    fun getTotalRevenue(
+        @Param("from") from: Instant,
+        @Param("to") to: Instant,
+        @Param("statuses") statuses: List<OrderStatus> = listOf(
+            OrderStatus.CONFIRMED, OrderStatus.PROCESSING, OrderStatus.SHIPPED, OrderStatus.DELIVERED
+        )
+    ): Long
 
-    @Query("SELECT COALESCE(AVG(o.totalAmount), 0) FROM Order o WHERE o.status IN ('CONFIRMED', 'PROCESSING', 'SHIPPED', 'DELIVERED')")
-    fun getAverageOrderValue(): Double
+    @Query("SELECT COALESCE(AVG(o.totalAmount), 0) FROM Order o WHERE o.status IN :statuses")
+    fun getAverageOrderValue(
+        @Param("statuses") statuses: List<OrderStatus> = listOf(
+            OrderStatus.CONFIRMED, OrderStatus.PROCESSING, OrderStatus.SHIPPED, OrderStatus.DELIVERED
+        )
+    ): Double
 
     fun existsByOrderNumber(orderNumber: String): Boolean
 
     @Query("""
         SELECT COUNT(oi) > 0 FROM OrderItem oi JOIN oi.order o 
         WHERE o.userId = :userId AND oi.productId = :productId 
-        AND o.status IN ('CONFIRMED', 'PROCESSING', 'SHIPPED', 'DELIVERED')
+        AND o.status IN :statuses
     """)
-    fun hasUserPurchasedProduct(@Param("userId") userId: Long, @Param("productId") productId: Long): Boolean
+    fun hasUserPurchasedProduct(
+        @Param("userId") userId: Long,
+        @Param("productId") productId: Long,
+        @Param("statuses") statuses: List<OrderStatus> = listOf(
+            OrderStatus.CONFIRMED, OrderStatus.PROCESSING, OrderStatus.SHIPPED, OrderStatus.DELIVERED
+        )
+    ): Boolean
 }
