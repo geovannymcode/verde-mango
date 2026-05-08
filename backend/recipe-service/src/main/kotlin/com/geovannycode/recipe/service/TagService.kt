@@ -4,7 +4,7 @@ import com.geovannycode.recipe.dto.CreateTagRequest
 import com.geovannycode.recipe.dto.TagResponse
 import com.geovannycode.recipe.entity.RecipeTag
 import com.geovannycode.recipe.repository.RecipeTagRepository
-import com.geovannycode.shared.exception.DuplicateResourceException
+import com.geovannycode.shared.exception.ResourceAlreadyExistsException
 import com.geovannycode.shared.exception.ResourceNotFoundException
 import org.springframework.cache.annotation.CacheEvict
 import org.springframework.cache.annotation.Cacheable
@@ -43,7 +43,7 @@ class TagService(
     @CacheEvict(value = ["tags"], allEntries = true)
     fun createTag(request: CreateTagRequest): TagResponse {
         if (tagRepository.findByNameIgnoreCase(request.name).isPresent) {
-            throw DuplicateResourceException("Tag", "nombre", request.name)
+            throw ResourceAlreadyExistsException("Tag", "nombre", request.name)
         }
 
         val slug = slugGenerator.generateUnique(request.name) { tagRepository.existsBySlug(it) }

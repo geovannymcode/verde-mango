@@ -3,7 +3,7 @@ package com.geovannycode.recipe.exception
 import com.geovannycode.shared.dto.ErrorResponse
 import com.geovannycode.shared.dto.FieldError
 import com.geovannycode.shared.exception.BusinessRuleException
-import com.geovannycode.shared.exception.DuplicateResourceException
+import com.geovannycode.shared.exception.ResourceAlreadyExistsException
 import com.geovannycode.shared.exception.ResourceNotFoundException
 import jakarta.servlet.http.HttpServletRequest
 import org.slf4j.LoggerFactory
@@ -26,8 +26,8 @@ class GlobalExceptionHandler {
             .body(ErrorResponse.of(ex.message, ex.errorCode, request.requestURI))
     }
 
-    @ExceptionHandler(DuplicateResourceException::class)
-    fun handleDuplicate(ex: DuplicateResourceException, request: HttpServletRequest): ResponseEntity<ErrorResponse> {
+    @ExceptionHandler(ResourceAlreadyExistsException::class)
+    fun handleConflict(ex: ResourceAlreadyExistsException, request: HttpServletRequest): ResponseEntity<ErrorResponse> {
         return ResponseEntity.status(HttpStatus.CONFLICT)
             .body(ErrorResponse.of(ex.message, ex.errorCode, request.requestURI))
     }

@@ -118,15 +118,3 @@ class ServiceUnavailableException(
     errorCode = "SERVICE_UNAVAILABLE",
     cause = cause
 )
-
-/**
- * Recurso duplicado (HTTP 409)
- */
-class DuplicateResourceException(
-    resourceName: String,
-    fieldName: String,
-    fieldValue: Any
-) : VerdeMangException(
-    message = "$resourceName duplicado con $fieldName: $fieldValue",
-    errorCode = "DUPLICATE_RESOURCE"
-)

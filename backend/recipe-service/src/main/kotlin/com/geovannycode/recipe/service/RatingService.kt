@@ -8,7 +8,7 @@ import com.geovannycode.recipe.entity.RecipeRating
 import com.geovannycode.recipe.repository.RecipeRatingRepository
 import com.geovannycode.recipe.repository.RecipeRepository
 import com.geovannycode.shared.dto.PageResponse
-import com.geovannycode.shared.exception.DuplicateResourceException
+import com.geovannycode.shared.exception.ResourceAlreadyExistsException
 import com.geovannycode.shared.exception.ResourceNotFoundException
 import org.slf4j.LoggerFactory
 import org.springframework.data.domain.PageRequest
@@ -66,7 +66,7 @@ class RatingService(
             .orElseThrow { ResourceNotFoundException("Receta", "slug", recipeSlug) }
 
         if (ratingRepository.existsByRecipeIdAndUserId(recipe.id, userId)) {
-            throw DuplicateResourceException("Rating", "userId", userId)
+            throw ResourceAlreadyExistsException("Rating", "userId", userId)
         }
 
         val rating = RecipeRating(
