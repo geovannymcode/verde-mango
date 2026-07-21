@@ -40,3 +40,9 @@ out/
 .kotlin
 .DS_Store
 postman/
+
+### Frontend (React + Vite) ###
+frontend/node_modules/
+frontend/dist/
+frontend/.env.local
+frontend/coverage/
