@@ -43,12 +43,6 @@ spring:
       port: ${REDIS_PORT:6379}
       timeout: 5000
 
-  rabbitmq:
-    host: ${RABBITMQ_HOST:localhost}
-    port: ${RABBITMQ_PORT:5672}
-    username: ${RABBITMQ_USERNAME:guest}
-    password: ${RABBITMQ_PASSWORD:guest}
-
   cache:
     type: redis
     redis:
@@ -60,7 +54,7 @@ spring:
       write-dates-as-timestamps: false
     default-property-inclusion: non_null
 
-  # Docker Compose (levanta postgres/redis/rabbitmq automaticamente en desarrollo)
+  # Docker Compose (levanta postgres/redis automaticamente en desarrollo)
   docker:
     compose:
       enabled: true

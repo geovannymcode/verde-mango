@@ -15,10 +15,6 @@ object AppConstants {
 object SecurityConstants {
     const val TOKEN_PREFIX = "Bearer "
     const val HEADER_AUTHORIZATION = "Authorization"
-    const val HEADER_USER_ID = "X-User-Id"
-    const val HEADER_USER_EMAIL = "X-User-Email"
-    const val HEADER_USER_ROLES = "X-User-Roles"
-    const val HEADER_TRACE_ID = "X-Trace-Id"
 }
 
 /**
@@ -72,33 +68,4 @@ enum class PaymentStatus {
     FAILED,
     REFUNDED,
     PARTIALLY_REFUNDED
-}
-
-/**
- * Constantes de mensajeria RabbitMQ
- */
-object MessagingConstants {
-    // Exchanges
-    const val USER_EXCHANGE = "user.exchange"
-    const val ORDER_EXCHANGE = "order.exchange"
-    const val PAYMENT_EXCHANGE = "payment.exchange"
-    const val PRODUCT_EXCHANGE = "product.exchange"
-
-    // Routing keys
-    const val USER_REGISTERED = "user.registered"
-    const val USER_UPDATED = "user.updated"
-    const val ORDER_CREATED = "order.created"
-    const val ORDER_PAID = "order.paid"
-    const val ORDER_CANCELLED = "order.cancelled"
-    const val ORDER_STATUS_CHANGED = "order.status.changed"
-    const val PAYMENT_COMPLETED = "payment.completed"
-    const val PAYMENT_FAILED = "payment.failed"
-    const val PRODUCT_STOCK_LOW = "product.stock.low"
-
-    // Queue names
-    const val ORDER_CREATED_QUEUE = "order.created.queue"
-    const val ORDER_PAID_QUEUE = "order.paid.queue"
-    const val ORDER_STATUS_CHANGED_QUEUE = "order.status.changed.queue"
-    const val ORDER_CANCELLED_QUEUE = "order.cancelled.queue"
-    const val PAYMENT_COMPLETED_ORDER_QUEUE = "payment.completed.order.queue"
 }
