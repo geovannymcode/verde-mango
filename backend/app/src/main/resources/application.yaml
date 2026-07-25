@@ -60,6 +60,15 @@ spring:
       write-dates-as-timestamps: false
     default-property-inclusion: non_null
 
+  # Docker Compose (levanta postgres/redis/rabbitmq automaticamente en desarrollo)
+  docker:
+    compose:
+      enabled: true
+      file: infrastructure/docker-compose.yml
+      lifecycle-management: start_and_stop
+      stop:
+        command: stop
+
   # Spring Modulith Event Publication Registry
   modulith:
     events:
