@@ -1,0 +1,9 @@
+package com.geovannycode.verdemango.orders.domain
+
+enum class CartStatus {
+    ACTIVE,      // Carrito activo
+    MERGED,      // Fusionado con carrito de usuario
+    CONVERTED,   // Convertido a orden
+    ABANDONED,   // Abandonado
+    EXPIRED      // Expirado
+}
