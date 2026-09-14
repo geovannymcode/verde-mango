@@ -2,6 +2,7 @@ import axios, { AxiosError, type AxiosResponse, type InternalAxiosRequestConfig 
 import { env } from '@/lib/env'
 import { refreshTokenStorage } from '@/lib/storage'
 import { useAuthStore } from '@/store/authStore'
+import { useCartStore } from '@/store/cartStore'
 import type { ApiErrorBody, ApiResponse } from './types'
 import { ApiError } from './types'
 import type { components } from './openapi.gen.d.ts'
@@ -22,7 +23,27 @@ httpClient.interceptors.request.use((config) => {
   if (accessToken) {
     config.headers.set('Authorization', `Bearer ${accessToken}`)
   }
+
+  // El carrito de invitado se identifica con el header X-Session-Id (confirmado en
+  // CartController.kt). Solo se envía cuando no hay sesión iniciada: si el usuario está
+  // autenticado, el backend identifica el carrito por el token y no necesita el header.
+  if (!accessToken && config.url?.includes('/api/v1/cart')) {
+    const sessionId = useCartStore.getState().ensureGuestSessionId()
+    config.headers.set('X-Session-Id', sessionId)
+  }
+
   return config
+})
+
+httpClient.interceptors.response.use((response) => {
+  const sessionId = response.headers['x-session-id']
+  if (typeof sessionId === 'string' && sessionId.trim().length > 0) {
+    const cartStore = useCartStore.getState()
+    if (sessionId !== cartStore.guestSessionId) {
+      cartStore.setGuestSessionId(sessionId)
+    }
+  }
+  return response
 })
 
 type RetriableConfig = InternalAxiosRequestConfig & { _retry?: boolean }
@@ -43,7 +64,7 @@ function rejectQueue(error: unknown): void {
   pendingQueue = []
 }
 
-async function refreshAccessToken(): Promise<string> {
+export async function refreshAccessToken(): Promise<string> {
   const refreshToken = refreshTokenStorage.get()
   if (!refreshToken) {
     throw new ApiError('No hay sesión activa')

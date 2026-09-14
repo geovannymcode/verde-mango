@@ -44,6 +44,7 @@ export type CheckoutItemValidation = Schemas['CheckoutItemValidation']
 export type AddressRequest = Schemas['AddressRequest']
 export type AddressResponse = Schemas['AddressResponse']
 
+export type OrderStatus = Schemas['OrderResponse']['status']
 export type OrderResponse = Schemas['OrderResponse']
 export type OrderListResponse = Schemas['OrderListResponse']
 export type OrderItemResponse = Schemas['OrderItemResponse']
