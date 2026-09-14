@@ -39,11 +39,15 @@ export function CatalogPage() {
   const page = Number(searchParams.get('page') ?? '1')
 
   const [searchInput, setSearchInput] = useState(q)
+  const [prevQ, setPrevQ] = useState(q)
   const debouncedSearch = useDebouncedValue(searchInput, 400)
 
-  useEffect(() => {
+  // Reajusta el input local cuando `q` cambia desde afuera (URL compartida, "Limpiar filtros"),
+  // ajustando el estado durante el render en vez de sincronizar con un efecto.
+  if (q !== prevQ) {
+    setPrevQ(q)
     setSearchInput(q)
-  }, [q])
+  }
 
   useEffect(() => {
     if (debouncedSearch !== q) {

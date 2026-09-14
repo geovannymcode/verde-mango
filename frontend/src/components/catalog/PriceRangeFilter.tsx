@@ -22,13 +22,19 @@ export function PriceRangeFilter({
 }: PriceRangeFilterProps) {
   const [draftMin, setDraftMin] = useState(min)
   const [draftMax, setDraftMax] = useState(max)
+  const [prevMin, setPrevMin] = useState(min)
+  const [prevMax, setPrevMax] = useState(max)
   const debouncedMin = useDebouncedValue(draftMin, 400)
   const debouncedMax = useDebouncedValue(draftMax, 400)
 
-  useEffect(() => {
+  // Reajusta el estado local cuando `min`/`max` cambian desde afuera (p. ej. "Limpiar filtros"),
+  // ajustando el estado durante el render en vez de sincronizar con un efecto.
+  if (min !== prevMin || max !== prevMax) {
+    setPrevMin(min)
+    setPrevMax(max)
     setDraftMin(min)
     setDraftMax(max)
-  }, [min, max])
+  }
 
   useEffect(() => {
     if (debouncedMin !== min || debouncedMax !== max) {

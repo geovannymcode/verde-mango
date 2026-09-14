@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { Minus, Plus, ShoppingBag } from 'lucide-react'
 import { useProduct, useRelatedProducts } from '@/features/catalog/hooks'
+import { useAddToCart } from '@/features/cart/hooks'
 import { productListToCard } from '@/lib/adapters'
 import { formatCurrency } from '@/lib/formatters'
 import { useUiStore } from '@/store/uiStore'
@@ -22,6 +23,7 @@ export function ProductDetailPage() {
   const { slug } = useParams()
   const [quantity, setQuantity] = useState(1)
   const pushToast = useUiStore((state) => state.pushToast)
+  const addToCart = useAddToCart()
 
   const productQuery = useProduct(slug)
   const relatedQuery = useRelatedProducts(productQuery.data?.id)
@@ -62,8 +64,25 @@ export function ProductDetailPage() {
   if (!product) return null
 
   function handleAddToCart() {
-    console.log('Agregar al carrito', { productId: product?.id, quantity })
-    pushToast({ message: `${product?.name} agregado al carrito (simulado).`, variant: 'success' })
+    if (!product) return
+
+    addToCart.mutate(
+      {
+        productId: product.id,
+        quantity,
+        product: {
+          name: product.name,
+          slug: product.slug,
+          imageUrl: product.images[0]?.url ?? null,
+          price: product.price,
+        },
+      },
+      {
+        onError: () => {
+          pushToast({ message: 'No pudimos agregar el producto al carrito.', variant: 'error' })
+        },
+      },
+    )
   }
 
   return (
@@ -137,7 +156,11 @@ export function ProductDetailPage() {
                 <Plus size={16} />
               </button>
             </div>
-            <Button onClick={handleAddToCart} disabled={!product.isInStock} className="flex-1">
+            <Button
+              onClick={handleAddToCart}
+              disabled={!product.isInStock || addToCart.isPending}
+              className="flex-1"
+            >
               <ShoppingBag size={18} />
               Agregar al carrito
             </Button>

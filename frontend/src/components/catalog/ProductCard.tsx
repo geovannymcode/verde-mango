@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { ShoppingBag } from 'lucide-react'
 import type { CatalogProductCard } from '@/types/catalog'
 import { formatCurrency } from '@/lib/formatters'
+import { useAddToCart } from '@/features/cart/hooks'
 import { Badge } from '@/components/ui/Badge'
 import { Rating } from '@/components/ui/Rating'
 import { Button } from '@/components/ui/Button'
@@ -11,6 +12,21 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product }: ProductCardProps) {
+  const addToCart = useAddToCart()
+
+  function handleAddToCart() {
+    addToCart.mutate({
+      productId: Number(product.id),
+      quantity: 1,
+      product: {
+        name: product.name,
+        slug: product.slug,
+        imageUrl: product.image ?? null,
+        price: product.price,
+      },
+    })
+  }
+
   return (
     <article className="group flex flex-col overflow-hidden rounded-vm-lg border border-vm-line bg-vm-white transition-shadow hover:shadow-vm-card">
       <Link
@@ -62,7 +78,8 @@ export function ProductCard({ product }: ProductCardProps) {
             variant="ghost"
             size="sm"
             aria-label={`Agregar ${product.name} al carrito`}
-            disabled={!product.inStock}
+            disabled={!product.inStock || addToCart.isPending}
+            onClick={handleAddToCart}
             className="!h-9 !w-9 !px-0"
           >
             <ShoppingBag size={18} />
