@@ -123,6 +123,32 @@ frontend/
 └── vitest.config.ts
 ```
 
+## Carrito, checkout y pagos (Wompi)
+
+- **Carrito**: invitados se identifican con el header `X-Session-Id` (UUID generado y persistido en
+  `localStorage`, ver `src/store/cartStore.ts` y el interceptor en `src/api/client.ts`). Al iniciar
+  sesión o registrarse (`src/features/auth/hooks.ts`) se llama automáticamente a
+  `POST /api/v1/cart/merge` para fusionar el carrito de invitado con el del usuario.
+- **Checkout** (`/checkout`, `src/pages/CheckoutPage.tsx`) requiere sesión iniciada (protegido por
+  `src/components/auth/RequireAuth.tsx`, redirige a `/login` y vuelve tras autenticar). Antes de
+  mostrar el formulario se valida el carrito con `POST /api/v1/checkout/validate` (stock/precio por
+  ítem); si hay errores se muestran y se bloquea el botón de pago.
+- **Resultado del pago** (`/checkout/resultado`, `src/pages/CheckoutResultPage.tsx`): lee el query
+  param `reference` (el `orderNumber`) y hace *polling* contra `GET /api/v1/orders/{orderNumber}`
+  cada 3s mientras el pedido esté en `PENDING`, hasta que quede `CONFIRMED`/`PROCESSING`/etc.
+  (aprobado) o `CANCELLED`/`REFUNDED` (rechazado).
+
+**Importante — no probable de punta a punta hoy**: el backend actual (`payment/PaymentApi.kt`) es
+un stub que simula el pago y **siempre** devuelve `paymentUrl = null` en la respuesta de
+`POST /api/v1/checkout`. No existe `WompiController`/webhook real. El frontend está construido
+asumiendo el contrato típico del Web Checkout de Wompi (si `paymentUrl` viene poblado, se hace
+`window.location.href = paymentUrl`), pero contra este backend el botón "Pagar con Wompi" siempre
+mostrará un error después de crear la orden real. Detalle completo, incluyendo el nombre asumido de
+los query params de retorno, en `../docs/api-gaps.md`.
+
+Los "métodos de pago" del selector en `/checkout` (`CARD`, `PSE`, `NEQUI`) son una suposición: el
+backend define `paymentMethod` como texto libre sin enum (`orders/web/CheckoutDtos.kt`).
+
 ## Notas
 
 - No se usan librerías de componentes pesadas (MUI, Ant, Chakra); los componentes de `ui/` se

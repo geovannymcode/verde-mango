@@ -78,3 +78,81 @@ real de quien calificó. Decisión: se muestra `Usuario #<userId>`, o `Tú` cuan
 No hay un endpoint que devuelva el precio mínimo/máximo real de los productos activos para
 calibrar el slider de precio de `/tienda`. Se usa un rango fijo razonable (`0` a `100.000` COP)
 como límites del slider; el usuario puede escribir un valor mayor manualmente si lo necesita.
+
+## Fase 4 — Carrito y checkout: lo que sí es real
+
+Confirmado leyendo `orders/web/CartController.kt`, `orders/web/CheckoutController.kt`,
+`orders/web/OrderController.kt` y sus DTOs/servicios:
+
+- **Identificación de invitado**: header `X-Session-Id` (no query param). Si el request de
+  carrito no trae el header y el usuario no está autenticado, el backend genera un UUID nuevo y
+  lo devuelve en la respuesta con el mismo header `X-Session-Id`. El frontend debe leerlo y
+  persistirlo (ver `CartController.getOrCreateSessionId` / `buildResponseWithSessionId`).
+- **Fusión de carrito**: `POST /api/v1/cart/merge`, requiere `Authorization` y lee `X-Session-Id`
+  del request. Si no hay header o el carrito de invitado está vacío, retorna el carrito del
+  usuario sin error (`CartController.kt:108-123`, `CartService.mergeGuestCart`).
+- **Checkout**: `POST /api/v1/checkout/validate` (valida stock/precio por ítem antes de pagar) y
+  `POST /api/v1/checkout` (crea la orden). Ambos requieren `Authorization` (`@PreAuthorize("isAuthenticated()")`),
+  por lo tanto el checkout **no admite invitados** — hay que iniciar sesión antes.
+- **Órdenes**: se consultan por `orderNumber` (string, no por `id` numérico):
+  `GET /api/v1/orders/{orderNumber}`, `GET /api/v1/orders`, `POST /api/v1/orders/{orderNumber}/cancel`.
+
+## Fase 4 — No existe integración real con Wompi en el backend (CRÍTICO)
+
+Revisión exhaustiva de `payment/` y `orders/service/CheckoutService.kt`:
+
+- `PaymentApi.createPayment()` (`payment/PaymentApi.kt:21-58`) es un **stub simulado**: genera una
+  referencia falsa (`PAY-XXXXXXXX`), publica `PaymentCompletedEvent` **de inmediato** y retorna
+  `PaymentResult(paymentUrl = null, status = "COMPLETED")`. Comentario explícito en el código:
+  `// TODO: Integrar con proveedor de pagos real (Stripe, MercadoPago, etc.)`.
+- `CheckoutResponse.paymentUrl` **siempre es `null`** (`CheckoutService.kt:153-158`). El checkout
+  real nunca devuelve URL de Wompi, referencia de transacción, ni firma de integridad.
+- El evento de pago se procesa en `TransactionSynchronization.afterCommit()` **dentro del mismo
+  request** de `POST /api/v1/checkout`: la orden pasa a `CONFIRMED` (vía `PaymentEventListener` →
+  `OrderService.confirmPayment`) **antes** de que el backend responda al front. No hay una espera
+  real de confirmación de pago que el frontend deba sondear.
+- **No existe `WompiController`, `WompiService`, `WompiClient` ni webhook** en todo el backend.
+- El bloque `wompi:` de `application.yaml:107-128` (public-key, integrity-secret, checkout-url,
+  `redirect-url: ${FRONTEND_URL:http://localhost:3000}/payment/result`) **no está referenciado por
+  ningún `@Value`/`@ConfigurationProperties` en el código Kotlin** — es configuración huérfana.
+- Existe la tabla `payments` (migración `V5__payment_tables.sql`, con columnas `checkout_url`,
+  `gateway_status`, `gateway_response`) pero **ninguna entidad/repositorio Kotlin la usa**.
+
+**Decisión (con el usuario, 2026-09-07)**: implementar el frontend de la Fase 4 asumiendo un
+contrato de Wompi típico (Web Checkout), aunque hoy no se pueda probar de punta a punta contra
+este backend:
+
+- Se asume que `CheckoutResponse.paymentUrl` eventualmente vendrá poblado con la URL completa del
+  Web Checkout de Wompi (el backend arma la URL y firma con sus llaves; el frontend nunca ve
+  `integrity-secret` ni construye la firma).
+- Al recibir `paymentUrl`, el frontend hace `window.location.href = paymentUrl` (sin fallback: si
+  vuelve `null`, como ocurre hoy, se muestra un error y no se navega a ningún lado — ver
+  `CheckoutPage.tsx`).
+- Se asume que Wompi redirige de vuelta a `redirect-url` con los query params estándar de su Web
+  Checkout: `id` (id de la transacción en Wompi), `env` (opcional) y, para facilitar pruebas
+  locales sin pasarela real, además soportamos `reference` y `status` si vienen. **Esto es una
+  suposición, no un contrato verificado**: hoy no hay código en el backend que arme esa URL de
+  retorno, así que no hay forma de confirmar el nombre exacto de los parámetros hasta que exista
+  la integración real.
+- La página `/checkout/resultado` **nunca confía solo en el query param `status`**: siempre hace
+  polling contra `GET /api/v1/orders/{orderNumber}` (real) para decidir aprobado/rechazado/pendiente,
+  usando `reference` (que en nuestro caso es el `orderNumber`) para saber qué orden consultar.
+- Ojo: `wompi.redirect-url` en `application.yaml` apunta a `/payment/result`, no a
+  `/checkout/resultado` como pide esta fase. Si se implementa Wompi real en el backend, hay que
+  alinear esa variable de entorno con la ruta del frontend, o parametrizarla.
+
+**Para probar de punta a punta hoy**: no es posible. El botón de pago en `/checkout` mostrará un
+error inmediato porque `paymentUrl` siempre llega `null` desde este backend. El checkout sí crea
+la orden real (`POST /api/v1/checkout` funciona), pero el frontend no tiene a dónde redirigir para
+"pagar". Queda pendiente para Fase 5 (o antes) implementar `WompiService`/`WompiController` reales
+en el backend.
+
+## Fase 4 — Estado de la implementación del frontend
+
+Implementado con el contrato real verificado arriba: `CartPage`, `CartDrawer`, `CheckoutPage`
+(guardado con `RequireAuth`, requiere login), `CheckoutResultPage` (`/checkout/resultado`, con
+polling a `GET /api/v1/orders/{orderNumber}`), `LoginPage`, `RegisterPage`, `AccountPage` (lista de
+pedidos vía `GET /api/v1/orders`). Botones "agregar al carrito" de `ProductCard`,
+`ProductListItem` y `ProductDetailPage` conectados a `useAddToCart` con update optimista. Sesión se
+restaura al recargar la app vía `refreshToken` persistido (`useAuthBootstrap` en
+`src/features/auth/hooks.ts`), ya que el `accessToken` solo vive en memoria.
