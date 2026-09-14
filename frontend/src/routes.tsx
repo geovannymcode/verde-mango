@@ -21,9 +21,22 @@ import { AboutPage } from '@/pages/AboutPage'
 import { ContactPage } from '@/pages/ContactPage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
 import { SetupStatusPage } from '@/pages/SetupStatusPage'
-import { AdminPlaceholderPage } from '@/pages/admin/AdminPlaceholderPage'
+import { AdminLayout } from '@/components/admin/AdminLayout'
+import { DashboardPage } from '@/pages/admin/DashboardPage'
 
 export const router = createBrowserRouter([
+  {
+    path: '/admin',
+    element: (
+      <AdminRoute>
+        <AdminLayout />
+      </AdminRoute>
+    ),
+    children: [
+      { index: true, element: <DashboardPage /> },
+      { path: '*', element: <NotFoundPage /> },
+    ],
+  },
   {
     path: '/',
     element: <RootLayout />,
@@ -55,14 +68,6 @@ export const router = createBrowserRouter([
           { path: 'ordenes', element: <OrdersListPage /> },
           { path: 'ordenes/:orderNumber', element: <OrderDetailPage /> },
         ],
-      },
-      {
-        path: 'admin',
-        element: (
-          <AdminRoute>
-            <AdminPlaceholderPage />
-          </AdminRoute>
-        ),
       },
       {
         path: 'login',
