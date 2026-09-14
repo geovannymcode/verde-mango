@@ -4,7 +4,7 @@ import { Drawer } from '@/components/ui/Drawer'
 
 const links = [
   { to: '/', label: 'Inicio' },
-  { to: '/productos', label: 'Tienda' },
+  { to: '/tienda', label: 'Tienda' },
   { to: '/recetas', label: 'Recetas' },
   { to: '/nosotros', label: 'Nosotros' },
   { to: '/contacto', label: 'Contacto' },

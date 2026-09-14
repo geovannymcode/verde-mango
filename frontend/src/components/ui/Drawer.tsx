@@ -1,6 +1,7 @@
 import { useEffect, useRef, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { X } from 'lucide-react'
+import { useFocusTrap } from '@/lib/useFocusTrap'
 
 interface DrawerProps {
   open: boolean
@@ -24,6 +25,8 @@ export function Drawer({ open, onClose, title, side = 'right', children }: Drawe
     panelRef.current?.focus()
     return () => document.removeEventListener('keydown', onKeyDown)
   }, [open, onClose])
+
+  useFocusTrap(panelRef, open)
 
   if (!open) return null
 

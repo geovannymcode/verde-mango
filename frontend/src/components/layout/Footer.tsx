@@ -50,7 +50,7 @@ export function Footer() {
         <FooterColumn
           title="Tienda"
           links={[
-            { to: '/productos', label: 'Todos los productos' },
+            { to: '/tienda', label: 'Todos los productos' },
             { to: '/recetas', label: 'Recetas' },
           ]}
         />

@@ -1,9 +1,12 @@
 import { Link, NavLink } from 'react-router-dom'
 import { Menu, Search, ShoppingBag, User } from 'lucide-react'
 import { useUiStore } from '@/store/uiStore'
+import { useCart } from '@/features/cart/hooks'
+import { useAuthStore } from '@/store/authStore'
+import { useCartStore } from '@/store/cartStore'
 
 const leftLinks = [
-  { to: '/productos', label: 'Tienda' },
+  { to: '/tienda', label: 'Tienda' },
   { to: '/recetas', label: 'Recetas' },
 ]
 
@@ -20,7 +23,10 @@ function linkClass({ isActive }: { isActive: boolean }) {
 
 export function Header() {
   const openMobileNav = useUiStore((state) => state.openMobileNav)
-  const openCartDrawer = useUiStore((state) => state.openCartDrawer)
+  const openCartDrawer = useCartStore((state) => state.openDrawer)
+  const cartQuery = useCart()
+  const totalQuantity = cartQuery.data?.totalQuantity ?? 0
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
 
   return (
     <header className="sticky top-0 z-40 border-b border-vm-line bg-vm-white/95 backdrop-blur">
@@ -69,7 +75,7 @@ export function Header() {
             <Search size={20} />
           </button>
           <Link
-            to="/cuenta"
+            to={isAuthenticated ? '/cuenta' : '/login'}
             aria-label="Mi cuenta"
             className="hidden h-10 w-10 items-center justify-center rounded-vm-full text-vm-ink hover:bg-vm-cream sm:flex"
           >
@@ -82,9 +88,11 @@ export function Header() {
             className="relative flex h-10 w-10 items-center justify-center rounded-vm-full text-vm-ink hover:bg-vm-cream"
           >
             <ShoppingBag size={20} />
-            <span className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-vm-full bg-vm-orange text-[10px] font-bold text-vm-white">
-              0
-            </span>
+            {totalQuantity > 0 && (
+              <span className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-vm-full bg-vm-orange text-[10px] font-bold text-vm-white">
+                {totalQuantity > 9 ? '9+' : totalQuantity}
+              </span>
+            )}
           </button>
         </div>
       </div>

@@ -1,6 +1,7 @@
 import { useEffect, useRef, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { X } from 'lucide-react'
+import { useFocusTrap } from '@/lib/useFocusTrap'
 
 interface ModalProps {
   open: boolean
@@ -23,6 +24,8 @@ export function Modal({ open, onClose, title, children }: ModalProps) {
     dialogRef.current?.focus()
     return () => document.removeEventListener('keydown', onKeyDown)
   }, [open, onClose])
+
+  useFocusTrap(dialogRef, open)
 
   if (!open) return null
 
