@@ -1,5 +1,5 @@
 const REFRESH_TOKEN_KEY = 'vm.refreshToken'
-const CART_SESSION_ID_KEY = 'vm.cartSessionId'
+const CART_SESSION_ID_KEY = 'vm_cart_session'
 
 export const refreshTokenStorage = {
   get(): string | null {
