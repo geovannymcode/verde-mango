@@ -78,7 +78,10 @@ export async function refreshAccessToken(): Promise<string> {
   )
 
   const tokens = unwrap(response)
-  useAuthStore.getState().setSession(tokens.accessToken, tokens.refreshToken)
+  // El refresh ROTA el refresh token (AuthService.refreshToken revoca el anterior y crea uno
+  // nuevo), así que hay que persistir el que viene en la respuesta, no reusar el viejo.
+  // `updateTokens` no toca `user`, a diferencia de `setSession`.
+  useAuthStore.getState().updateTokens(tokens.accessToken, tokens.refreshToken)
   return tokens.accessToken
 }
 
@@ -117,7 +120,8 @@ httpClient.interceptors.response.use(
       rejectQueue(refreshError)
       useAuthStore.getState().clearSession()
       if (typeof window !== 'undefined') {
-        window.location.href = '/login'
+        const returnTo = window.location.pathname + window.location.search
+        window.location.href = `/login?returnTo=${encodeURIComponent(returnTo)}`
       }
       return Promise.reject(toApiError(error))
     } finally {

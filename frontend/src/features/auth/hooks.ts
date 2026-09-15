@@ -1,10 +1,12 @@
 import { useEffect } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
-  getCurrentUser,
+  getProfile,
   login as loginRequest,
   logout as logoutRequest,
   register as registerRequest,
+  updateProfile as updateProfileRequest,
+  type UpdateProfilePayload,
 } from '@/api/auth'
 import { refreshAccessToken } from '@/api/client'
 import type { LoginRequest, RegisterRequest } from '@/api/schema'
@@ -45,44 +47,70 @@ export function useLogout() {
 
   return useMutation({
     mutationFn: logoutRequest,
+    // AuthService.logout revoca TODOS los refresh tokens del usuario en el backend. Si esa
+    // llamada falla (ej. red caída) igual limpiamos la sesión local: un logout nunca debe dejar
+    // al usuario "atascado" con sesión activa en el cliente.
     onSettled: () => {
       clearSession()
-      void queryClient.invalidateQueries()
+      queryClient.clear()
+      if (typeof window !== 'undefined') {
+        window.location.href = '/'
+      }
     },
   })
 }
 
-export function useCurrentUser(enabled: boolean) {
+export function useProfile(enabled: boolean) {
   return useQuery({
     queryKey: authKeys.me(),
-    queryFn: getCurrentUser,
+    queryFn: getProfile,
     enabled,
     staleTime: 5 * 60_000,
   })
 }
 
-// Al recargar la página el access token vive solo en memoria (Zustand), pero el refresh
-// token persiste en localStorage. Este hook intenta restaurar la sesión una sola vez al
-// montar la app, para que las rutas protegidas (ej. /checkout) y el header reflejen el
-// estado real de autenticación sin esperar a un 401.
+// GAP (ver @/api/auth.ts y docs/api-gaps.md): no existe endpoint real para actualizar el perfil.
+// Este hook queda listo para cuando el backend lo implemente; la UI de /cuenta no lo invoca hoy.
+export function useUpdateProfile() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (payload: UpdateProfilePayload) => updateProfileRequest(payload),
+    onSuccess: (user) => {
+      queryClient.setQueryData(authKeys.me(), user)
+      void queryClient.invalidateQueries({ queryKey: authKeys.me() })
+    },
+  })
+}
+
+// Al recargar la página el access token vive solo en memoria (Zustand), pero el refresh token
+// persiste en localStorage. Este hook intenta restaurar la sesión una sola vez al montar la app:
+// mientras se resuelve, el store queda en status='loading' (ver AuthStatus en authStore.ts) para
+// que ninguna ruta protegida ni el header decidan nada todavía y nunca "parpadee" /login a un
+// usuario que sí tiene sesión.
 export function useAuthBootstrap() {
-  const setAccessToken = useAuthStore((state) => state.setAccessToken)
   const setUser = useAuthStore((state) => state.setUser)
+  const setStatus = useAuthStore((state) => state.setStatus)
   const clearSession = useAuthStore((state) => state.clearSession)
 
   useEffect(() => {
     let cancelled = false
 
     async function bootstrap() {
-      if (!refreshTokenStorage.get()) return
+      if (!refreshTokenStorage.get()) {
+        if (!cancelled) setStatus('anonymous')
+        return
+      }
 
       try {
-        const accessToken = await refreshAccessToken()
+        // refreshAccessToken (@/api/client.ts) ya persiste el accessToken en memoria y rota/
+        // persiste el refreshToken en localStorage, dejando status='authenticated'.
+        await refreshAccessToken()
         if (cancelled) return
-        setAccessToken(accessToken)
 
-        const user = await getCurrentUser()
-        if (!cancelled) setUser(user)
+        const user = await getProfile()
+        if (cancelled) return
+        setUser(user)
       } catch {
         if (!cancelled) clearSession()
       }
@@ -92,5 +120,5 @@ export function useAuthBootstrap() {
     return () => {
       cancelled = true
     }
-  }, [setAccessToken, setUser, clearSession])
+  }, [setUser, setStatus, clearSession])
 }
