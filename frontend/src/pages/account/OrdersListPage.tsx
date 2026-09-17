@@ -1,0 +1,74 @@
+import { useDocumentTitle } from '@/hooks/useDocumentTitle'
+import { useState } from 'react'
+import { Link } from 'react-router-dom'
+import { useOrders } from '@/features/cart/hooks'
+import { formatCurrency, formatDate } from '@/lib/formatters'
+import { Badge } from '@/components/ui/Badge'
+import { Button } from '@/components/ui/Button'
+import { Skeleton } from '@/components/ui/Skeleton'
+import { Pagination } from '@/components/ui/Pagination'
+import type { OrderStatus } from '@/api/schema'
+
+const STATUS_BADGE: Record<OrderStatus, 'orange' | 'green' | 'neutral' | 'danger'> = {
+  PENDING: 'neutral',
+  CONFIRMED: 'orange',
+  PROCESSING: 'orange',
+  SHIPPED: 'orange',
+  DELIVERED: 'green',
+  CANCELLED: 'danger',
+  REFUNDED: 'danger',
+}
+
+const PAGE_SIZE = 10
+
+export function OrdersListPage() {
+  useDocumentTitle('Mis pedidos', 'Consulta el historial y estado de tus pedidos de Verde Mango.')
+  const [page, setPage] = useState(0)
+  const ordersQuery = useOrders({ page, size: PAGE_SIZE })
+  const data = ordersQuery.data
+
+  if (ordersQuery.isLoading) {
+    return (
+      <div className="flex flex-col gap-3">
+        <Skeleton className="h-20 w-full" />
+        <Skeleton className="h-20 w-full" />
+        <Skeleton className="h-20 w-full" />
+      </div>
+    )
+  }
+
+  if (!data || data.content.length === 0) {
+    return (
+      <div className="flex flex-col items-center gap-3 rounded-vm-lg border border-vm-line py-16 text-center text-vm-muted">
+        <p>Todavía no tienes pedidos.</p>
+        <Link to="/tienda">
+          <Button variant="outline">Ir a la tienda</Button>
+        </Link>
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex flex-col gap-4">
+      <ul className="flex flex-col gap-3">
+        {data.content.map((order) => (
+          <li key={order.orderNumber}>
+            <Link
+              to={`/cuenta/ordenes/${order.orderNumber}`}
+              className="flex flex-wrap items-center justify-between gap-3 rounded-vm-lg border border-vm-line p-4 transition-colors hover:border-vm-orange"
+            >
+              <div>
+                <p className="font-semibold text-vm-ink">{order.orderNumber}</p>
+                <p className="text-sm text-vm-muted">{formatDate(order.createdAt)}</p>
+              </div>
+              <Badge variant={STATUS_BADGE[order.status]}>{order.statusLabel}</Badge>
+              <span className="font-bold text-vm-ink">{formatCurrency(order.totalAmount)}</span>
+            </Link>
+          </li>
+        ))}
+      </ul>
+
+      <Pagination page={page + 1} totalPages={data.totalPages} onPageChange={(p) => setPage(p - 1)} />
+    </div>
+  )
+}
