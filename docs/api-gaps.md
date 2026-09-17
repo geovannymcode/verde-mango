@@ -337,3 +337,118 @@ previa de checkout) y diff sin errores de whitespace. Ambas páginas comprobadas
 Las tres fotos cargaron. El iframe de Maps permaneció vacío en el navegador de prueba; su URL
 respondió HTTP 200. No se confirmó visualmente el pin; se dejó enlace alternativo a Maps con
 la misma dirección. Esta limitación no impide consultar la dirección ni usar el formulario.
+
+
+## Fase 8 — Auditoría previa al panel (8a)
+
+Se intentó acceder a `/api-docs` en localhost:8080 antes de escribir código y con permiso de red; no respondió. Se contrastaron la exportación OpenAPI local y los controladores/servicios/dominio actuales. No equivale a verificación de integración en vivo.
+
+### Inventario completo de endpoints administrativos
+
+Todas las respuestas tienen wrapper ApiResponse. Los POST de creación devuelven 201 en Kotlin, aunque la exportación los describe como 200.
+
+| Método y ruta | Parámetros / body JSON | Respuesta (schema OpenAPI) |
+|---|---|---|
+| `POST /api/v1/admin/categories` | — · body `CreateCategoryRequest` | `ApiResponseCategoryResponse` |
+| `POST /api/v1/admin/categories/reorder` | — · body `ReorderCategoriesRequest` | `ApiResponse` |
+| `GET /api/v1/admin/categories/{id}` | — | `ApiResponseCategoryResponse` |
+| `PUT /api/v1/admin/categories/{id}` | — · body `UpdateCategoryRequest` | `ApiResponseCategoryResponse` |
+| `DELETE /api/v1/admin/categories/{id}` | — | `ApiResponse` |
+| `GET /api/v1/admin/orders` | status, userId, search, fromDate, toDate, page, size | `ApiResponsePageResponseOrderListResponse` |
+| `GET /api/v1/admin/orders/stats` | fromDate, toDate | `ApiResponseOrderStatsResponse` |
+| `GET /api/v1/admin/orders/{id}` | — | `ApiResponseOrderResponse` |
+| `PATCH /api/v1/admin/orders/{id}/status` | — · body `UpdateOrderStatusRequest` | `ApiResponseOrderResponse` |
+| `POST /api/v1/admin/products` | — · body `CreateProductRequest` | `ApiResponseProductResponse` |
+| `PUT /api/v1/admin/products/{id}` | — · body `UpdateProductRequest` | `ApiResponseProductResponse` |
+| `DELETE /api/v1/admin/products/{id}` | — | `ApiResponse` |
+| `PATCH /api/v1/admin/products/{id}/featured` | featured | `ApiResponse` |
+| `POST /api/v1/admin/products/{id}/images` | — · body `AddProductImageRequest` | `ApiResponseProductImageResponse` |
+| `DELETE /api/v1/admin/products/{id}/images/{imageId}` | — | `ApiResponse` |
+| `PATCH /api/v1/admin/products/{id}/images/{imageId}/primary` | — | `ApiResponse` |
+| `PATCH /api/v1/admin/products/{id}/stock` | — · body `UpdateStockRequest` | `ApiResponseProductResponse` |
+| `GET /api/v1/admin/recipes` | status, search, page, size | `ApiResponsePageResponseRecipeListResponse` |
+| `POST /api/v1/admin/recipes` | — · body `CreateRecipeRequest` | `ApiResponseRecipeResponse` |
+| `POST /api/v1/admin/recipes/categories` | — · body `CreateCategoryRequest` | `ApiResponseCategoryResponse` |
+| `PUT /api/v1/admin/recipes/categories/{id}` | — · body `UpdateCategoryRequest` | `ApiResponseCategoryResponse` |
+| `DELETE /api/v1/admin/recipes/categories/{id}` | — | `ApiResponseUnit` |
+| `PATCH /api/v1/admin/recipes/categories/{id}/toggle-active` | — | `ApiResponseCategoryResponse` |
+| `GET /api/v1/admin/recipes/{id}` | — | `ApiResponseRecipeResponse` |
+| `PUT /api/v1/admin/recipes/{id}` | — · body `UpdateRecipeRequest` | `ApiResponseRecipeResponse` |
+| `DELETE /api/v1/admin/recipes/{id}` | — | `ApiResponseUnit` |
+| `PATCH /api/v1/admin/recipes/{id}/feature` | featured | `ApiResponseRecipeResponse` |
+| `PATCH /api/v1/admin/recipes/{id}/publish` | — | `ApiResponseRecipeResponse` |
+| `PATCH /api/v1/admin/recipes/{id}/unpublish` | — | `ApiResponseRecipeResponse` |
+
+
+### Gaps que afectan las siguientes subentregas
+
+- No existe upload multipart/base64 ni endpoint de almacenamiento de archivos. Producto recibe
+  `imageUrls[]` al crear y `AddProductImageRequest {url, altText?, isPrimary}` al agregar;
+  categoría usa imageUrl; receta usa primaryImageUrl y steps[].imageUrl. ImageUploader en 8a
+  degrada a URLs HTTP(S), preview, eliminar y reordenar localmente. No se puede verificar el
+  peso/MIME de un archivo remoto de forma fiable sin descargarlo/CORS; no se promete esa validación.
+  Producto permite cambiar primaria y borrar imágenes, pero no guardar el orden completo de las
+  existentes. Los movimientos del componente son locales hasta su integración en 8b.
+- No hay `GET /admin/products` ni `GET /admin/products/{id}`. Lecturas reales: `GET /products`
+  (page, size, category, minPrice, maxPrice, inStock, search, sortBy, sortDir) y `/products/id/{id}`.
+  El listado fuerza active=true, sin filtro de inactivos ni total global. Dashboard usa size=1 y
+  totalElements con etiqueta **Productos activos**; no simula un total administrativo.
+- No hay `GET /admin/categories` paginado ni listado de inactivas. `/categories` devuelve activas,
+  `/admin/categories/{id}` sí existe. Slug y sortOrder existen en DTO Kotlin de catálogo, pero
+  CreateCategoryRequest/UpdateCategoryRequest/CategoryResponse colisionan con recetas en OpenAPI:
+  la exportación contiene displayOrder/recipeCount de recetas. Resolver nombres de schemas y
+  regenerar tipos antes de construir 8b con tipado fiel a OpenAPI.
+- `DELETE /admin/products/{id}` desactiva (soft delete), sin comprobación de referencias de órdenes.
+  `DELETE /admin/categories/{id}` desactiva también descendientes y no bloquea por productos.
+  La UI futura no debe describir estos endpoints como borrado físico.
+- `/admin/orders` filtra status/userId/search/fromDate/toDate y pagina. Search busca número/email;
+  fechas son instantes ISO. Orden fijo createdAt DESC, sin parámetro de ordenación. DataTable
+  acepta ordenación controlada para endpoints que la soporten; dashboard no presenta sort ficticio.
+- OrderListResponse no incluye cliente/email ni paymentStatus; tiene paidAt. OrderResponse sí
+  tiene destinatario/dirección, paymentMethod/paymentReference/paidAt, ítems e historial, pero no
+  userEmail, paymentId ni detalles completos de transacción Wompi. No deducir estado de pasarela
+  de un estado de orden. El proveedor de pagos continúa simulado en el backend.
+- `/admin/orders/stats` devuelve totalOrders, pendingOrders, processingOrders, deliveredOrders,
+  cancelledOrders, totalRevenue y averageOrderValue. Los conteos y promedio son históricos; solo
+  totalRevenue usa fromDate/toDate (30 días por defecto). Para CONFIRMED/SHIPPED/REFUNDED, 8a
+  consulta `/admin/orders?status=...&page=0&size=1` y usa totalElements. No hace sumas de una página.
+- Recetas: listado admin solo admite status/search/page/size, sin categoría/dificultad/tag.
+  RecipeListResponse tampoco devuelve status, aunque RecipeResponse sí. No inventar estado
+  publicado de cada fila. Create/UpdateRecipeRequest no aceptan slug: backend lo genera a partir
+  del título (también al editar). description sirve como extracto; no existe campo excerpt separado.
+  Pasos/ingredientes son arrays reemplazables con PUT, con stepNumber/displayOrder. Nutrición
+  opcional son campos planos (calories/proteinGrams/carbsGrams/fatGrams/fiberGrams). Los null de
+  actualización se ignoran, así que limpiar nutrición existente no está soportado completamente.
+  Crear genera DRAFT; publish/unpublish son PATCH independientes. Publicar requiere ingredientes
+  y pasos. Tags solo tienen lectura pública, no CRUD administrativo expuesto.
+- Permisos backend: SecurityConfig exige hasRole('ADMIN') en /api/v1/admin/**, aunque los
+  controladores admiten SUPER_ADMIN. JwtAuthenticationFilter otorga solo el rol del token, sin
+  jerarquía. AdminRoute seguirá admitiendo ambos, pero SUPER_ADMIN puede recibir 403 real. Se
+  muestra mensaje de permisos explícito; no se modifica backend ni se elude autorización.
+
+### Transiciones reales de órdenes (Constants.kt + OrderService)
+
+| Estado actual | Destinos permitidos |
+|---|---|
+| PENDING | CONFIRMED, CANCELLED |
+| CONFIRMED | PROCESSING, CANCELLED |
+| PROCESSING | SHIPPED, CANCELLED |
+| SHIPPED | DELIVERED, CANCELLED |
+| DELIVERED | REFUNDED |
+| CANCELLED | Ninguno |
+| REFUNDED | Ninguno |
+
+PATCH /admin/orders/{id}/status recibe `{status, comment?, trackingNumber?, carrier?}`.
+SHIPPED y DELIVERED usan métodos especiales que generan su comentario, ignorando comment recibido.
+CONFIRMED marca paidAt aun cuando el cambio es manual. REFUNDED por este PATCH cambia el estado,
+pero no ejecuta un reembolso en Wompi ni recibe importe; no presentarlo como movimiento de dinero.
+No hay endpoint para obtener dinámicamente transiciones ni DELETE de órdenes. Transición inválida
+se rechaza con check; la traducción HTTP depende del GlobalExceptionHandler, no del enum OpenAPI.
+
+### Alcance 8a
+
+Shell independiente protegido por AdminRoute, dashboard y componentes base. Navegación de las
+secciones posteriores visible pero deshabilitada con su subentrega; no se crean CRUD ni rutas
+que aparenten estar listas antes de revisión. Mutaciones de negocio e invalidación pública se
+conectarán en 8b–8d. FormShell prepara protección de navegación; helper común mapea 403 y errores
+por campo. Pruebas/preview pueden usar fixtures aisladas, nunca un bypass en la aplicación.
