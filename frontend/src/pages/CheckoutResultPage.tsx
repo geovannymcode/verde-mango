@@ -1,3 +1,4 @@
+import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 import { useMemo } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { CheckCircle2, Clock, XCircle } from 'lucide-react'
@@ -17,6 +18,7 @@ const APPROVED_STATUSES = new Set(['CONFIRMED', 'PROCESSING', 'SHIPPED', 'DELIVE
 const REJECTED_STATUSES = new Set(['CANCELLED', 'REFUNDED'])
 
 export function CheckoutResultPage() {
+  useDocumentTitle('Resultado del pedido', 'Consulta el estado de tu pedido en Verde Mango.')
   const [searchParams] = useSearchParams()
   const wompiParams = useMemo(() => parseWompiReturnParams(searchParams), [searchParams])
   const orderNumber = wompiParams.reference ?? searchParams.get('reference') ?? undefined

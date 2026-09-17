@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useDocumentTitle } from '@/hooks/useDocumentTitle'
+import { useState } from 'react'
 import { RefreshCw } from 'lucide-react'
 import { useCategories, useProducts } from '@/features/catalog/hooks'
-import { useDebouncedValue } from '@/hooks/useDebouncedValue'
+import { useUrlFilters } from '@/hooks/useUrlFilters'
 import { productListToCard } from '@/lib/adapters'
 import { CATALOG_SORT_MAP } from '@/lib/catalogSort'
 import { Breadcrumbs } from '@/components/layout/Breadcrumbs'
@@ -24,7 +24,16 @@ const DEFAULT_MIN_PRICE = 0
 const DEFAULT_MAX_PRICE = 100_000
 
 export function CatalogPage() {
-  const [searchParams, setSearchParams] = useSearchParams()
+  useDocumentTitle('Tienda', 'Explora el catálogo de Verde Mango: productos vegetales, fermentos y alimentos para tu cocina.')
+  const {
+    searchParams,
+    q,
+    page,
+    searchInput,
+    setSearchInput,
+    updateParams,
+    clearFilters: handleClearFilters,
+  } = useUrlFilters()
   const [viewMode, setViewMode] = useState<CatalogViewMode>('grid')
 
   const categoria = searchParams.get('categoria') ?? undefined
@@ -34,46 +43,7 @@ export function CatalogPage() {
   const maxPrecio = searchParams.has('maxPrecio')
     ? Number(searchParams.get('maxPrecio'))
     : DEFAULT_MAX_PRICE
-  const q = searchParams.get('q') ?? ''
   const orden = (searchParams.get('orden') as CatalogSortOption | null) ?? 'predeterminado'
-  const page = Number(searchParams.get('page') ?? '1')
-
-  const [searchInput, setSearchInput] = useState(q)
-  const [prevQ, setPrevQ] = useState(q)
-  const debouncedSearch = useDebouncedValue(searchInput, 400)
-
-  // Reajusta el input local cuando `q` cambia desde afuera (URL compartida, "Limpiar filtros"),
-  // ajustando el estado durante el render en vez de sincronizar con un efecto.
-  if (q !== prevQ) {
-    setPrevQ(q)
-    setSearchInput(q)
-  }
-
-  useEffect(() => {
-    if (debouncedSearch !== q) {
-      updateParams({ q: debouncedSearch || undefined })
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedSearch])
-
-  function updateParams(updates: Record<string, string | undefined>, resetPage = true) {
-    const next = new URLSearchParams(searchParams)
-    Object.entries(updates).forEach(([key, value]) => {
-      if (value === undefined || value === '') {
-        next.delete(key)
-      } else {
-        next.set(key, value)
-      }
-    })
-    if (resetPage) next.delete('page')
-    setSearchParams(next)
-  }
-
-  function handleClearFilters() {
-    setSearchParams({})
-    setSearchInput('')
-  }
-
   const { sortBy, sortDir } = CATALOG_SORT_MAP[orden] ?? CATALOG_SORT_MAP.predeterminado
 
   const categoriesQuery = useCategories()
@@ -100,7 +70,8 @@ export function CatalogPage() {
   const recentProducts = (recentProductsQuery.data?.content ?? []).map(productListToCard)
   const totalPages = productsQuery.data?.totalPages ?? 0
   const totalElements = productsQuery.data?.totalElements ?? 0
-  const hasActiveFilters = !!categoria || searchParams.has('minPrecio') || searchParams.has('maxPrecio') || !!q
+  const hasActiveFilters =
+    !!categoria || searchParams.has('minPrecio') || searchParams.has('maxPrecio') || !!q
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">

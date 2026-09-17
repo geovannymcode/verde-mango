@@ -1,3 +1,4 @@
+import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 import { Link } from 'react-router-dom'
 import { ShoppingBag, Trash2 } from 'lucide-react'
 import { useCart, useClearCart, useRemoveCartItem, useUpdateCartItem } from '@/features/cart/hooks'
@@ -8,6 +9,7 @@ import { Button } from '@/components/ui/Button'
 import { Skeleton } from '@/components/ui/Skeleton'
 
 export function CartPage() {
+  useDocumentTitle('Mi carrito', 'Revisa los productos, cantidades y total de tu carrito de Verde Mango.')
   const cartQuery = useCart()
   const updateItem = useUpdateCartItem()
   const removeItem = useRemoveCartItem()

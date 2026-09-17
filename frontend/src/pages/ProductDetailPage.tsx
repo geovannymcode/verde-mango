@@ -1,3 +1,4 @@
+import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 import { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { Minus, Plus, ShoppingBag } from 'lucide-react'
@@ -26,6 +27,7 @@ export function ProductDetailPage() {
   const addToCart = useAddToCart()
 
   const productQuery = useProduct(slug)
+  useDocumentTitle(productQuery.data?.name ?? 'Producto', productQuery.data?.shortDescription ?? 'Conoce los ingredientes, precio y valoraciones de este producto de Verde Mango.')
   const relatedQuery = useRelatedProducts(productQuery.data?.id)
 
   if (productQuery.isLoading) {

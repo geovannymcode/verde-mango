@@ -1,3 +1,4 @@
+import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Link, useNavigate } from 'react-router-dom'
@@ -35,6 +36,7 @@ const PAYMENT_METHODS = [
 ]
 
 export function CheckoutPage() {
+  useDocumentTitle('Finalizar compra', 'Revisa tu pedido y completa los datos de envío de tu compra en Verde Mango.')
   const navigate = useNavigate()
   const pushToast = useUiStore((state) => state.pushToast)
 

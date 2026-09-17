@@ -1,3 +1,4 @@
+import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 import { useQuery } from '@tanstack/react-query'
 import { env } from '@/lib/env'
 
@@ -10,6 +11,7 @@ async function checkBackendHealth(): Promise<{ status: string }> {
 }
 
 export function SetupStatusPage() {
+  useDocumentTitle('Estado del sistema', 'Estado de la conexión y los servicios de Verde Mango.')
   const { data, isLoading, isError } = useQuery({
     queryKey: ['health'],
     queryFn: checkBackendHealth,

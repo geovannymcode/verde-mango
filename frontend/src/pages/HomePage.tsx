@@ -1,6 +1,8 @@
+import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 import { Link } from 'react-router-dom'
 import { RefreshCw } from 'lucide-react'
-import { mockRecipes } from '@/lib/mocks'
+import { useRecentRecipes } from '@/features/recipes/hooks'
+import { RecipeError, RecipeSkeleton } from '@/components/recipes/RecipeQueryState'
 import { buttonClasses } from '@/lib/buttonClasses'
 import { productListToCard } from '@/lib/adapters'
 import { useCategories, useFeaturedProducts } from '@/features/catalog/hooks'
@@ -12,7 +14,9 @@ import { Skeleton } from '@/components/ui/Skeleton'
 import { Button } from '@/components/ui/Button'
 
 export function HomePage() {
-  const recentRecipes = mockRecipes.slice(0, 3)
+  useDocumentTitle('Inicio', 'Fermentos, veg-quesos, productos de la huerta y recetas vegetales de Verde Mango.')
+  const recentRecipesQuery = useRecentRecipes(3)
+  const recentRecipes = recentRecipesQuery.data ?? []
   const categoriesQuery = useCategories()
   const featuredQuery = useFeaturedProducts()
   const featuredProducts = (featuredQuery.data ?? []).map(productListToCard)
@@ -120,9 +124,15 @@ export function HomePage() {
           description="Ideas fáciles y sabrosas para tu semana."
         />
         <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
-          {recentRecipes.map((recipe) => (
-            <RecipeCard key={recipe.id} recipe={recipe} />
-          ))}
+          {recentRecipesQuery.isPending && <RecipeSkeleton count={1} />}
+          {recentRecipesQuery.isError && (
+            <RecipeError retry={() => void recentRecipesQuery.refetch()} />
+          )}
+          {recentRecipesQuery.isSuccess && recentRecipes.length === 0 && (
+            <p className="text-vm-muted">Pronto compartiremos nuevas recetas.</p>
+          )}
+          {!recentRecipesQuery.isError &&
+            recentRecipes.map((recipe) => <RecipeCard key={recipe.id} recipe={recipe} />)}
         </div>
       </section>
 
