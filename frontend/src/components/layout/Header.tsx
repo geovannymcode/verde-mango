@@ -1,9 +1,9 @@
 import { Link, NavLink } from 'react-router-dom'
-import { Menu, Search, ShoppingBag, User } from 'lucide-react'
+import { Menu, Search, ShoppingBag } from 'lucide-react'
 import { useUiStore } from '@/store/uiStore'
 import { useCart } from '@/features/cart/hooks'
-import { useAuthStore } from '@/store/authStore'
 import { useCartStore } from '@/store/cartStore'
+import { UserMenu } from '@/components/layout/UserMenu'
 
 const leftLinks = [
   { to: '/tienda', label: 'Tienda' },
@@ -12,7 +12,7 @@ const leftLinks = [
 
 const rightLinks = [
   { to: '/nosotros', label: 'Nosotros' },
-  { to: '/contacto', label: 'Contacto' },
+  { to: '/contactenos', label: 'Contáctenos' },
 ]
 
 function linkClass({ isActive }: { isActive: boolean }) {
@@ -26,7 +26,6 @@ export function Header() {
   const openCartDrawer = useCartStore((state) => state.openDrawer)
   const cartQuery = useCart()
   const totalQuantity = cartQuery.data?.totalQuantity ?? 0
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
 
   return (
     <header className="sticky top-0 z-40 border-b border-vm-line bg-vm-white/95 backdrop-blur">
@@ -74,13 +73,7 @@ export function Header() {
           >
             <Search size={20} />
           </button>
-          <Link
-            to={isAuthenticated ? '/cuenta' : '/login'}
-            aria-label="Mi cuenta"
-            className="hidden h-10 w-10 items-center justify-center rounded-vm-full text-vm-ink hover:bg-vm-cream sm:flex"
-          >
-            <User size={20} />
-          </Link>
+          <UserMenu />
           <button
             type="button"
             aria-label="Abrir carrito"
