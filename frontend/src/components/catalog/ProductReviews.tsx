@@ -17,7 +17,7 @@ const PAGE_SIZE = 5
 
 export function ProductReviews({ productId }: ProductReviewsProps) {
   const [page, setPage] = useState(1)
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
+  const isAuthenticated = useAuthStore((state) => state.status === 'authenticated')
   const currentUserId = useAuthStore((state) => state.user?.id)
   const pushToast = useUiStore((state) => state.pushToast)
 

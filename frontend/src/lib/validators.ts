@@ -22,13 +22,29 @@ export const loginSchema = z.object({
 
 export type LoginFormValues = z.infer<typeof loginSchema>
 
-export const registerSchema = z.object({
-  firstName: z.string().min(1, 'El nombre es requerido').max(100),
-  lastName: z.string().min(1, 'El apellido es requerido').max(100),
-  email: z.string().min(1, 'El correo es requerido').email('Correo inválido'),
-  password: z.string().min(8, 'La contraseña debe tener al menos 8 caracteres'),
-  phone: z.string().max(20).optional().or(z.literal('')),
-})
+// Debe reflejar exactamente la regla del backend (RegisterRequest.password en
+// auth/web/Dtos.kt): 8-100 caracteres, al menos una minúscula, una mayúscula y un dígito.
+const passwordSchema = z
+  .string()
+  .min(8, 'La contraseña debe tener entre 8 y 100 caracteres')
+  .max(100, 'La contraseña debe tener entre 8 y 100 caracteres')
+  .regex(/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, {
+    message: 'Debe contener al menos una minúscula, una mayúscula y un dígito',
+  })
+
+export const registerSchema = z
+  .object({
+    firstName: z.string().min(2, 'El nombre debe tener al menos 2 caracteres').max(100),
+    lastName: z.string().min(2, 'El apellido debe tener al menos 2 caracteres').max(100),
+    email: z.string().min(1, 'El correo es requerido').email('Correo inválido'),
+    password: passwordSchema,
+    confirmPassword: z.string().min(1, 'Confirma tu contraseña'),
+    phone: z.string().max(20).optional().or(z.literal('')),
+  })
+  .refine((values) => values.password === values.confirmPassword, {
+    message: 'Las contraseñas no coinciden',
+    path: ['confirmPassword'],
+  })
 
 export type RegisterFormValues = z.infer<typeof registerSchema>
 
