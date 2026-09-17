@@ -22,10 +22,15 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
         ref={ref}
         id={inputId}
         aria-invalid={!!error}
+        aria-describedby={error ? `${inputId}-error` : undefined}
         className={`h-11 rounded-vm-md border border-vm-line bg-vm-white px-4 text-sm text-vm-ink placeholder:text-vm-muted focus-visible:border-vm-orange focus-visible:outline-none ${error ? 'border-red-400' : ''} ${className}`}
         {...props}
       />
-      {error && <span className="text-xs text-red-500">{error}</span>}
+      {error && (
+        <span id={`${inputId}-error`} className="text-xs text-red-500">
+          {error}
+        </span>
+      )}
     </div>
   )
 })

@@ -66,7 +66,7 @@ export function Footer() {
           title="Ayuda"
           links={[
             { to: '/nosotros', label: 'Nosotros' },
-            { to: '/contacto', label: 'Contacto' },
+            { to: '/contactenos', label: 'Contáctenos' },
           ]}
         />
       </div>
