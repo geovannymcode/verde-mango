@@ -156,3 +156,184 @@ pedidos vía `GET /api/v1/orders`). Botones "agregar al carrito" de `ProductCard
 `ProductListItem` y `ProductDetailPage` conectados a `useAddToCart` con update optimista. Sesión se
 restaura al recargar la app vía `refreshToken` persistido (`useAuthBootstrap` en
 `src/features/auth/hooks.ts`), ya que el `accessToken` solo vive en memoria.
+
+## Fase 5 — Auth robusta: bugs encontrados en el trabajo de la Fase 4
+
+Al revisar el código escrito en la Fase 4 se encontraron varios bugs reales (no gaps del backend)
+que se corrigieron en esta fase:
+
+- **`ApiErrorBody.errors` tenía el tipo equivocado**: se declaraba como `Record<string, string>`,
+  pero `GlobalExceptionHandler`/`ErrorResponse.kt` (backend) manda `errors: List<FieldError>` donde
+  `FieldError = { field, message, rejectedValue? }` — un **array**, no un mapa. `ApiError` en
+  `src/api/types.ts` ahora recibe `FieldError[]` y colapsa el primer mensaje por campo a
+  `fieldErrors: Record<string, string>` para usarlo con `setError` de React Hook Form en
+  `LoginPage`/`RegisterPage`.
+- **Clave de `localStorage` inconsistente**: `src/lib/storage.ts` usaba `'vm.refreshToken'` (con
+  punto), fuera de la convención `vm_*` del resto del proyecto (`vm_cart_session`). Se corrigió a
+  `'vm_refresh_token'`.
+- **El refresh silencioso borraba el usuario de sesión**: `refreshAccessToken()` en
+  `src/api/client.ts` llamaba `setSession(accessToken, refreshToken)` sin `user`, y como
+  `setSession` sobreescribía `user: null` por defecto, cualquier refresh (al recargar la página o
+  tras un 401) dejaba al usuario "logueado" pero sin datos de perfil en el store. Se separó
+  `setSession` (login/register, con `user` obligatorio) de `updateTokens` (solo rota tokens, nunca
+  toca `user`).
+- **No había estado explícito de "restaurando sesión"**: antes se usaba
+  `isAuthenticated: boolean` inicializado en `false`, así que durante el primer render (antes de
+  que `useAuthBootstrap` resolviera el refresh) cualquier ruta protegida veía `false` y podía
+  redirigir a `/login` a un usuario que sí tenía sesión válida. Se reemplazó por
+  `status: 'loading' | 'authenticated' | 'anonymous'` en `useAuthStore`, y `App.tsx` muestra un
+  `SplashScreen` mientras `status === 'loading'`.
+- **Logout no limpiaba la caché de React Query**: `useLogout` solo invalidaba queries; datos de
+  otro usuario (perfil, pedidos) podían seguir en caché y aparecer brevemente si alguien iniciaba
+  sesión con otra cuenta en la misma pestaña. Ahora hace `queryClient.clear()` y redirige a `/`.
+- **`RequireAuth` no soportaba volver a la página original tras iniciar sesión** de forma robusta
+  (dependía de `location.state`, que se pierde si el usuario llega por link directo o si el 401
+  ocurre en medio de una navegación). Se reemplazó por `ProtectedRoute` + `resolveReturnTo`/
+  `buildLoginRedirect` (`src/lib/returnTo.ts`), que usan el query param `?returnTo=`, validando que
+  sea una ruta interna (anti open-redirect).
+
+## Fase 5 — Gaps reales del backend (no se pueden arreglar solo en el frontend)
+
+- **No existe endpoint para actualizar el perfil**: `auth/web/Dtos.kt` define
+  `UpdateProfileRequest`, pero ningún `@RestController` lo expone (`AuthController` solo tiene
+  `register, login, refresh, logout, me`). `src/api/auth.ts#updateProfile` y
+  `useUpdateProfile` quedan implementados contra `PATCH /api/v1/auth/me` como la ruta más probable,
+  pero **no se puede probar contra el backend actual** (siempre 404). La UI de `/cuenta` (
+  `ProfilePage`) es de solo lectura con un aviso explícito hasta que el endpoint exista.
+- **`AuthService.logout` revoca TODOS los refresh tokens del usuario**, no solo el de la sesión/
+  dispositivo actual (no hay concepto de "cerrar sesión en este dispositivo" vs. "en todos"). Se
+  documenta como comportamiento esperado: cerrar sesión en un dispositivo cierra sesión en todos.
+- **`GET /api/v1/orders/{orderNumber}` devuelve 404 tanto si la orden no existe como si pertenece a
+  otro usuario** (`OrderService.getUserOrder` filtra por `userId` sin distinguir "not found" de
+  "forbidden"). `OrderDetailPage` no puede mostrar un mensaje distinto para cada caso; ambos
+  renderizan `NotFoundPage`.
+- **`OrderStatusHistoryResponse` no incluye un label traducido** para `toStatus`/`fromStatus` (solo
+  el enum crudo). `OrderDetailPage` mantiene un mapa local `STATUS_LABELS` que espeja
+  `OrderStatus.toLabel()` del backend (usado hoy solo para el `statusLabel` de la orden completa,
+  no por entrada del historial); si el backend cambia esos labels hay que sincronizar a mano.
+
+
+## Fase 6 — Recetas: contrato revisado y límites
+
+Revisión del 2026-09-16 antes de implementar: se intentó consultar
+`http://localhost:8080/api-docs` dos veces (también con permiso de red), pero no había un
+servidor accesible. Se contrastó la exportación `frontend/openapi/verde-mango-openapi.json`
+con los controladores, DTOs y servicios Kotlin actuales. Pendiente validar contra el backend
+arrancado; no se presenta esta revisión estática como una prueba de integración en vivo.
+
+### Contrato consumido
+
+Todas las respuestas vienen envueltas en `ApiResponse<T>`.
+
+- `GET /api/v1/recipes?page=0&size=12` → `PageResponse<RecipeListResponse>`.
+- `GET /api/v1/recipes/search?search=&category=&tag=&difficulty=&maxTime=&page=0&size=12`
+  → `PageResponse<RecipeListResponse>`. Category y tag son slugs; difficulty admite
+  `EASY | MEDIUM | HARD`; maxTime es entero. La URL pública usa `categoria`, `tag`,
+  `dificultad`, `q`, `page` (base 1), traducidos a los parámetros del backend (page base 0).
+- `GET /api/v1/recipes/{slug}` → `RecipeResponse`. El detalle público se resuelve por slug;
+  el acceso por id es administrativo.
+- `GET /api/v1/recipes/categories` → `CategoryResponse[]` de recetas.
+- `GET /api/v1/recipes/tags` → `TagResponse[]`.
+- `GET /api/v1/recipes/latest?limit=6` → `RecipeListResponse[]`.
+- `GET /api/v1/recipes/{slug}/related?limit=4` → `RecipeListResponse[]`.
+- `GET /api/v1/recipes/{recipeSlug}/ratings?page=0&size=10` → `PageResponse<RatingResponse>`.
+- `GET /api/v1/recipes/{recipeSlug}/ratings/stats` → `{ averageRating, totalRatings, distribution }`.
+- `POST /api/v1/recipes/{recipeSlug}/ratings` (autenticado) con
+  `{ rating: entero 1..5, comment?: string (máximo 2000), madeRecipe: boolean }`
+  → `RatingResponse`, HTTP 201. Incluye `id, userId, userName?, rating, comment?, madeRecipe, createdAt`.
+- `GET /api/v1/products/id/{id}` → `ProductResponse`, para los ingredientes vinculados.
+  ProductCard reutiliza el flujo existente de `POST /api/v1/cart/items`.
+
+### Filtros combinados: limitación real del backend
+
+Aunque `/search` acepta todos los filtros, `RecipeService.searchRecipes` utiliza un `when`
+excluyente: si hay search ignora categoría/tag/dificultad; si hay categoría ignora tag y
+ dificultad; si hay tag ignora dificultad. Solo sin esos tres aplica difficulty/maxTime.
+El frontend transmite los parámetros elegidos y avisa cuando se combinan. No filtra únicamente
+la página recibida ni inventa totales. Para completar la intersección real se requiere modificar
+la consulta de backend y validar su paginación. No se modifica el backend en esta fase.
+
+### Estructuras y relación con catálogo
+
+- `steps[]`: `id, stepNumber, instruction, imageUrl?, tip?, estimatedTime?`; se ordenan por
+  stepNumber. Las instrucciones se muestran como texto, no HTML.
+- `ingredients[]`: `id, name, quantity?, unit?, preparationNotes?, ingredientGroup?, optional,
+  formatted, productId?, productName?, productSlug?, isLinkedToProduct`. Se conserva el orden
+  del backend; el DTO no expone displayOrder. Los checks son locales y se reinician al cambiar
+  de receta. **Sí existe relación con catálogo mediante productId**: se consultan ids únicos
+  por el endpoint público de producto. No hace falta inventar un endpoint receta/productos.
+- `nutrition` es opcional: `calories?, proteinGrams?, carbsGrams?, fatGrams?, fiberGrams?`.
+  Se oculta si no hay datos y se omiten métricas nulas, sin convertirlas en cero. El contrato
+  no indica si los valores son por porción o por receta; no se inventa esa unidad de referencia.
+- `publishedAt`, `authorName`, imagen y categoría pueden faltar. No se inventan fechas ni
+  autores; en detalle se usa createdAt si falta publishedAt.
+- Relacionadas se calculan **solo por categoría** en RecipeService; sin categoría retorna [].
+  No hay fallback por tag en el backend actual.
+- Se reutilizan los tipos generados. La colisión previa de nombres Rating/Category entre
+  catálogo y recetas sigue pendiente; los schemas actuales usados aquí corresponden a recetas.
+- No se insertan categorías fijas: se muestran las que devuelve la API, incluyendo Almuerzo,
+  Desayuno y Ensaladas si existen en los datos.
+
+### Pendientes posteriores
+
+Arrancar el backend y validar listado/búsqueda, filtros combinados tras su corrección,
+ratings autenticados y productos vinculados. Aclarar base nutricional, corregir nombres de
+schemas OpenAPI y mantener vigente la exportación. El alcance funcional de Fase 7 no está
+especificado en esta solicitud; los pendientes de pagos reales y administración continúan.
+
+Nota adicional de nutrición: `Recipe.hasNutritionInfo` solo comprueba calorías o proteínas. Si únicamente hay carbohidratos, grasas o fibra, el backend envía `nutrition = null`; el frontend no puede recuperar esos valores. Pendiente corregir esa condición en backend.
+
+## Fase 7 — Nosotros y Contáctenos
+
+### Contacto: no existe endpoint
+
+Se intentó consultar `http://localhost:8080/api-docs` antes de escribir código, también con
+permiso de red. El servidor no respondió. La exportación OpenAPI local y los controladores
+actuales de auth/catalog/orders/payment/recipes no incluyen contacto, mensajes ni consultas.
+No hay DTO ni contrato de envío que podamos consumir. Falta verificar el OpenAPI en vivo.
+
+`frontend/src/api/contact.ts` concentra el schema Zod, el tipo `ContactFormValues`, el estado
+`contactAvailability` y la única función `sendContactMessage`. No se inventó una ruta, no se
+realiza ninguna petición y no hay éxito simulado en la aplicación. Tras validar, devuelve
+`ContactError` con código `unavailable`; la página lo muestra mediante el Toast existente y
+conserva el texto escrito. Para conectar el backend se cambia este único archivo: mapear el DTO,
+hacer la petición, resolver únicamente cuando el backend confirme éxito y activar disponibilidad.
+
+Campos locales (no son un DTO backend): fullName, email, subject, comments; website es honeypot
+y renderedAt es el timestamp de montaje. Nombre completo de 3–120 caracteres, email válido
+hasta 254, asunto de 3–150 y comentarios de 10–3000. Honeypot no vacío se rechaza; menos de
+2 segundos o timestamp futuro también. La protección es básica y el cliente se puede eludir:
+el endpoint futuro deberá validar y limitar envíos en servidor. No hay captcha.
+
+### Datos editables y ubicación
+
+- `frontend/src/lib/content/about.ts`: hero, cuatro hitos tipados y tres perfiles tipados.
+  TODO: historia/fechas definitivas; nombres, cargos, fotografías y redes reales del equipo.
+  El año 1998 proviene del diseño solicitado; los demás hitos no tienen fechas inventadas.
+  Los retratos son fotos ilustrativas de Pexels, indicadas como tales y con source URL en datos.
+- `frontend/src/lib/content/contact.ts`: dirección, teléfono, email, redes y mapa.
+  Dirección confirmada por el usuario: Calle 112 # 43 - 123, Alameda del Río, Barranquilla, Colombia.
+  El iframe consulta esa dirección en Google Maps, tiene title descriptivo, loading lazy y altura
+  fija. TODO: verificar el pin devuelto por Google o proporcionar embed oficial del negocio.
+  TODO: completar teléfono +57, email y las cuatro URLs oficiales. Los enlaces de contacto
+  nuevos no usan destinos ficticios #. Hay enlace externo al mapa como alternativa al iframe.
+- Ruta canónica `/contactenos`; `/contacto` redirige por compatibilidad. Header, Footer y menú
+  móvil enlazan a la ruta nueva.
+
+### Metadatos y siguientes fases
+
+`useDocumentTitle` usa document.title y una única meta description. Se aplicó a todas las
+páginas de entrada de fases anteriores, además de Nosotros y Contáctenos; producto y receta
+usan el nombre/descripción real tras cargar datos. Son metadatos cliente de una SPA; no hay SSR.
+
+Fase 8 todavía no tiene alcance definido en esta solicitud. Pendientes: endpoint de contacto,
+contenido definitivo del equipo/historia y datos de contacto restantes. Se conservan los gaps
+previos de Wompi, administración y filtros combinados de recetas.
+
+
+Verificación Fase 7: build correcto, 27 pruebas (11 nuevas), ESLint sin errores (advertencia
+previa de checkout) y diff sin errores de whitespace. Ambas páginas comprobadas a 375, 768 y
+1440 px sin desbordamiento horizontal; equipo 1/2/3 columnas y timeline vertical/horizontal.
+Las tres fotos cargaron. El iframe de Maps permaneció vacío en el navegador de prueba; su URL
+respondió HTTP 200. No se confirmó visualmente el pin; se dejó enlace alternativo a Maps con
+la misma dirección. Esta limitación no impide consultar la dirección ni usar el formulario.
