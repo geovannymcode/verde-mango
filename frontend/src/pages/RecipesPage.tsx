@@ -58,8 +58,8 @@ export function RecipesPage() {
             </div>
           )}
           {!recipes.isError &&
-            recipes.data?.content.map((recipe) => (
-              <RecipeCard key={recipe.id} recipe={recipe} large />
+            recipes.data?.content.map((recipe, index) => (
+              <RecipeCard key={recipe.id} recipe={recipe} large priority={index === 0} />
             ))}
           {!recipes.isError && (
             <Pagination

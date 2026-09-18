@@ -1,4 +1,5 @@
 import { useDocumentTitle } from '@/hooks/useDocumentTitle'
+import { preload } from 'react-dom'
 import { Link } from 'react-router-dom'
 import { RefreshCw } from 'lucide-react'
 import { useRecentRecipes } from '@/features/recipes/hooks'
@@ -14,6 +15,7 @@ import { Skeleton } from '@/components/ui/Skeleton'
 import { Button } from '@/components/ui/Button'
 
 export function HomePage() {
+  preload('https://picsum.photos/seed/vm-hero/640/520', { as: 'image', fetchPriority: 'high' })
   useDocumentTitle(
     'Inicio',
     'Fermentos, veg-quesos, productos de la huerta y recetas vegetales de Verde Mango.',
@@ -48,6 +50,9 @@ export function HomePage() {
           <img
             src="https://picsum.photos/seed/vm-hero/640/520"
             alt="Selección de productos Verde Mango"
+            width={640}
+            height={520}
+            fetchPriority="high"
             className="mx-auto w-full max-w-md rounded-vm-lg object-cover shadow-vm-card"
           />
         </div>
@@ -144,6 +149,9 @@ export function HomePage() {
           <img
             src="https://picsum.photos/seed/vm-story/640/480"
             alt="Nuestra historia"
+            width={640}
+            height={480}
+            loading="lazy"
             className="w-full rounded-vm-lg object-cover shadow-vm-card"
           />
           <div>

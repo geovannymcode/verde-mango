@@ -34,6 +34,7 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
             >
               <img
                 src={image.url}
+                loading="lazy"
                 alt={image.altText ?? productName}
                 className="h-full w-full object-cover"
               />

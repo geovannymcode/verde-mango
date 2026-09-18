@@ -90,6 +90,7 @@ export function OrderDetailPage() {
                 {item.productImageUrl && (
                   <img
                     src={item.productImageUrl}
+                    loading="lazy"
                     alt={item.productName}
                     className="h-14 w-14 rounded-vm-md object-cover"
                   />

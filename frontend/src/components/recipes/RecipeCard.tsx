@@ -6,9 +6,11 @@ import { formatRecipeDate } from '@/lib/formatters'
 export function RecipeCard({
   recipe,
   large = false,
+  priority = false,
 }: {
   recipe: RecipeListResponse
   large?: boolean
+  priority?: boolean
 }) {
   return (
     <Link
@@ -18,7 +20,8 @@ export function RecipeCard({
       <img
         src={recipe.primaryImageUrl || '/placeholder-product.svg'}
         alt={recipe.title}
-        loading="lazy"
+        loading={priority ? 'eager' : 'lazy'}
+        fetchPriority={priority ? 'high' : undefined}
         className="aspect-[16/9] w-full object-cover"
       />
       <div className={large ? 'space-y-4 p-6 sm:p-8' : 'space-y-3 p-4'}>
