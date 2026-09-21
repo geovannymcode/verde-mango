@@ -1,8 +1,8 @@
 plugins {
-    kotlin("jvm") version "2.0.21" apply false
-    kotlin("plugin.spring") version "2.0.21" apply false
-    kotlin("plugin.jpa") version "2.0.21" apply false
-    id("org.springframework.boot") version "3.4.4" apply false
+    kotlin("jvm") version "2.3.21" apply false
+    kotlin("plugin.spring") version "2.3.21" apply false
+    kotlin("plugin.jpa") version "2.3.21" apply false
+    id("org.springframework.boot") version "3.5.16" apply false
     id("io.spring.dependency-management") version "1.1.7" apply false
 }
 
@@ -19,7 +19,7 @@ subprojects {
     apply(plugin = "org.jetbrains.kotlin.jvm")
 
     configure<org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension> {
-        jvmToolchain(21)
+        jvmToolchain(25)
         compilerOptions {
             freeCompilerArgs.addAll("-Xjsr305=strict")
         }

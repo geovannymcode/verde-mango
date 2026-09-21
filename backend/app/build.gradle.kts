@@ -6,7 +6,7 @@ plugins {
     id("io.spring.dependency-management")
 }
 
-val springModulithVersion = "1.3.12"
+val springModulithVersion = "1.4.13"
 
 dependencyManagement {
     imports {
