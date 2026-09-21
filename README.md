@@ -6,9 +6,9 @@ Backend de e-commerce (frutas, verduras y recetas) construido como **monolito mo
 
 | Categoría | Tecnología |
 |---|---|
-| Lenguaje | Kotlin 2.0.21 (JVM 21) |
-| Framework | Spring Boot 3.4.4 |
-| Arquitectura | Spring Modulith 1.3.12 (monolito modular) |
+| Lenguaje | Kotlin 2.3.21 (JVM 25) |
+| Framework | Spring Boot 3.5.16 |
+| Arquitectura | Spring Modulith 1.4.13 (monolito modular) |
 | Persistencia | Spring Data JPA + PostgreSQL 17 |
 | Migraciones | Flyway |
 | Cache | Redis (Spring Cache) |
@@ -62,14 +62,14 @@ verde-mango/
 │   ├── docker-compose.yml            # Postgres + Redis
 │   └── init-databases.sql
 ├── postman/                          # Colección Postman para pruebas manuales (local, gitignored)
-├── build.gradle.kts                  # Config raíz (Kotlin, JVM 21)
+├── build.gradle.kts                  # Config raíz (Kotlin, JVM 25)
 ├── settings.gradle.kts               # include("backend:app")
 └── gradlew / gradlew.bat
 ```
 
 ## Requisitos previos
 
-- **JDK 21**
+- **JDK 25**
 - **Docker Desktop** (para Postgres y Redis vía Docker Compose)
 - No es necesario instalar Postgres/Redis manualmente: Spring Boot Docker Compose los levanta y detiene automáticamente al ejecutar/parar la app.
 
@@ -79,6 +79,9 @@ verde-mango/
 # Clonar y entrar al proyecto
 git clone <repo-url>
 cd verde-mango
+
+# Seleccionar Java 25 instalado con SDKMAN
+sdk env
 
 # Levantar la aplicación (levanta Postgres + Redis automáticamente)
 ./gradlew :backend:app:bootRun
