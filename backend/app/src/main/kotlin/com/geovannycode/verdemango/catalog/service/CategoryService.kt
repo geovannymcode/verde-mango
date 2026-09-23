@@ -11,6 +11,9 @@ import com.geovannycode.verdemango.catalog.web.UpdateCategoryRequest
 import com.geovannycode.verdemango.common.domain.ResourceAlreadyExistsException
 import com.geovannycode.verdemango.common.domain.ResourceNotFoundException
 import com.geovannycode.verdemango.common.domain.toSlug
+import com.geovannycode.verdemango.common.domain.BusinessRuleException
+import org.springframework.data.jpa.domain.Specification
+import org.springframework.data.domain.Sort
 import org.slf4j.LoggerFactory
 import org.springframework.cache.annotation.CacheEvict
 import org.springframework.cache.annotation.Cacheable
@@ -54,13 +57,24 @@ class CategoryService(
     @Transactional(readOnly = true)
     fun getById(id: Long): CategoryResponse {
         val category = findById(id)
-        return CategoryResponse.from(category, category.activeProductCount)
+        return CategoryResponse.from(category, category.products.size)
+    }
+
+    @Transactional(readOnly = true)
+    fun getAllAdmin(search: String?, active: Boolean?): List<CategoryResponse> {
+        val filters = mutableListOf<Specification<Category>>()
+        active?.let { value -> filters.add(Specification { root, _, cb -> cb.equal(root.get<Boolean>("active"), value) }) }
+        search?.trim()?.takeIf { it.isNotEmpty() }?.let { value ->
+            filters.add(Specification { root, _, cb -> cb.like(cb.lower(root.get("name")), "%${value.lowercase()}%") })
+        }
+        return categoryRepository.findAll(Specification.allOf(filters), Sort.by("sortOrder", "name", "id"))
+            .map { CategoryResponse.from(it, it.products.size) }
     }
 
     // ============== Operaciones admin ==============
 
     @Transactional
-    @CacheEvict(value = ["categories"], allEntries = true)
+    @CacheEvict(value = ["categories", "products"], allEntries = true)
     fun create(request: CreateCategoryRequest): CategoryResponse {
         logger.info("Creando categoría: ${request.name}")
 
@@ -93,7 +107,7 @@ class CategoryService(
     }
 
     @Transactional
-    @CacheEvict(value = ["categories"], allEntries = true)
+    @CacheEvict(value = ["categories", "products"], allEntries = true)
     fun update(id: Long, request: UpdateCategoryRequest): CategoryResponse {
         logger.info("Actualizando categoría: $id")
 
@@ -127,21 +141,27 @@ class CategoryService(
     }
 
     @Transactional
-    @CacheEvict(value = ["categories"], allEntries = true)
+    @CacheEvict(value = ["categories", "products"], allEntries = true)
     fun delete(id: Long) {
         logger.info("Desactivando categoría: $id")
 
         val category = findById(id)
+        fun countAssociated(node: Category): Int = node.products.size + node.children.sumOf { countAssociated(it) }
+        val count = countAssociated(category)
+        if (count > 0) throw BusinessRuleException("No se puede eliminar: hay $count productos asociados a esta categoría o sus subcategorías.", "CATEGORY_HAS_PRODUCTS")
         category.deactivate(includeChildren = true)
         categoryRepository.save(category)
     }
 
     @Transactional
-    @CacheEvict(value = ["categories"], allEntries = true)
+    @CacheEvict(value = ["categories", "products"], allEntries = true)
     fun reorder(request: ReorderCategoriesRequest) {
         logger.info("Reordenando ${request.categoryOrders.size} categorías")
 
+        require(request.categoryOrders.map { it.categoryId }.distinct().size == request.categoryOrders.size) { "Categorías repetidas" }
         request.categoryOrders.forEach { order ->
+            require(order.sortOrder >= 0) { "El orden no puede ser negativo" }
+            findById(order.categoryId)
             categoryRepository.updateSortOrder(order.categoryId, order.sortOrder)
         }
     }

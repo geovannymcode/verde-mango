@@ -1,12 +1,14 @@
 package com.geovannycode.verdemango.catalog.web
 
 import com.geovannycode.verdemango.catalog.domain.Category
+import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Size
 import java.time.Instant
 
 // ==================== REQUEST DTOs ====================
 
+@Schema(name = "CatalogCreateCategoryRequest")
 data class CreateCategoryRequest(
     @field:NotBlank(message = "El nombre es requerido")
     @field:Size(min = 2, max = 100)
@@ -20,6 +22,7 @@ data class CreateCategoryRequest(
     val metaDescription: String? = null
 )
 
+@Schema(name = "CatalogUpdateCategoryRequest")
 data class UpdateCategoryRequest(
     @field:Size(min = 2, max = 100) val name: String? = null,
     @field:Size(max = 120) val slug: String? = null,
@@ -43,6 +46,7 @@ data class CategoryOrder(
 
 // ==================== RESPONSE DTOs ====================
 
+@Schema(name = "CatalogCategoryResponse")
 data class CategoryResponse(
     val id: Long,
     val name: String,

@@ -8,6 +8,8 @@ import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
+import org.springframework.web.bind.annotation.GetMapping
+import com.geovannycode.verdemango.common.domain.PageResponse
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.PatchMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -25,6 +27,24 @@ import org.springframework.web.bind.annotation.RestController
 class AdminProductController(
     private val productService: ProductService
 ) {
+
+    @GetMapping
+    @Operation(summary = "Listar productos activos e inactivos (ADMIN o SUPER_ADMIN)")
+    fun listAdminProducts(
+        @RequestParam(required = false) search: String?,
+        @RequestParam(required = false) categoryId: Long?,
+        @RequestParam(required = false) active: Boolean?,
+        @RequestParam(defaultValue = "0") page: Int,
+        @RequestParam(defaultValue = "20") size: Int,
+        @RequestParam(defaultValue = "name") sortBy: String,
+        @RequestParam(defaultValue = "asc") sortDir: String
+    ): ResponseEntity<ApiResponse<PageResponse<ProductResponse>>> =
+        ResponseEntity.ok(ApiResponse.success(productService.getAdminProducts(search, categoryId, active, page, size, sortBy, sortDir)))
+
+    @GetMapping("/{id}")
+    @Operation(summary = "Detalle administrativo de producto (ADMIN o SUPER_ADMIN)")
+    fun getAdminProduct(@PathVariable id: Long): ResponseEntity<ApiResponse<ProductResponse>> =
+        ResponseEntity.ok(ApiResponse.success(productService.getById(id)))
 
     @PostMapping
     @Operation(summary = "Crear producto")

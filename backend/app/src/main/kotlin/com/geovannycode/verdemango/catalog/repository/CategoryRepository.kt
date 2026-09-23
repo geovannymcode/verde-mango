@@ -3,6 +3,7 @@ package com.geovannycode.verdemango.catalog.repository
 import com.geovannycode.verdemango.catalog.domain.Category
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
@@ -10,7 +11,7 @@ import org.springframework.stereotype.Repository
 import java.util.Optional
 
 @Repository
-interface CategoryRepository : JpaRepository<Category, Long> {
+interface CategoryRepository : JpaRepository<Category, Long>, JpaSpecificationExecutor<Category> {
 
     fun findBySlug(slug: String): Optional<Category>
 

@@ -121,10 +121,28 @@ class ProductService(
             .map { ProductListResponse.from(it) }
     }
 
+    @Transactional(readOnly = true)
+    fun getAdminProducts(search: String?, categoryId: Long?, active: Boolean?, page: Int, size: Int,
+                         sortBy: String, sortDir: String): PageResponse<ProductResponse> {
+        require(page >= 0) { "La página no puede ser negativa" }
+        require(sortBy in setOf("name", "price", "stock")) { "Ordenamiento no permitido" }
+        require(sortDir in setOf("asc", "desc")) { "Dirección no permitida" }
+        val filters = mutableListOf<Specification<Product>>()
+        active?.let { value -> filters.add(Specification { root, _, cb -> cb.equal(root.get<Boolean>("active"), value) }) }
+        categoryId?.let { value -> filters.add(Specification { root, _, cb -> cb.equal(root.get<com.geovannycode.verdemango.catalog.domain.Category>("category").get<Long>("id"), value) }) }
+        search?.trim()?.takeIf { it.isNotEmpty() }?.let { value ->
+            filters.add(Specification { root, _, cb -> cb.like(cb.lower(root.get("name")), "%${value.lowercase()}%") })
+        }
+        val limit = size.coerceIn(1, 100)
+        val direction = if (sortDir == "asc") Sort.Direction.ASC else Sort.Direction.DESC
+        val result = productRepository.findAll(Specification.allOf(filters), PageRequest.of(page, limit, Sort.by(direction, sortBy).and(Sort.by("id"))))
+        return PageResponse.of(result.content.map(ProductResponse::from), page, limit, result.totalElements)
+    }
+
     // ============== Operaciones admin ==============
 
     @Transactional
-    @CacheEvict(value = ["products"], allEntries = true)
+    @CacheEvict(value = ["products", "categories"], allEntries = true)
     fun create(request: CreateProductRequest): ProductResponse {
         logger.info("Creando producto: ${request.name}")
 
@@ -171,7 +189,7 @@ class ProductService(
     }
 
     @Transactional
-    @CacheEvict(value = ["products"], allEntries = true)
+    @CacheEvict(value = ["products", "categories"], allEntries = true)
     fun update(id: Long, request: UpdateProductRequest): ProductResponse {
         logger.info("Actualizando producto: $id")
 
@@ -218,7 +236,7 @@ class ProductService(
     }
 
     @Transactional
-    @CacheEvict(value = ["products"], key = "#id")
+    @CacheEvict(value = ["products", "categories"], allEntries = true)
     fun updateStock(id: Long, request: UpdateStockRequest): ProductResponse {
         logger.info("Actualizando stock del producto: $id, operación: ${request.operation}, cantidad: ${request.quantity}")
 
@@ -272,19 +290,21 @@ class ProductService(
     }
 
     @Transactional
-    @CacheEvict(value = ["products"], key = "#productId")
+    @CacheEvict(value = ["products"], allEntries = true)
     fun addImage(productId: Long, request: AddProductImageRequest): ProductImageResponse {
         logger.info("Agregando imagen al producto: $productId")
 
         val product = findById(productId)
         val image = product.addImage(url = request.url, altText = request.altText, isPrimary = request.isPrimary)
 
-        productRepository.save(product)
+        // The product is managed; flushing cascades persistence and assigns the image ID
+        // before serializing the response (merge could leave the original image with ID 0).
+        productRepository.flush()
         return ProductImageResponse.from(image)
     }
 
     @Transactional
-    @CacheEvict(value = ["products"], key = "#productId")
+    @CacheEvict(value = ["products"], allEntries = true)
     fun removeImage(productId: Long, imageId: Long) {
         logger.info("Eliminando imagen $imageId del producto: $productId")
 
@@ -298,7 +318,7 @@ class ProductService(
     }
 
     @Transactional
-    @CacheEvict(value = ["products"], key = "#productId")
+    @CacheEvict(value = ["products"], allEntries = true)
     fun setPrimaryImage(productId: Long, imageId: Long) {
         logger.info("Estableciendo imagen primaria $imageId para producto: $productId")
 
@@ -312,7 +332,7 @@ class ProductService(
     }
 
     @Transactional
-    @CacheEvict(value = ["products"], allEntries = true)
+    @CacheEvict(value = ["products", "categories"], allEntries = true)
     fun delete(id: Long) {
         logger.info("Desactivando producto: $id")
         val product = findById(id)
@@ -321,7 +341,7 @@ class ProductService(
     }
 
     @Transactional
-    @CacheEvict(value = ["products"], allEntries = true)
+    @CacheEvict(value = ["products", "categories"], allEntries = true)
     fun setFeatured(id: Long, featured: Boolean) {
         logger.info("Cambiando featured a $featured para producto: $id")
         productRepository.updateFeatured(id, featured)
