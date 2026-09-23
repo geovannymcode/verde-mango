@@ -90,10 +90,13 @@ async function requestFreshTokens(): Promise<string> {
 let refreshPromise: Promise<string> | undefined
 export function refreshAccessToken(): Promise<string> {
   if (!refreshPromise) {
-    const request = typeof navigator !== 'undefined' && navigator.locks
-      ? navigator.locks.request('vm-refresh-session', requestFreshTokens)
-      : requestFreshTokens()
-    refreshPromise = request.finally(() => { refreshPromise = undefined })
+    const request =
+      typeof navigator !== 'undefined' && navigator.locks
+        ? navigator.locks.request('vm-refresh-session', requestFreshTokens)
+        : requestFreshTokens()
+    refreshPromise = Promise.resolve(request).finally(() => {
+      refreshPromise = undefined
+    })
   }
   return refreshPromise
 }
@@ -103,7 +106,8 @@ httpClient.interceptors.response.use(
   async (error: AxiosError<ApiErrorBody>) => {
     const originalRequest = error.config as RetriableConfig | undefined
     const status = error.response?.status
-    const isAuthEndpoint = originalRequest?.url?.includes('/auth/login') ||
+    const isAuthEndpoint =
+      originalRequest?.url?.includes('/auth/login') ||
       originalRequest?.url?.includes('/auth/register') ||
       originalRequest?.url?.includes('/auth/refresh')
 
