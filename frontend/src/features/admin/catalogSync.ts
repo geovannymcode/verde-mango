@@ -10,7 +10,11 @@ export async function invalidateCatalog(client: QueryClient) {
 }
 /** Send only an invalidation signal: no user, product or token data crosses tabs. */
 export function publishCatalogChange() {
-  try { localStorage.setItem(eventKey, crypto.randomUUID()) } catch { /* Storage can be unavailable. */ }
+  try {
+    localStorage.setItem(eventKey, crypto.randomUUID())
+  } catch {
+    /* Storage can be unavailable. */
+  }
 }
 export function listenForCatalogChanges(client: QueryClient) {
   const listener = (event: StorageEvent) => {

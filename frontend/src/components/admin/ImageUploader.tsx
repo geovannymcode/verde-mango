@@ -48,7 +48,10 @@ export function ImageUploader({ images, onChange, disabled, onBusyChange }: Imag
       setError('Esta imagen ya está en la lista.')
       return
     }
-    if (images.length >= 10) { setError('Máximo 10 imágenes.'); return }
+    if (images.length >= 10) {
+      setError('Máximo 10 imágenes.')
+      return
+    }
     setChecking(true)
     onBusyChange?.(true)
     setError(undefined)
@@ -56,12 +59,17 @@ export function ImageUploader({ images, onChange, disabled, onBusyChange }: Imag
       const verified = await prepareImageSource(parsed.data)
       onChange([...images, { key: crypto.randomUUID(), url: verified }])
       setUrl('')
-    } catch (error) { setError(error instanceof Error ? error.message : 'No se pudo validar la imagen.') }
-    finally { setChecking(false); onBusyChange?.(false) }
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'No se pudo validar la imagen.')
+    } finally {
+      setChecking(false)
+      onBusyChange?.(false)
+    }
   }
   function move(from: number, to: number) {
     if (
-      disabled || checking ||
+      disabled ||
+      checking ||
       from < 0 ||
       to < 0 ||
       from >= images.length ||
@@ -81,7 +89,8 @@ export function ImageUploader({ images, onChange, disabled, onBusyChange }: Imag
         <h2 className="font-bold">Imágenes</h2>
         <p className="mt-1 text-sm text-vm-muted">
           Agrega una URL pública de imagen. La primera será la principal al guardar. No se admiten
-          archivos en este momento. En edición solo se guarda la elección de la principal; el orden de las demás lo define el servidor.
+          archivos en este momento. En edición solo se guarda la elección de la principal; el orden
+          de las demás lo define el servidor.
         </p>
       </div>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end">

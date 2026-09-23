@@ -44,7 +44,8 @@ export function DataTable<T, K extends string = string>({
   isFetching,
   error,
   onRetry,
-  emptyAction, rowClassName,
+  emptyAction,
+  rowClassName,
   emptyMessage = 'No hay registros para mostrar.',
 }: DataTableProps<T, K>) {
   const id = useId()
@@ -128,7 +129,11 @@ export function DataTable<T, K extends string = string>({
               <tr>
                 <td colSpan={columns.length} className="px-4 py-12 text-center" role="status">
                   <span className="sr-only">Cargando registros…</span>
-                  <div className="space-y-4" aria-hidden="true">{[0,1,2,3,4].map(index => <div key={index} className="h-10 animate-pulse rounded bg-stone-100" />)}</div>
+                  <div className="space-y-4" aria-hidden="true">
+                    {[0, 1, 2, 3, 4].map((index) => (
+                      <div key={index} className="h-10 animate-pulse rounded bg-stone-100" />
+                    ))}
+                  </div>
                 </td>
               </tr>
             ) : error != null ? (
@@ -137,14 +142,7 @@ export function DataTable<T, K extends string = string>({
                   Los datos no están disponibles.
                 </td>
               </tr>
-            ) : rows.length === 0 ? (
-              <tr>
-                <td colSpan={columns.length} className="px-4 py-12 text-center text-vm-muted">
-                  <p>{emptyMessage}</p>
-                  {emptyAction && <div className="mt-4">{emptyAction}</div>}
-                </td>
-              </tr>
-            ) : (
+            ) : rows.length === 0 ? null : (
               rows.map((row) => (
                 <tr
                   key={rowKey(row)}
@@ -161,6 +159,15 @@ export function DataTable<T, K extends string = string>({
           </tbody>
         </table>
       </div>
+      {error == null && !isLoading && rows.length === 0 && (
+        <div
+          className="rounded-lg border border-vm-line px-4 py-12 text-center text-vm-muted"
+          role="status"
+        >
+          <p>{emptyMessage}</p>
+          {emptyAction && <div className="mt-4">{emptyAction}</div>}
+        </div>
+      )}
       {error == null && !isLoading && (
         <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
           <p className="text-vm-muted" aria-live="polite">

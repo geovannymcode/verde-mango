@@ -11,6 +11,7 @@ interface ConfirmDialogProps {
   pending?: boolean
   error?: string
   errorAction?: ReactNode
+  children?: ReactNode
   onConfirm: () => void
   onCancel: () => void
 }
@@ -20,7 +21,7 @@ function ConfirmationContent({
   confirmText = 'Confirmar',
   requiredText,
   pending,
-  error, errorAction,
+  error, errorAction, children,
   onConfirm,
   onCancel,
 }: Omit<ConfirmDialogProps, 'open'>) {
@@ -47,6 +48,7 @@ function ConfirmationContent({
           />
         </div>
       )}
+      {children}
       {error && (
         <p role="alert" className="mt-4 text-sm text-red-700">
           {error}
