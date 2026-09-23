@@ -104,7 +104,8 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /** Detalle administrativo de producto (ADMIN o SUPER_ADMIN) */
+        get: operations["getAdminProduct"];
         /** Actualizar producto */
         put: operations["update"];
         post?: never;
@@ -364,7 +365,8 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /** Listar productos activos e inactivos (ADMIN o SUPER_ADMIN) */
+        get: operations["listAdminProducts"];
         put?: never;
         /** Crear producto */
         post: operations["create"];
@@ -398,7 +400,8 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /** Listar categorías activas e inactivas (ADMIN o SUPER_ADMIN) */
+        get: operations["listAdminCategories"];
         put?: never;
         /** Crear categoría */
         post: operations["create_1"];
@@ -1520,6 +1523,49 @@ export interface components {
             /** Format: date-time */
             updatedAt: string;
         };
+        CatalogUpdateCategoryRequest: {
+            name?: string;
+            slug?: string;
+            description?: string;
+            imageUrl?: string;
+            /** Format: int64 */
+            parentId?: number;
+            /** Format: int32 */
+            sortOrder?: number;
+            active?: boolean;
+            metaTitle?: string;
+            metaDescription?: string;
+        };
+        ApiResponseCatalogCategoryResponse: {
+            success: boolean;
+            message?: string;
+            data?: components["schemas"]["CatalogCategoryResponse"];
+            /** Format: date-time */
+            timestamp: string;
+            path?: string;
+        };
+        CatalogCategoryResponse: {
+            /** Format: int64 */
+            id: number;
+            name: string;
+            slug: string;
+            description?: string;
+            imageUrl?: string;
+            /** Format: int64 */
+            parentId?: number;
+            parentName?: string;
+            /** Format: int32 */
+            sortOrder: number;
+            active: boolean;
+            /** Format: int32 */
+            productCount: number;
+            metaTitle?: string;
+            metaDescription?: string;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
         CreateRatingRequest: {
             /** Format: int32 */
             rating: number;
@@ -1846,6 +1892,18 @@ export interface components {
             timestamp: string;
             path?: string;
         };
+        CatalogCreateCategoryRequest: {
+            name: string;
+            slug?: string;
+            description?: string;
+            imageUrl?: string;
+            /** Format: int64 */
+            parentId?: number;
+            /** Format: int32 */
+            sortOrder: number;
+            metaTitle?: string;
+            metaDescription?: string;
+        };
         CategoryOrder: {
             /** Format: int64 */
             categoryId: number;
@@ -2143,6 +2201,29 @@ export interface components {
             timestamp: string;
             path?: string;
         };
+        ApiResponsePageResponseProductResponse: {
+            success: boolean;
+            message?: string;
+            data?: components["schemas"]["PageResponseProductResponse"];
+            /** Format: date-time */
+            timestamp: string;
+            path?: string;
+        };
+        PageResponseProductResponse: {
+            content: components["schemas"]["ProductResponse"][];
+            /** Format: int32 */
+            page: number;
+            /** Format: int32 */
+            size: number;
+            /** Format: int64 */
+            totalElements: number;
+            /** Format: int32 */
+            totalPages: number;
+            first: boolean;
+            last: boolean;
+            hasNext: boolean;
+            hasPrevious: boolean;
+        };
         ApiResponseOrderStatsResponse: {
             success: boolean;
             message?: string;
@@ -2167,6 +2248,14 @@ export interface components {
             totalRevenueFormatted: string;
             /** Format: double */
             averageOrderValue: number;
+        };
+        ApiResponseListCatalogCategoryResponse: {
+            success: boolean;
+            message?: string;
+            data?: components["schemas"]["CatalogCategoryResponse"][];
+            /** Format: date-time */
+            timestamp: string;
+            path?: string;
         };
         ApiResponseUnit: {
             success: boolean;
@@ -2499,6 +2588,28 @@ export interface operations {
             };
         };
     };
+    getAdminProduct: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseProductResponse"];
+                };
+            };
+        };
+    };
     update: {
         parameters: {
             query?: never;
@@ -2564,7 +2675,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["ApiResponseCategoryResponse"];
+                    "*/*": components["schemas"]["ApiResponseCatalogCategoryResponse"];
                 };
             };
         };
@@ -2580,7 +2691,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["UpdateCategoryRequest"];
+                "application/json": components["schemas"]["CatalogUpdateCategoryRequest"];
             };
         };
         responses: {
@@ -2590,7 +2701,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["ApiResponseCategoryResponse"];
+                    "*/*": components["schemas"]["ApiResponseCatalogCategoryResponse"];
                 };
             };
         };
@@ -2971,6 +3082,34 @@ export interface operations {
             };
         };
     };
+    listAdminProducts: {
+        parameters: {
+            query?: {
+                search?: string;
+                categoryId?: number;
+                active?: boolean;
+                page?: number;
+                size?: number;
+                sortBy?: string;
+                sortDir?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponsePageResponseProductResponse"];
+                };
+            };
+        };
+    };
     create: {
         parameters: {
             query?: never;
@@ -3021,6 +3160,29 @@ export interface operations {
             };
         };
     };
+    listAdminCategories: {
+        parameters: {
+            query?: {
+                search?: string;
+                active?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseListCatalogCategoryResponse"];
+                };
+            };
+        };
+    };
     create_1: {
         parameters: {
             query?: never;
@@ -3030,7 +3192,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["CreateCategoryRequest"];
+                "application/json": components["schemas"]["CatalogCreateCategoryRequest"];
             };
         };
         responses: {
@@ -3040,7 +3202,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["ApiResponseCategoryResponse"];
+                    "*/*": components["schemas"]["ApiResponseCatalogCategoryResponse"];
                 };
             };
         };
@@ -3843,7 +4005,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["ApiResponseCategoryResponse"];
+                    "*/*": components["schemas"]["ApiResponseCatalogCategoryResponse"];
                 };
             };
         };

@@ -31,9 +31,9 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
   updateTokens: (accessToken, refreshToken) => {
     refreshTokenStorage.set(refreshToken)
-    set({ accessToken, status: 'authenticated' })
+    set((state) => ({ accessToken, status: state.user ? 'authenticated' : 'loading' }))
   },
-  setUser: (user) => set({ user }),
+  setUser: (user) => set({ user, status: user ? 'authenticated' : 'anonymous' }),
   setStatus: (status) => set({ status }),
   clearSession: () => {
     refreshTokenStorage.clear()

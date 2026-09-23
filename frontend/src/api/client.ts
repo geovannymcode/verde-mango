@@ -64,7 +64,7 @@ function rejectQueue(error: unknown): void {
   pendingQueue = []
 }
 
-export async function refreshAccessToken(): Promise<string> {
+async function requestFreshTokens(): Promise<string> {
   const refreshToken = refreshTokenStorage.get()
   if (!refreshToken) {
     throw new ApiError('No hay sesión activa')
@@ -83,6 +83,19 @@ export async function refreshAccessToken(): Promise<string> {
   // `updateTokens` no toca `user`, a diferencia de `setSession`.
   useAuthStore.getState().updateTokens(tokens.accessToken, tokens.refreshToken)
   return tokens.accessToken
+}
+
+// StrictMode/bootstrap and 401 retries share one refresh per tab. Web Locks serialize
+// token rotation across tabs; read localStorage inside the lock to use the newest token.
+let refreshPromise: Promise<string> | undefined
+export function refreshAccessToken(): Promise<string> {
+  if (!refreshPromise) {
+    const request = typeof navigator !== 'undefined' && navigator.locks
+      ? navigator.locks.request('vm-refresh-session', requestFreshTokens)
+      : requestFreshTokens()
+    refreshPromise = request.finally(() => { refreshPromise = undefined })
+  }
+  return refreshPromise
 }
 
 httpClient.interceptors.response.use(
