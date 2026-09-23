@@ -452,3 +452,53 @@ secciones posteriores visible pero deshabilitada con su subentrega; no se crean 
 que aparenten estar listas antes de revisión. Mutaciones de negocio e invalidación pública se
 conectarán en 8b–8d. FormShell prepara protección de navegación; helper común mapea 403 y errores
 por campo. Pruebas/preview pueden usar fixtures aisladas, nunca un bypass en la aplicación.
+
+## Fase 8b — cierre con backend real y Java 25 (2026-09-23)
+
+Esta sección actualiza los gaps históricos de 8a; las observaciones anteriores describen el
+contrato de aquel momento.
+
+### Resueltos
+
+- Catálogo tiene schemas propios: `CatalogCreateCategoryRequest`, `CatalogUpdateCategoryRequest`
+  y `CatalogCategoryResponse`. Este último devuelve `slug`, `sortOrder`, `active` y
+  `productCount`, no `displayOrder`/`recipeCount`. Se descargó `/api-docs` con el backend
+  ejecutándose y se regeneró `frontend/src/api/openapi.gen.d.ts`; snapshot en
+  `frontend/openapi/verde-mango-openapi.json`.
+- SecurityConfig y controladores permiten ADMIN **o** SUPER_ADMIN en catálogo. No hay acciones
+  exclusivas de SUPER_ADMIN en productos/categorías. CUSTOMER recibe 403. Se corrigieron también
+  los matchers de lectura pública para usar HttpMethod.GET.
+- `GET /api/v1/admin/products` admite `search`, `categoryId`, `active`, `page`, `size`,
+  `sortBy` (name/price/stock) y `sortDir` (asc/desc). Incluye inactivos cuando no se filtra estado.
+  `GET /api/v1/admin/products/{id}` permite editar inactivos y devuelve 404 si no existe.
+- `GET /api/v1/admin/categories?search=&active=` devuelve una lista completa, sin paginación,
+  ordenada por sortOrder/nombre/id. Su conteo incluye productos activos e inactivos.
+- DELETE de categoría rechaza con 422 `CATEGORY_HAS_PRODUCTS` cuando la categoría o sus
+  descendientes contienen productos. La UI bloquea por el conteo directo y presenta el rechazo
+  del servidor si la asociación está en un descendiente.
+- Reordenación real de categorías mediante `POST /api/v1/admin/categories/reorder` con
+  `{categoryOrders: [{categoryId, sortOrder}]}`; arrastre y botones accesibles conectados.
+- Las mutaciones invalidan consultas públicas y administrativas, incluso si una secuencia de
+  guardado falla parcialmente. Un evento de storage comunica la invalidación a otras pestañas.
+  Se comprobó en vivo que /tienda cambia nombre/precio sin recarga manual.
+- La adición de imágenes devuelve ahora su ID persistido, en lugar de 0, antes de seleccionar
+  la principal. Verificado con POST de imagen seguido de PATCH de principal.
+- Se corrigió la sesión necesaria para el panel: /me y /logout usan UserPrincipal; los refresh
+  tokens tienen jti único; las pestañas serializan la rotación con Web Locks y cada pestaña
+  comparte una sola promesa de refresh. El perfil se carga antes de declarar autenticación lista.
+
+### Limitaciones que permanecen
+
+- No hay upload multipart ni almacenamiento de archivos. ImageUploader recibe URL HTTP(S),
+  verifica que cargue, muestra preview y permite quitar imágenes/elegir principal. Preparación
+  aislada en `src/api/imageSource.ts`; persistencia de metadata en `src/api/adminCatalog.ts`.
+  No se simula progreso ni subida. No se promete validación del peso/MIME de URLs remotas.
+- No hay endpoint para persistir el orden completo de imágenes existentes. Al editar se guarda
+  cuál es principal; el servidor determina el orden de las demás. La UI lo explica.
+- DELETE de producto sigue siendo desactivación, sin rechazo por referencias a órdenes. El
+  diálogo exige nombre exacto e informa la desactivación. Está preparado para mostrar un rechazo
+  por referencias y ofrecer desactivar si ese contrato aparece en el futuro; no se simuló tal error.
+- Los null de actualizaciones se ignoran en varios campos del backend. No se ofrece limpiar la
+  categoría de un producto mediante null; el formulario exige una categoría.
+- Siguen pendientes para 8c los gaps de órdenes/pagos descritos en 8a: no confundir cambios de
+  estado con cobros/reembolsos reales, ni inferir datos de pasarela ausentes del DTO.
