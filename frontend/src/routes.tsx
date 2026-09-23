@@ -22,6 +22,9 @@ import { ContactPage } from '@/pages/ContactPage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
 import { SetupStatusPage } from '@/pages/SetupStatusPage'
 import { AdminLayout } from '@/components/admin/AdminLayout'
+import { ProductsPage } from '@/pages/admin/ProductsPage'
+import { ProductFormPage } from '@/pages/admin/ProductFormPage'
+import { CategoriesPage } from '@/pages/admin/CategoriesPage'
 import { DashboardPage } from '@/pages/admin/DashboardPage'
 
 export const router = createBrowserRouter([
@@ -34,6 +37,10 @@ export const router = createBrowserRouter([
     ),
     children: [
       { index: true, element: <DashboardPage /> },
+      { path: 'productos', element: <ProductsPage /> },
+      { path: 'productos/nuevo', element: <ProductFormPage /> },
+      { path: 'productos/:id/editar', element: <ProductFormPage /> },
+      { path: 'categorias', element: <CategoriesPage /> },
       { path: '*', element: <NotFoundPage /> },
     ],
   },
