@@ -41,7 +41,7 @@ export function Modal({ open, onClose, title, children }: ModalProps) {
         aria-label={title}
         tabIndex={-1}
         onClick={(event) => event.stopPropagation()}
-        className="w-full max-w-lg rounded-vm-lg bg-vm-white p-6 shadow-vm-card focus:outline-none"
+        className="max-h-[90dvh] overflow-y-auto w-full max-w-lg rounded-vm-lg bg-vm-white p-6 shadow-vm-card focus:outline-none"
       >
         <div className="mb-4 flex items-center justify-between">
           {title && <h2 className="text-lg font-bold text-vm-ink">{title}</h2>}

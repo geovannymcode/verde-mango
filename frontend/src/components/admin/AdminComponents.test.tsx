@@ -1,3 +1,4 @@
+vi.mock('@/api/imageSource', async (importOriginal) => ({ ...await importOriginal<typeof import('@/api/imageSource')>(), prepareImageSource: vi.fn(async (value: string) => value) }))
 import { useState } from 'react'
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
@@ -132,7 +133,7 @@ function ImageHarness() {
     </>
   )
 }
-it('rejects unsafe URLs, prevents duplicates and supports keyboard-friendly reordering/removal', () => {
+it('rejects unsafe URLs, prevents duplicates and supports keyboard-friendly reordering/removal', async () => {
   render(<ImageHarness />)
   const input = screen.getByLabelText('URL de imagen')
   const add = () => fireEvent.click(screen.getByRole('button', { name: 'Agregar imagen' }))
@@ -141,11 +142,13 @@ it('rejects unsafe URLs, prevents duplicates and supports keyboard-friendly reor
   expect(screen.getByText('Usa una URL HTTP o HTTPS.')).toBeInTheDocument()
   fireEvent.change(input, { target: { value: 'https://example.com/a.jpg' } })
   add()
+  await waitFor(() => expect(screen.getByTestId('urls')).toHaveTextContent('https://example.com/a.jpg'))
   fireEvent.change(input, { target: { value: 'https://example.com/a.jpg' } })
   add()
   expect(screen.getByText('Esta imagen ya está en la lista.')).toBeInTheDocument()
   fireEvent.change(input, { target: { value: 'https://example.com/b.jpg' } })
   add()
+  await waitFor(() => expect(screen.getByTestId('urls')).toHaveTextContent('https://example.com/b.jpg'))
   fireEvent.click(screen.getByRole('button', { name: 'Mover imagen 2 antes' }))
   expect(screen.getByTestId('urls')).toHaveTextContent(
     'https://example.com/b.jpg,https://example.com/a.jpg',

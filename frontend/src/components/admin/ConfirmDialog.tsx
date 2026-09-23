@@ -1,4 +1,4 @@
-import { useId, useState } from 'react'
+import { useId, useState, type ReactNode } from 'react'
 import { Modal } from '@/components/ui/Modal'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
@@ -10,6 +10,7 @@ interface ConfirmDialogProps {
   requiredText?: string
   pending?: boolean
   error?: string
+  errorAction?: ReactNode
   onConfirm: () => void
   onCancel: () => void
 }
@@ -19,7 +20,7 @@ function ConfirmationContent({
   confirmText = 'Confirmar',
   requiredText,
   pending,
-  error,
+  error, errorAction,
   onConfirm,
   onCancel,
 }: Omit<ConfirmDialogProps, 'open'>) {
@@ -51,6 +52,7 @@ function ConfirmationContent({
           {error}
         </p>
       )}
+      {errorAction}
       <div className="mt-6 flex flex-wrap justify-end gap-3">
         <Button variant="outline" disabled={pending} onClick={onCancel}>
           Cancelar

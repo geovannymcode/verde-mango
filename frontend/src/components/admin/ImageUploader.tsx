@@ -1,6 +1,6 @@
 import { useId, useState } from 'react'
 import { ArrowLeft, ArrowRight, GripVertical, Trash2 } from 'lucide-react'
-import { z } from 'zod'
+import { imageUrlSchema as imageUrl, prepareImageSource } from '@/api/imageSource'
 import type { ProductImageResponse } from '@/api/schema'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
@@ -9,12 +9,8 @@ interface ImageUploaderProps {
   images: readonly AdminImage[]
   onChange: (images: AdminImage[]) => void
   disabled?: boolean
+  onBusyChange?: (busy: boolean) => void
 }
-const imageUrl = z
-  .string()
-  .trim()
-  .url('Escribe una URL válida.')
-  .refine((url) => /^https?:\/\//i.test(url), 'Usa una URL HTTP o HTTPS.')
 function ImagePreview({ url, alt }: { url: string; alt: string }) {
   const [failed, setFailed] = useState(false)
   return failed || !imageUrl.safeParse(url).success ? (
@@ -36,12 +32,13 @@ function ImagePreview({ url, alt }: { url: string; alt: string }) {
   )
 }
 /** URL-only fallback: no upload endpoint exists. Changes are local until the parent saves. */
-export function ImageUploader({ images, onChange, disabled }: ImageUploaderProps) {
+export function ImageUploader({ images, onChange, disabled, onBusyChange }: ImageUploaderProps) {
   const id = useId()
   const [url, setUrl] = useState('')
   const [error, setError] = useState<string>()
   const [dragKey, setDragKey] = useState<string | null>(null)
-  function add() {
+  const [checking, setChecking] = useState(false)
+  async function add() {
     const parsed = imageUrl.safeParse(url)
     if (!parsed.success) {
       setError(parsed.error.issues[0]?.message)
@@ -51,13 +48,20 @@ export function ImageUploader({ images, onChange, disabled }: ImageUploaderProps
       setError('Esta imagen ya está en la lista.')
       return
     }
-    onChange([...images, { key: crypto.randomUUID(), url: parsed.data, altText: '' }])
-    setUrl('')
+    if (images.length >= 10) { setError('Máximo 10 imágenes.'); return }
+    setChecking(true)
+    onBusyChange?.(true)
     setError(undefined)
+    try {
+      const verified = await prepareImageSource(parsed.data)
+      onChange([...images, { key: crypto.randomUUID(), url: verified }])
+      setUrl('')
+    } catch (error) { setError(error instanceof Error ? error.message : 'No se pudo validar la imagen.') }
+    finally { setChecking(false); onBusyChange?.(false) }
   }
   function move(from: number, to: number) {
     if (
-      disabled ||
+      disabled || checking ||
       from < 0 ||
       to < 0 ||
       from >= images.length ||
@@ -77,7 +81,7 @@ export function ImageUploader({ images, onChange, disabled }: ImageUploaderProps
         <h2 className="font-bold">Imágenes</h2>
         <p className="mt-1 text-sm text-vm-muted">
           Agrega una URL pública de imagen. La primera será la principal al guardar. No se admiten
-          archivos en este momento.
+          archivos en este momento. En edición solo se guarda la elección de la principal; el orden de las demás lo define el servidor.
         </p>
       </div>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
@@ -88,13 +92,13 @@ export function ImageUploader({ images, onChange, disabled }: ImageUploaderProps
             type="url"
             placeholder="https://…"
             value={url}
-            disabled={disabled}
+            disabled={disabled || checking}
             error={error}
             onChange={(event) => setUrl(event.target.value)}
           />
         </div>
-        <Button type="button" variant="outline" disabled={disabled} onClick={add}>
-          Agregar imagen
+        <Button type="button" variant="outline" disabled={disabled || checking} onClick={add}>
+          {checking ? 'Validando imagen…' : 'Agregar imagen'}
         </Button>
       </div>
       <ol className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -102,7 +106,7 @@ export function ImageUploader({ images, onChange, disabled }: ImageUploaderProps
           <li
             key={image.key}
             onDragOver={(event) => {
-              if (!disabled && dragKey) event.preventDefault()
+              if (!disabled && !checking && dragKey) event.preventDefault()
             }}
             onDrop={(event) => {
               event.preventDefault()
@@ -124,7 +128,7 @@ export function ImageUploader({ images, onChange, disabled }: ImageUploaderProps
               <div className="flex items-center justify-between text-sm">
                 <span>{index === 0 ? 'Principal' : `Imagen ${index + 1}`}</span>
                 <span
-                  draggable={!disabled}
+                  draggable={!disabled && !checking}
                   onDragStart={(event) => {
                     event.dataTransfer.setData('text/plain', image.key)
                     event.dataTransfer.effectAllowed = 'move'
@@ -137,25 +141,12 @@ export function ImageUploader({ images, onChange, disabled }: ImageUploaderProps
                   <GripVertical size={18} aria-hidden="true" />
                 </span>
               </div>
-              <Input
-                id={`${id}-${image.key}`}
-                label="Descripción de la imagen"
-                value={image.altText ?? ''}
-                disabled={disabled}
-                onChange={(event) =>
-                  onChange(
-                    images.map((item) =>
-                      item.key === image.key ? { ...item, altText: event.target.value } : item,
-                    ),
-                  )
-                }
-              />
               <div className="flex flex-wrap gap-2">
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
-                  disabled={disabled || index === 0}
+                  disabled={disabled || checking || index === 0}
                   aria-label={`Mover imagen ${index + 1} antes`}
                   onClick={() => move(index, index - 1)}
                 >
@@ -165,7 +156,7 @@ export function ImageUploader({ images, onChange, disabled }: ImageUploaderProps
                   type="button"
                   variant="outline"
                   size="sm"
-                  disabled={disabled || index === images.length - 1}
+                  disabled={disabled || checking || index === images.length - 1}
                   aria-label={`Mover imagen ${index + 1} después`}
                   onClick={() => move(index, index + 1)}
                 >
@@ -175,7 +166,7 @@ export function ImageUploader({ images, onChange, disabled }: ImageUploaderProps
                   type="button"
                   variant="outline"
                   size="sm"
-                  disabled={disabled}
+                  disabled={disabled || checking}
                   aria-label={`Eliminar imagen ${index + 1}`}
                   onClick={() => onChange(images.filter((item) => item.key !== image.key))}
                 >

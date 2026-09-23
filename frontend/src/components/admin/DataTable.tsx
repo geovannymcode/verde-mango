@@ -26,6 +26,8 @@ interface DataTableProps<T, K extends string> {
   isFetching?: boolean
   error?: unknown
   onRetry?: () => void
+  emptyAction?: ReactNode
+  rowClassName?: (row: T) => string
   emptyMessage?: string
 }
 /** Server owns sorting and pagination; this component never sorts or slices the received page. */
@@ -42,6 +44,7 @@ export function DataTable<T, K extends string = string>({
   isFetching,
   error,
   onRetry,
+  emptyAction, rowClassName,
   emptyMessage = 'No hay registros para mostrar.',
 }: DataTableProps<T, K>) {
   const id = useId()
@@ -124,7 +127,8 @@ export function DataTable<T, K extends string = string>({
             {isLoading ? (
               <tr>
                 <td colSpan={columns.length} className="px-4 py-12 text-center" role="status">
-                  Cargando registros…
+                  <span className="sr-only">Cargando registros…</span>
+                  <div className="space-y-4" aria-hidden="true">{[0,1,2,3,4].map(index => <div key={index} className="h-10 animate-pulse rounded bg-stone-100" />)}</div>
                 </td>
               </tr>
             ) : error != null ? (
@@ -136,14 +140,15 @@ export function DataTable<T, K extends string = string>({
             ) : rows.length === 0 ? (
               <tr>
                 <td colSpan={columns.length} className="px-4 py-12 text-center text-vm-muted">
-                  {emptyMessage}
+                  <p>{emptyMessage}</p>
+                  {emptyAction && <div className="mt-4">{emptyAction}</div>}
                 </td>
               </tr>
             ) : (
               rows.map((row) => (
                 <tr
                   key={rowKey(row)}
-                  className="border-b border-vm-line last:border-0 hover:bg-stone-50"
+                  className={`border-b border-vm-line last:border-0 hover:bg-stone-50 ${rowClassName?.(row) ?? ''}`}
                 >
                   {columns.map((column) => (
                     <td key={column.id} className={`px-4 py-4 ${column.className ?? ''}`}>

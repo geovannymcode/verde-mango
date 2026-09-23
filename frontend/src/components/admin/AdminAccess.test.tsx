@@ -54,7 +54,8 @@ describe('admin shell access', () => {
       setup(role)
       expect(screen.getByText('Contenido protegido')).toBeInTheDocument()
       expect(screen.getByText(role)).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: /Productos/ })).toBeDisabled()
+      expect(screen.getByRole('link', { name: 'Productos' })).toHaveAttribute('href', '/admin/productos')
+      expect(screen.getByRole('button', { name: /Órdenes/ })).toBeDisabled()
       expect(screen.queryByRole('contentinfo')).not.toBeInTheDocument()
     },
   )

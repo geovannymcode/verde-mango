@@ -16,8 +16,6 @@ import { Drawer } from '@/components/ui/Drawer'
 import { Button } from '@/components/ui/Button'
 import { ToastContainer } from '@/components/ui/Toast'
 const upcoming = [
-  { label: 'Productos', icon: Package, phase: '8b' },
-  { label: 'Categorías', icon: Tags, phase: '8b' },
   { label: 'Órdenes', icon: ShoppingBag, phase: '8c' },
   { label: 'Recetas', icon: BookOpen, phase: '8d' },
 ]
@@ -35,6 +33,7 @@ function AdminNavigation({ onNavigate }: { onNavigate?: () => void }) {
         <LayoutDashboard size={18} />
         Dashboard
       </NavLink>
+      {[{label:'Productos', path:'productos', icon:Package}, {label:'Categorías', path:'categorias', icon:Tags}].map(({label,path,icon:Icon}) => <NavLink key={path} to={`/admin/${path}`} onClick={onNavigate} className={({isActive}) => `flex items-center gap-3 rounded-md px-3 py-3 text-sm font-semibold ${isActive ? 'bg-vm-orange/10 text-vm-orange' : 'hover:bg-stone-50'}`}><Icon size={18} />{label}</NavLink>)}
       {upcoming.map(({ label, icon: Icon, phase }) => (
         <button
           key={label}
