@@ -1,6 +1,6 @@
 package com.geovannycode.verdemango.auth.web
 
-import com.geovannycode.verdemango.auth.domain.User
+import com.geovannycode.verdemango.common.security.UserPrincipal
 import com.geovannycode.verdemango.auth.service.AuthService
 import com.geovannycode.verdemango.common.domain.ApiResponse
 import io.swagger.v3.oas.annotations.Operation
@@ -61,7 +61,7 @@ class AuthController(
     @PostMapping("/logout")
     @Operation(summary = "Cerrar sesion")
     fun logout(
-        @AuthenticationPrincipal user: User
+        @AuthenticationPrincipal user: UserPrincipal
     ): ResponseEntity<ApiResponse<Nothing>> {
         authService.logout(user.id)
         return ResponseEntity.ok(ApiResponse.success("Sesion cerrada exitosamente"))
@@ -70,9 +70,9 @@ class AuthController(
     @GetMapping("/me")
     @Operation(summary = "Obtener usuario actual")
     fun getCurrentUser(
-        @AuthenticationPrincipal user: User
+        @AuthenticationPrincipal user: UserPrincipal
     ): ResponseEntity<ApiResponse<UserResponse>> {
-        return ResponseEntity.ok(ApiResponse.success(UserResponse.from(user)))
+        return ResponseEntity.ok(ApiResponse.success(authService.getCurrentUser(user.id)))
     }
 
     private fun getClientIp(request: HttpServletRequest): String? {

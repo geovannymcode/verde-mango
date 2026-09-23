@@ -1,6 +1,7 @@
 package com.geovannycode.verdemango.common.config
 
 import com.geovannycode.verdemango.common.security.JwtAuthenticationFilter
+import org.springframework.http.HttpMethod
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.authentication.AuthenticationManager
@@ -39,13 +40,13 @@ class SecurityConfig(
                     ).permitAll()
                     // Catalog - public reads
                     .requestMatchers(
-                        "GET", "/api/v1/products/**",
+                        HttpMethod.GET, "/api/v1/products/**",
                         "/api/v1/categories/**"
                     ).permitAll()
                     // Cart - allow guest access (session-based)
                     .requestMatchers("/api/v1/cart/**").permitAll()
                     // Recipes - public reads
-                    .requestMatchers("GET", "/api/v1/recipes/**").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/v1/recipes/**").permitAll()
                     // Swagger/OpenAPI
                     .requestMatchers(
                         "/swagger-ui/**",
@@ -55,7 +56,7 @@ class SecurityConfig(
                     // Actuator
                     .requestMatchers("/actuator/health", "/actuator/info").permitAll()
                     // Admin endpoints
-                    .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
+                    .requestMatchers("/api/v1/admin/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
                     // Everything else requires authentication
                     .anyRequest().authenticated()
             }

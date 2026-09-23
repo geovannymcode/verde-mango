@@ -101,6 +101,13 @@ class AuthService(
         )
     }
 
+    @Transactional(readOnly = true)
+    fun getCurrentUser(id: Long): UserResponse {
+        val user = userRepository.findById(id).orElseThrow { AuthenticationException("Usuario no encontrado") }
+        if (!user.active) throw AuthenticationException("Cuenta desactivada")
+        return UserResponse.from(user)
+    }
+
     @Transactional
     fun logout(userId: Long) {
         logger.info("Cerrando sesion de usuario: $userId")
