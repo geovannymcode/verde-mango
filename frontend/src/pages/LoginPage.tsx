@@ -15,7 +15,10 @@ import { Button } from '@/components/ui/Button'
 const FIELD_NAMES = new Set<keyof LoginFormValues>(['email', 'password'])
 
 export function LoginPage() {
-  useDocumentTitle('Iniciar sesión', 'Accede a tu cuenta de Verde Mango para consultar tus pedidos y completar tus compras.')
+  useDocumentTitle(
+    'Iniciar sesión',
+    'Accede a tu cuenta de Verde Mango para consultar tus pedidos y completar tus compras.',
+  )
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const login = useLogin()
@@ -50,7 +53,9 @@ export function LoginPage() {
           return
         }
         setFormError(
-          error instanceof ApiError ? error.message : 'No pudimos iniciar sesión. Intenta de nuevo.',
+          error instanceof ApiError
+            ? error.message
+            : 'No pudimos iniciar sesión. Intenta de nuevo.',
         )
       },
     })

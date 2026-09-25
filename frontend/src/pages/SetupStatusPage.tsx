@@ -22,12 +22,14 @@ export function SetupStatusPage() {
       <p className="font-hand text-2xl text-vm-orange">— est. 1998 —</p>
       <h1 className="text-4xl text-vm-ink">Verde Mango</h1>
       <p className="max-w-md text-vm-muted">
-        Fase 1 completada: Vite + React 19 + TypeScript, Tailwind CSS, TanStack Query, Zustand y
-        el cliente Axios están configurados.
+        Fase 1 completada: Vite + React 19 + TypeScript, Tailwind CSS, TanStack Query, Zustand y el
+        cliente Axios están configurados.
       </p>
       <div className="rounded border border-vm-line bg-vm-white px-6 py-4 text-sm">
         <p className="font-semibold text-vm-ink">Estado del backend</p>
-        {isLoading && <p className="text-vm-muted">Consultando {env.apiBaseUrl}/actuator/health…</p>}
+        {isLoading && (
+          <p className="text-vm-muted">Consultando {env.apiBaseUrl}/actuator/health…</p>
+        )}
         {isError && <p className="text-vm-orange">No fue posible conectar con el backend.</p>}
         {data && <p className="text-vm-green">{data.status}</p>}
       </div>

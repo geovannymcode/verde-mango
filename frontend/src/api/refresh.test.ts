@@ -10,11 +10,9 @@ afterEach(() => {
 it('shares concurrent refreshes and waits for the profile before declaring the session ready', async () => {
   useAuthStore.setState({ accessToken: null, user: null, status: 'loading' })
   refreshTokenStorage.set('test-refresh')
-  const post = vi
-    .spyOn(axios, 'post')
-    .mockResolvedValue({
-      data: { success: true, data: { accessToken: 'new-access', refreshToken: 'new-refresh' } },
-    })
+  const post = vi.spyOn(axios, 'post').mockResolvedValue({
+    data: { success: true, data: { accessToken: 'new-access', refreshToken: 'new-refresh' } },
+  })
   const first = refreshAccessToken()
   const second = refreshAccessToken()
   expect(first).toBe(second)

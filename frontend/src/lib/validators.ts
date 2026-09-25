@@ -69,12 +69,9 @@ export const checkoutSchema = z
     customerNotes: z.string().max(500).optional().or(z.literal('')),
     paymentMethod: z.string().min(1, 'Selecciona un método de pago'),
   })
-  .refine(
-    (values) => values.billingSameAsShipping || !!values.billingAddress,
-    {
-      message: 'La dirección de facturación es requerida',
-      path: ['billingAddress'],
-    },
-  )
+  .refine((values) => values.billingSameAsShipping || !!values.billingAddress, {
+    message: 'La dirección de facturación es requerida',
+    path: ['billingAddress'],
+  })
 
 export type CheckoutFormValues = z.infer<typeof checkoutSchema>

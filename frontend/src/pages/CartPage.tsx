@@ -9,7 +9,10 @@ import { Button } from '@/components/ui/Button'
 import { Skeleton } from '@/components/ui/Skeleton'
 
 export function CartPage() {
-  useDocumentTitle('Mi carrito', 'Revisa los productos, cantidades y total de tu carrito de Verde Mango.')
+  useDocumentTitle(
+    'Mi carrito',
+    'Revisa los productos, cantidades y total de tu carrito de Verde Mango.',
+  )
   const cartQuery = useCart()
   const updateItem = useUpdateCartItem()
   const removeItem = useRemoveCartItem()

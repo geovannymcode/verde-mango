@@ -4,8 +4,7 @@ export const catalogKeys = {
   all: ['catalog'] as const,
 
   products: () => [...catalogKeys.all, 'products'] as const,
-  productList: (params: ProductQueryParams) =>
-    [...catalogKeys.products(), 'list', params] as const,
+  productList: (params: ProductQueryParams) => [...catalogKeys.products(), 'list', params] as const,
   productDetail: (slug: string) => [...catalogKeys.products(), 'detail', slug] as const,
   featuredProducts: () => [...catalogKeys.products(), 'featured'] as const,
   relatedProducts: (productId: number) =>

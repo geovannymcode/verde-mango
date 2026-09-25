@@ -66,7 +66,9 @@ export function CartDrawer() {
                       <QuantityStepper
                         quantity={item.quantity}
                         disabled={isPending}
-                        onChange={(quantity) => updateItem.mutate({ productId: item.productId, quantity })}
+                        onChange={(quantity) =>
+                          updateItem.mutate({ productId: item.productId, quantity })
+                        }
                       />
                       <button
                         type="button"

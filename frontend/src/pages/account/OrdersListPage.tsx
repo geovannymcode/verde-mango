@@ -8,8 +8,6 @@ import { Button } from '@/components/ui/Button'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { Pagination } from '@/components/ui/Pagination'
 
-
-
 const PAGE_SIZE = 10
 
 export function OrdersListPage() {
@@ -59,7 +57,11 @@ export function OrdersListPage() {
         ))}
       </ul>
 
-      <Pagination page={page + 1} totalPages={data.totalPages} onPageChange={(p) => setPage(p - 1)} />
+      <Pagination
+        page={page + 1}
+        totalPages={data.totalPages}
+        onPageChange={(p) => setPage(p - 1)}
+      />
     </div>
   )
 }

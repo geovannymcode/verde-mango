@@ -36,7 +36,10 @@ const PAYMENT_METHODS = [
 ]
 
 export function CheckoutPage() {
-  useDocumentTitle('Finalizar compra', 'Revisa tu pedido y completa los datos de envío de tu compra en Verde Mango.')
+  useDocumentTitle(
+    'Finalizar compra',
+    'Revisa tu pedido y completa los datos de envío de tu compra en Verde Mango.',
+  )
   const navigate = useNavigate()
   const pushToast = useUiStore((state) => state.pushToast)
 
@@ -145,7 +148,10 @@ export function CheckoutPage() {
               {...register('shippingAddress.streetAddress')}
               error={errors.shippingAddress?.streetAddress?.message}
             />
-            <Input label="Apartamento / referencia (opcional)" {...register('shippingAddress.apartment')} />
+            <Input
+              label="Apartamento / referencia (opcional)"
+              {...register('shippingAddress.apartment')}
+            />
             <div className="grid grid-cols-2 gap-4">
               <Input
                 label="Ciudad"
@@ -207,7 +213,10 @@ export function CheckoutPage() {
               </div>
             )}
 
-            <Input label="NIT / documento de facturación (opcional)" {...register('billingTaxId')} />
+            <Input
+              label="NIT / documento de facturación (opcional)"
+              {...register('billingTaxId')}
+            />
           </fieldset>
 
           <fieldset className="flex flex-col gap-4">
@@ -252,9 +261,7 @@ export function CheckoutPage() {
 
           <Button
             type="submit"
-            disabled={
-              checkout.isPending || (validationQuery.data && !validationQuery.data.valid)
-            }
+            disabled={checkout.isPending || (validationQuery.data && !validationQuery.data.valid)}
           >
             {checkout.isPending ? 'Procesando…' : 'Pagar con Wompi'}
           </Button>

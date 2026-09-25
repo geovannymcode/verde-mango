@@ -162,7 +162,11 @@ function RecipeDetail({ recipe }: { recipe: RecipeResponse }) {
 export function RecipeDetailPage() {
   const { slug } = useParams()
   const query = useRecipe(slug)
-  useDocumentTitle(query.data?.title ?? 'Receta', query.data?.description ?? 'Ingredientes y preparación paso a paso de las recetas de Verde Mango.')
+  useDocumentTitle(
+    query.data?.title ?? 'Receta',
+    query.data?.description ??
+      'Ingredientes y preparación paso a paso de las recetas de Verde Mango.',
+  )
   if (query.isPending)
     return (
       <div className="mx-auto max-w-5xl p-8">

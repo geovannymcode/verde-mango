@@ -27,7 +27,11 @@ export function ProductDetailPage() {
   const addToCart = useAddToCart()
 
   const productQuery = useProduct(slug)
-  useDocumentTitle(productQuery.data?.name ?? 'Producto', productQuery.data?.shortDescription ?? 'Conoce los ingredientes, precio y valoraciones de este producto de Verde Mango.')
+  useDocumentTitle(
+    productQuery.data?.name ?? 'Producto',
+    productQuery.data?.shortDescription ??
+      'Conoce los ingredientes, precio y valoraciones de este producto de Verde Mango.',
+  )
   const relatedQuery = useRelatedProducts(productQuery.data?.id)
 
   if (productQuery.isLoading) {
@@ -150,9 +154,7 @@ export function ProductDetailPage() {
               <button
                 type="button"
                 aria-label="Aumentar cantidad"
-                onClick={() =>
-                  setQuantity((current) => Math.min(product.stock || 99, current + 1))
-                }
+                onClick={() => setQuantity((current) => Math.min(product.stock || 99, current + 1))}
                 className="flex h-10 w-10 items-center justify-center text-vm-ink hover:bg-vm-cream"
               >
                 <Plus size={16} />

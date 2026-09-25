@@ -13,12 +13,11 @@ import { Skeleton } from '@/components/ui/Skeleton'
 import { Modal } from '@/components/ui/Modal'
 import { NotFoundPage } from '@/pages/NotFoundPage'
 
-
-
-
-
 export function OrderDetailPage() {
-  useDocumentTitle('Detalle del pedido', 'Consulta los productos, el envío y el estado de tu pedido de Verde Mango.')
+  useDocumentTitle(
+    'Detalle del pedido',
+    'Consulta los productos, el envío y el estado de tu pedido de Verde Mango.',
+  )
   const { orderNumber } = useParams<{ orderNumber: string }>()
   const orderQuery = useOrder(orderNumber)
   const cancelOrder = useCancelOrder()
@@ -56,7 +55,8 @@ export function OrderDetailPage() {
           pushToast({ message: 'Orden cancelada.', variant: 'success' })
         },
         onError: (error) => {
-          const message = error instanceof ApiError ? error.message : 'No pudimos cancelar la orden.'
+          const message =
+            error instanceof ApiError ? error.message : 'No pudimos cancelar la orden.'
           pushToast({ message, variant: 'error' })
         },
       },
@@ -135,9 +135,7 @@ export function OrderDetailPage() {
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <section className="rounded-vm-lg border border-vm-line p-4">
-          <h2 className="mb-2 text-sm font-bold uppercase tracking-wide text-vm-muted">
-            Envío
-          </h2>
+          <h2 className="mb-2 text-sm font-bold uppercase tracking-wide text-vm-muted">Envío</h2>
           <p className="text-sm text-vm-ink">{order.shippingAddress.formatted}</p>
           {order.trackingNumber && (
             <p className="mt-2 text-sm text-vm-muted">
@@ -148,9 +146,7 @@ export function OrderDetailPage() {
 
         <section className="rounded-vm-lg border border-vm-line p-4">
           <h2 className="mb-2 text-sm font-bold uppercase tracking-wide text-vm-muted">Pago</h2>
-          <p className="text-sm text-vm-ink">
-            {order.paymentMethod ?? 'Sin método registrado'}
-          </p>
+          <p className="text-sm text-vm-ink">{order.paymentMethod ?? 'Sin método registrado'}</p>
           {order.paidAt && (
             <p className="mt-1 text-sm text-vm-muted">Pagado el {formatDateTime(order.paidAt)}</p>
           )}
@@ -158,14 +154,14 @@ export function OrderDetailPage() {
       </div>
 
       <section className="rounded-vm-lg border border-vm-line p-4">
-        <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-vm-muted">
-          Historial
-        </h2>
+        <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-vm-muted">Historial</h2>
         <ol className="flex flex-col gap-4 border-l border-vm-line pl-4">
           {order.statusHistory.map((entry) => (
             <li key={entry.id} className="relative">
               <span className="absolute -left-[21px] top-1 h-2.5 w-2.5 rounded-vm-full bg-vm-orange" />
-              <p className="text-sm font-semibold text-vm-ink">{orderStatusLabels[entry.toStatus]}</p>
+              <p className="text-sm font-semibold text-vm-ink">
+                {orderStatusLabels[entry.toStatus]}
+              </p>
               <p className="text-xs text-vm-muted">{formatDateTime(entry.createdAt)}</p>
               {entry.comment && <p className="mt-1 text-sm text-vm-muted">{entry.comment}</p>}
             </li>

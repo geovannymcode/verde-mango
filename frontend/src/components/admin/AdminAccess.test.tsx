@@ -62,7 +62,10 @@ describe('admin shell access', () => {
         'href',
         '/admin/ordenes',
       )
-      expect(screen.getByRole('link', { name: 'Recetas' })).toHaveAttribute('href', '/admin/recetas')
+      expect(screen.getByRole('link', { name: 'Recetas' })).toHaveAttribute(
+        'href',
+        '/admin/recetas',
+      )
       expect(screen.queryByRole('contentinfo')).not.toBeInTheDocument()
     },
   )

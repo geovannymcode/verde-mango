@@ -54,10 +54,7 @@ export function useRelatedProducts(productId: number | undefined) {
   })
 }
 
-export function useProductRatings(
-  productId: number | undefined,
-  params: ProductRatingQueryParams,
-) {
+export function useProductRatings(productId: number | undefined, params: ProductRatingQueryParams) {
   return useQuery({
     queryKey: catalogKeys.ratingsList(productId ?? 0, params),
     queryFn: () => getProductRatings(productId as number, params),

@@ -24,7 +24,10 @@ const FIELD_NAMES = new Set<keyof RegisterFormValues>([
 ])
 
 export function RegisterPage() {
-  useDocumentTitle('Crear cuenta', 'Crea tu cuenta de Verde Mango para comprar y compartir tus valoraciones.')
+  useDocumentTitle(
+    'Crear cuenta',
+    'Crea tu cuenta de Verde Mango para comprar y compartir tus valoraciones.',
+  )
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const registerAccount = useRegister()
@@ -74,7 +77,9 @@ export function RegisterPage() {
             return
           }
           setFormError(
-            error instanceof ApiError ? error.message : 'No pudimos crear tu cuenta. Intenta de nuevo.',
+            error instanceof ApiError
+              ? error.message
+              : 'No pudimos crear tu cuenta. Intenta de nuevo.',
           )
         },
       },

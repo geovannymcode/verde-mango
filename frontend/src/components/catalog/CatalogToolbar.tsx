@@ -2,11 +2,7 @@ import { LayoutGrid, List } from 'lucide-react'
 import { Select } from '@/components/ui/Select'
 
 export type CatalogSortOption =
-  | 'predeterminado'
-  | 'precio-asc'
-  | 'precio-desc'
-  | 'recientes'
-  | 'calificados'
+  'predeterminado' | 'precio-asc' | 'precio-desc' | 'recientes' | 'calificados'
 
 export type CatalogViewMode = 'grid' | 'list'
 

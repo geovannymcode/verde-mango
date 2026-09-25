@@ -62,10 +62,7 @@ export async function validateCheckout(): Promise<CheckoutValidationResponse> {
 }
 
 export async function createCheckout(payload: CheckoutRequest): Promise<CheckoutResponse> {
-  const response = await httpClient.post<ApiResponse<CheckoutResponse>>(
-    '/api/v1/checkout',
-    payload,
-  )
+  const response = await httpClient.post<ApiResponse<CheckoutResponse>>('/api/v1/checkout', payload)
   return unwrap(response)
 }
 
@@ -94,9 +91,7 @@ export async function getOrders(
 }
 
 export async function getOrder(orderNumber: string): Promise<OrderResponse> {
-  const response = await httpClient.get<ApiResponse<OrderResponse>>(
-    `/api/v1/orders/${orderNumber}`,
-  )
+  const response = await httpClient.get<ApiResponse<OrderResponse>>(`/api/v1/orders/${orderNumber}`)
   return unwrap(response)
 }
 

@@ -24,7 +24,10 @@ const DEFAULT_MIN_PRICE = 0
 const DEFAULT_MAX_PRICE = 100_000
 
 export function CatalogPage() {
-  useDocumentTitle('Tienda', 'Explora el catálogo de Verde Mango: productos vegetales, fermentos y alimentos para tu cocina.')
+  useDocumentTitle(
+    'Tienda',
+    'Explora el catálogo de Verde Mango: productos vegetales, fermentos y alimentos para tu cocina.',
+  )
   const {
     searchParams,
     q,

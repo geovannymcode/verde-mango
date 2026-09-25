@@ -1,10 +1,6 @@
 import { httpClient, unwrap } from './client'
 import type { ApiResponse, PageResponse } from './types'
-import type {
-  CategorySummary,
-  ProductListResponse,
-  ProductResponse,
-} from './schema'
+import type { CategorySummary, ProductListResponse, ProductResponse } from './schema'
 
 // ==================== Rating types (definidos a mano) ====================
 //
@@ -97,16 +93,12 @@ export async function getProducts(
 }
 
 export async function getProductBySlug(slug: string): Promise<ProductResponse> {
-  const response = await httpClient.get<ApiResponse<ProductResponse>>(
-    `/api/v1/products/${slug}`,
-  )
+  const response = await httpClient.get<ApiResponse<ProductResponse>>(`/api/v1/products/${slug}`)
   return unwrap(response)
 }
 
 export async function getProductById(id: number): Promise<ProductResponse> {
-  const response = await httpClient.get<ApiResponse<ProductResponse>>(
-    `/api/v1/products/id/${id}`,
-  )
+  const response = await httpClient.get<ApiResponse<ProductResponse>>(`/api/v1/products/id/${id}`)
   return unwrap(response)
 }
 

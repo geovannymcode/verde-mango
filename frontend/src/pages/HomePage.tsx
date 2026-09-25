@@ -14,7 +14,10 @@ import { Skeleton } from '@/components/ui/Skeleton'
 import { Button } from '@/components/ui/Button'
 
 export function HomePage() {
-  useDocumentTitle('Inicio', 'Fermentos, veg-quesos, productos de la huerta y recetas vegetales de Verde Mango.')
+  useDocumentTitle(
+    'Inicio',
+    'Fermentos, veg-quesos, productos de la huerta y recetas vegetales de Verde Mango.',
+  )
   const recentRecipesQuery = useRecentRecipes(3)
   const recentRecipes = recentRecipesQuery.data ?? []
   const categoriesQuery = useCategories()

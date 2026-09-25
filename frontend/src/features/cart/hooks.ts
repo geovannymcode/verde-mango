@@ -268,9 +268,7 @@ export function useOrders(params: OrderListParams) {
 
 interface UseOrderOptions {
   refetchInterval?:
-    | number
-    | false
-    | ((query: { state: { data?: OrderResponse } }) => number | false)
+    number | false | ((query: { state: { data?: OrderResponse } }) => number | false)
 }
 
 export function useOrder(orderNumber: string | undefined, options: UseOrderOptions = {}) {

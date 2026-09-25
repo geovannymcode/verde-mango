@@ -9,7 +9,10 @@ import { RecipeCard } from '@/components/recipes/RecipeCard'
 import { RecipeSidebar } from '@/components/recipes/RecipeSidebar'
 import { RecipeError, RecipeSkeleton } from '@/components/recipes/RecipeQueryState'
 export function RecipesPage() {
-  useDocumentTitle('Recetas', 'Encuentra recetas vegetales por categoría, dificultad e ingredientes para cocinar con Verde Mango.')
+  useDocumentTitle(
+    'Recetas',
+    'Encuentra recetas vegetales por categoría, dificultad e ingredientes para cocinar con Verde Mango.',
+  )
   const filters = useUrlFilters()
   const category = filters.searchParams.get('categoria') || undefined
   const tag = filters.searchParams.get('tag') || undefined

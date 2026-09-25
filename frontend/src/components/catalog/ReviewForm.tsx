@@ -39,9 +39,7 @@ export function ReviewForm({ onSubmit, isSubmitting }: ReviewFormProps) {
         <Controller
           control={control}
           name="rating"
-          render={({ field }) => (
-            <Rating value={field.value} onChange={field.onChange} size={22} />
-          )}
+          render={({ field }) => <Rating value={field.value} onChange={field.onChange} size={22} />}
         />
         {errors.rating && <span className="text-xs text-red-500">{errors.rating.message}</span>}
       </div>

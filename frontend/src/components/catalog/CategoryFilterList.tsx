@@ -6,11 +6,7 @@ interface CategoryFilterListProps {
   onSelect: (slug: string | undefined) => void
 }
 
-export function CategoryFilterList({
-  categories,
-  activeSlug,
-  onSelect,
-}: CategoryFilterListProps) {
+export function CategoryFilterList({ categories, activeSlug, onSelect }: CategoryFilterListProps) {
   return (
     <div className="flex flex-col gap-3">
       <p className="text-sm font-bold uppercase tracking-wide text-vm-ink">Categorías</p>

@@ -75,9 +75,7 @@ export function CheckoutResultPage() {
         <>
           <Clock size={56} className="text-vm-orange" />
           <SectionTitle eyebrow="pago" title="Estamos confirmando tu pago" align="center" />
-          <p className="text-vm-muted">
-            Esto puede tardar unos segundos. No cierres esta página.
-          </p>
+          <p className="text-vm-muted">Esto puede tardar unos segundos. No cierres esta página.</p>
         </>
       )}
 
@@ -95,7 +93,11 @@ export function CheckoutResultPage() {
       {isRejected && (
         <>
           <XCircle size={56} className="text-red-500" />
-          <SectionTitle eyebrow="pago rechazado" title="No pudimos procesar tu pago" align="center" />
+          <SectionTitle
+            eyebrow="pago rechazado"
+            title="No pudimos procesar tu pago"
+            align="center"
+          />
           <p className="text-vm-muted">
             El pedido <strong>{order.orderNumber}</strong> quedó en estado{' '}
             <strong>{order.statusLabel}</strong>.
