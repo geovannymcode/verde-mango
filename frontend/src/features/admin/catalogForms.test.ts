@@ -1,5 +1,6 @@
+import { toSlug } from '@/lib/slug'
 import { describe, expect, it } from 'vitest'
-import { productSchema, toSlug } from './catalogForms'
+import { productSchema } from './catalogForms'
 const valid = {
   name: 'Mango fresco',
   slug: 'mango-fresco',

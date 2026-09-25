@@ -2,7 +2,6 @@ import { httpClient, unwrap } from './client'
 import type { ApiResponse, PageResponse } from './types'
 import type {
   CategorySummary,
-  CategoryWithChildren,
   ProductListResponse,
   ProductResponse,
 } from './schema'
@@ -129,13 +128,6 @@ export async function getRelatedProducts(productId: number): Promise<ProductList
 
 export async function getCategories(): Promise<CategorySummary[]> {
   const response = await httpClient.get<ApiResponse<CategorySummary[]>>('/api/v1/categories')
-  return unwrap(response)
-}
-
-export async function getCategoryMenu(): Promise<CategoryWithChildren[]> {
-  const response = await httpClient.get<ApiResponse<CategoryWithChildren[]>>(
-    '/api/v1/categories/menu',
-  )
   return unwrap(response)
 }
 

@@ -32,7 +32,7 @@ import { SortableRows, SortableRow } from '@/features/admin/recipes/SortableRows
 import { IngredientPaste } from '@/features/admin/recipes/IngredientPaste'
 import { TagChips } from '@/features/admin/recipes/TagChips'
 import { useRecipeCategories, useRecipeTags } from '@/features/recipes/hooks'
-import { toSlug } from '@/features/admin/catalogForms'
+import { toSlug } from '@/lib/slug'
 import { useUiStore } from '@/store/uiStore'
 import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 import { adminErrorMessage } from '@/lib/adminErrors'

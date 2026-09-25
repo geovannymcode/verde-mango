@@ -3,21 +3,12 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useOrders } from '@/features/cart/hooks'
 import { formatCurrency, formatDate } from '@/lib/formatters'
-import { Badge } from '@/components/ui/Badge'
+import { StatusBadge } from '@/components/admin/StatusBadge'
 import { Button } from '@/components/ui/Button'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { Pagination } from '@/components/ui/Pagination'
-import type { OrderStatus } from '@/api/schema'
 
-const STATUS_BADGE: Record<OrderStatus, 'orange' | 'green' | 'neutral' | 'danger'> = {
-  PENDING: 'neutral',
-  CONFIRMED: 'orange',
-  PROCESSING: 'orange',
-  SHIPPED: 'orange',
-  DELIVERED: 'green',
-  CANCELLED: 'danger',
-  REFUNDED: 'danger',
-}
+
 
 const PAGE_SIZE = 10
 
@@ -61,7 +52,7 @@ export function OrdersListPage() {
                 <p className="font-semibold text-vm-ink">{order.orderNumber}</p>
                 <p className="text-sm text-vm-muted">{formatDate(order.createdAt)}</p>
               </div>
-              <Badge variant={STATUS_BADGE[order.status]}>{order.statusLabel}</Badge>
+              <StatusBadge status={order.status} />
               <span className="font-bold text-vm-ink">{formatCurrency(order.totalAmount)}</span>
             </Link>
           </li>

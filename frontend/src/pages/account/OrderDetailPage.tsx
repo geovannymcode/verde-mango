@@ -1,3 +1,4 @@
+import { orderStatusLabels } from '@/features/admin/orders/transitions'
 import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
@@ -6,34 +7,15 @@ import { useCancelOrder, useOrder } from '@/features/cart/hooks'
 import { useUiStore } from '@/store/uiStore'
 import { formatCurrency, formatDateTime } from '@/lib/formatters'
 import { ApiError } from '@/api/types'
-import type { OrderStatus } from '@/api/schema'
-import { Badge } from '@/components/ui/Badge'
+import { StatusBadge } from '@/components/admin/StatusBadge'
 import { Button } from '@/components/ui/Button'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { Modal } from '@/components/ui/Modal'
 import { NotFoundPage } from '@/pages/NotFoundPage'
 
-const STATUS_BADGE: Record<OrderStatus, 'orange' | 'green' | 'neutral' | 'danger'> = {
-  PENDING: 'neutral',
-  CONFIRMED: 'orange',
-  PROCESSING: 'orange',
-  SHIPPED: 'orange',
-  DELIVERED: 'green',
-  CANCELLED: 'danger',
-  REFUNDED: 'danger',
-}
 
-// Espejo de OrderStatus.toLabel() en orders/web/OrderDtos.kt (el backend no manda un label por
-// cada entrada del historial, solo para el estado actual de la orden).
-const STATUS_LABELS: Record<OrderStatus, string> = {
-  PENDING: 'Pendiente de pago',
-  CONFIRMED: 'Confirmada',
-  PROCESSING: 'En preparación',
-  SHIPPED: 'Enviada',
-  DELIVERED: 'Entregada',
-  CANCELLED: 'Cancelada',
-  REFUNDED: 'Reembolsada',
-}
+
+
 
 export function OrderDetailPage() {
   useDocumentTitle('Detalle del pedido', 'Consulta los productos, el envío y el estado de tu pedido de Verde Mango.')
@@ -95,7 +77,7 @@ export function OrderDetailPage() {
           <h1 className="text-xl font-bold text-vm-ink">{order.orderNumber}</h1>
           <p className="text-sm text-vm-muted">Creada el {formatDateTime(order.createdAt)}</p>
         </div>
-        <Badge variant={STATUS_BADGE[order.status]}>{order.statusLabel}</Badge>
+        <StatusBadge status={order.status} />
       </div>
 
       <section className="rounded-vm-lg border border-vm-line p-4">
@@ -183,7 +165,7 @@ export function OrderDetailPage() {
           {order.statusHistory.map((entry) => (
             <li key={entry.id} className="relative">
               <span className="absolute -left-[21px] top-1 h-2.5 w-2.5 rounded-vm-full bg-vm-orange" />
-              <p className="text-sm font-semibold text-vm-ink">{STATUS_LABELS[entry.toStatus]}</p>
+              <p className="text-sm font-semibold text-vm-ink">{orderStatusLabels[entry.toStatus]}</p>
               <p className="text-xs text-vm-muted">{formatDateTime(entry.createdAt)}</p>
               {entry.comment && <p className="mt-1 text-sm text-vm-muted">{entry.comment}</p>}
             </li>

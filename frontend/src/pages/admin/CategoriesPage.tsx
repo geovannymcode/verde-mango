@@ -1,3 +1,4 @@
+import { toSlug } from '@/lib/slug'
 import { useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
 import { useForm } from 'react-hook-form'
@@ -11,7 +12,7 @@ import {
   useDeleteCategory,
   useReorderCategories,
 } from '@/features/admin/catalogHooks'
-import { categorySchema, toSlug, type CategoryFormValues } from '@/features/admin/catalogForms'
+import { categorySchema, type CategoryFormValues } from '@/features/admin/catalogForms'
 import { DataTable, type DataColumn } from '@/components/admin/DataTable'
 import { FormShell } from '@/components/admin/FormShell'
 import { ConfirmDialog } from '@/components/admin/ConfirmDialog'

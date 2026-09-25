@@ -1,19 +1,16 @@
 import { useEffect } from 'react'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   getProfile,
   login as loginRequest,
   logout as logoutRequest,
   register as registerRequest,
-  updateProfile as updateProfileRequest,
-  type UpdateProfilePayload,
 } from '@/api/auth'
 import { refreshAccessToken } from '@/api/client'
 import type { LoginRequest, RegisterRequest } from '@/api/schema'
 import { refreshTokenStorage } from '@/lib/storage'
 import { useAuthStore } from '@/store/authStore'
 import { useMergeCart } from '@/features/cart/hooks'
-import { authKeys } from '@/features/auth/keys'
 
 export function useLogin() {
   const setSession = useAuthStore((state) => state.setSession)
@@ -56,29 +53,6 @@ export function useLogout() {
       if (typeof window !== 'undefined') {
         window.location.href = '/'
       }
-    },
-  })
-}
-
-export function useProfile(enabled: boolean) {
-  return useQuery({
-    queryKey: authKeys.me(),
-    queryFn: getProfile,
-    enabled,
-    staleTime: 5 * 60_000,
-  })
-}
-
-// GAP (ver @/api/auth.ts y docs/api-gaps.md): no existe endpoint real para actualizar el perfil.
-// Este hook queda listo para cuando el backend lo implemente; la UI de /cuenta no lo invoca hoy.
-export function useUpdateProfile() {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: (payload: UpdateProfilePayload) => updateProfileRequest(payload),
-    onSuccess: (user) => {
-      queryClient.setQueryData(authKeys.me(), user)
-      void queryClient.invalidateQueries({ queryKey: authKeys.me() })
     },
   })
 }
