@@ -81,9 +81,6 @@ export const router = createBrowserRouter([
         ),
         children: [
           { index: true, element: <ProfilePage /> },
-          { path: 'recetas', element: <AdminRecipesPage /> },
-          { path: 'recetas/nueva', element: <RecipeFormPage /> },
-          { path: 'recetas/:id/editar', element: <RecipeFormPage /> },
           { path: 'ordenes', element: <OrdersListPage /> },
           { path: 'ordenes/:orderNumber', element: <OrderDetailPage /> },
         ],
