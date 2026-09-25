@@ -502,3 +502,107 @@ contrato de aquel momento.
   categoría de un producto mediante null; el formulario exige una categoría.
 - Siguen pendientes para 8c los gaps de órdenes/pagos descritos en 8a: no confundir cambios de
   estado con cobros/reembolsos reales, ni inferir datos de pasarela ausentes del DTO.
+
+## Fase 8c — contrato ampliado de órdenes
+
+La revisión inicial se hizo contra `/api-docs` con el backend activo y contra
+`common/domain/Constants.kt`, `orders/domain/Order.kt` y `OrderService.updateOrderStatus`.
+El usuario autorizó completar backend y frontend para cubrir los campos y filtros ausentes.
+
+### Resueltos en 8c
+
+- `GET /api/v1/admin/orders` conserva status/userId/search/fromDate/toDate/page/size y agrega
+  `statuses` (lista, prioridad sobre status), `paymentStatus`, `sortBy` (createdAt/totalAmount)
+  y `sortDir` (asc/desc). Filtrado, orden y paginación se ejecutan en PostgreSQL; no se filtra
+  solo la página actual. `UNRECORDED` filtra órdenes sin registro de pago. Fechas UI: límites
+  del día en Colombia, UTC-05:00.
+- Listado administrativo agrega customerName/customerEmail/paymentStatus. Detalle agrega
+  customerName/customerEmail/customerPhone/customerDocument y payment opcional. Nombre y
+  teléfono vienen del perfil actual; email y documento de facturación, de la orden histórica.
+  No se confunde el destinatario de envío con el cliente. Si el perfil ya no existe, su nombre
+  no se inventa. No hay ruta de perfil administrativo de cliente y no se ofrece un link ficticio.
+- `payment` contiene reference, transactionId (external_reference), method, status, gateway y
+  processedAt (confirmed_at o processed_at) del registro de pago más reciente de esa orden.
+  La misma regla se usa en el filtro y en el detalle. No se exponen gateway_response, metadata
+  ni ningún dato de tarjeta. Los campos permanecen ausentes si no existe un registro.
+- Historial agrega changedByUserId además de changedByType y createdAt. La UI identifica
+  al autor por ID; el backend no proporciona su nombre. La fecha se presenta en es-CO.
+- PATCH `/admin/orders/{id}/status` conserva `{status, comment?, trackingNumber?, carrier?}`;
+  se corrigió la pérdida de comment al enviar y entregar. Transición inválida y conflicto
+  optimista devuelven 409; UI muestra el mensaje real y refresca el detalle, sin actualización
+  optimista ni reintento automático de mutaciones.
+- La única fuente del mapa en UI es `src/features/admin/orders/transitions.ts`, derivada del
+  enum Kotlin. DELIVERED **no es final**: permite REFUNDED. Solo CANCELLED y REFUNDED carecen
+  de destinos. Se conserva la regla real, aunque el ejemplo del alcance llamaba final a entregada.
+- Invalidación de detalle/listados/stats administrativos y consultas públicas de órdenes, con
+  señal de storage para otras pestañas. No se ofrece borrado ni edición de ítems/precios.
+
+### Limitaciones reales conservadas
+
+- PaymentApi sigue simulando un evento de pago; no integra Wompi ni persiste sus transacciones.
+  No se completó esa integración en una fase de gestión de órdenes. El panel muestra
+  «Sin registro de transacción» cuando corresponde, aunque la orden tenga paidAt o referencia.
+  No se deduce APPROVED/COMPLETED del estado de la orden ni de paidAt.
+- No hay URL de comprobante. checkout_url/redirect_url en la tabla payments no son comprobantes;
+  no se reutilizan como si lo fueran ni se construye una URL Wompi a partir de un ID.
+- CONFIRMED registra paidAt aun si lo aplica un administrador. REFUNDED por este PATCH solo
+  cambia estado; no ejecuta un reembolso ni recibe importe. Ambos se explican en el diálogo.
+- `/admin/orders/stats` existe. Sus conteos/promedio son históricos y solo los ingresos usan el
+  rango; el dashboard continúa usando stats y listados size=1 para los estados sin contador.
+- Los precios y cantidades del detalle provienen de OrderItem, no del catálogo actual.
+  No hay endpoint administrativo de edición de ítems ni de borrado de órdenes en este contrato.
+
+
+### Verificación de cierre 8c (2026-09-24)
+
+Con Docker disponible se completó la prueba real en PostgreSQL y navegador: filtros multiestado,
+pago, orden/paginación, detalle histórico, stats y respuestas 400/403/404/409. El envío guardó nota,
+guía y autor; otra pestaña actualizó el listado sin recarga. Una segunda sesión entregó la orden
+mientras el diálogo estaba abierto: el intento desactualizado recibió 409, mostró el mensaje exacto,
+refrescó el detalle y bloqueó la transición inválida. Revisado a 375/768/1440 px. Fixtures temporales
+retiradas; no hubo pagos/reembolsos Wompi reales. OpenAPI regenerado desde localhost:8080.
+
+## Fase 8d — administración de recetas (2026-09-24)
+
+Contrato inicial comprobado con `/api-docs` activo antes de implementar. El usuario autorizó
+ampliar backend y frontend; el snapshot y los tipos se regeneraron desde el backend final.
+
+### Resueltos
+
+- GET `/api/v1/admin/recipes`: status/search/page/size más categoryId y difficulty; filtros
+  combinados en base de datos y paginación real. RecipeListResponse ahora incluye status.
+  ADMIN y SUPER_ADMIN tienen acceso a recetas y mutaciones de categorías de recetas.
+- POST/PUT aceptan slug opcional, validado y único; cambiar solo el título ya no cambia el slug.
+- PUT conserva campos escalares omitidos, pero reemplaza completos steps, ingredients y tagIds
+  cuando se envían. No hay endpoints separados de pasos o ingredientes. El formulario envía
+  siempre los arrays completos; los números se derivan al guardar: stepNumber desde 1 y
+  displayOrder desde 0. El backend ordena por esos campos y normaliza la secuencia. Se hace flush
+  al retirar pasos antiguos para evitar conflictos de unicidad durante el reemplazo.
+- Ingrediente: name, quantity decimal opcional, unit texto libre opcional; además preparationNotes,
+  ingredientGroup, optional y productId. Se preservan notas, vínculos existentes y datos auxiliares
+  al editar/reordenar. Los pasos conservan tip y estimatedTime aunque no se editen en esta UI.
+- Nutrición de entrada: campos planos opcionales calories/proteinGrams/carbsGrams/fatGrams/fiberGrams;
+  respuesta: objeto nutrition nullable. Se añadió replaceNutrition a UpdateRecipeRequest: true
+  reemplaza los cinco campos, incluyendo ausencias como null. El toggle apagado omite todos esos
+  valores y envía replaceNutrition=true; nunca fabrica ceros. Nutrición con solo carbohidratos,
+  grasas o fibra también se devuelve correctamente.
+- Estados reales DRAFT/PUBLISHED/ARCHIVED. Crear produce DRAFT; PATCH publish/unpublish controlan
+  publicación. Publicar exige ingredientes y pasos y no incrementa dos veces el conteo de categoría.
+- Invalidación de todas las consultas de recetas y dashboard, con señal storage entre pestañas.
+  Publicar en panel actualizó /recetas, recientes y conteo de categoría sin recargar. Quitar nutrición
+  también retiró la sección del detalle público abierto.
+
+### Capacidades ausentes conservadas
+
+- No hay endpoint de duplicación: no se ofrece la acción.
+- Tags solo tienen GET público `/recipes/tags` y `/recipes/tags/popular`; el autocomplete selecciona
+  existentes, no inventa creación de tags.
+- Categorías: GET públicos de listado, árbol y detalle por slug; POST admin, PUT/DELETE por ID y
+  PATCH toggle-active. No hay GET administrativo que incluya inactivas. El selector usa categorías
+  públicas y conserva como opción la categoría actual de la receta si ya no aparece allí.
+- No hay subida multipart: ImageUploader reutilizado en hero y pasos acepta una URL y comprueba
+  su carga. No se simula almacenamiento de archivos.
+- Los filtros públicos combinados conservan el gap documentado en Fase 6: el servicio público da
+  prioridad a búsqueda/categoría/tag. Los filtros administrativos sí se combinan.
+- La sincronización entre pestañas requiere mismo origen y localStorage disponible; no es push
+  entre dispositivos. No hay control de concurrencia optimista específico para recetas.

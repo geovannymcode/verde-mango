@@ -151,9 +151,18 @@ class RecipeService(
     // ==================== Admin ====================
 
     @Transactional(readOnly = true)
-    fun getAllRecipesForAdmin(status: RecipeStatus?, search: String?, page: Int, size: Int): PageResponse<RecipeListResponse> {
-        val pageable = PageRequest.of(page, size)
-        val recipePage = recipeRepository.findAllForAdmin(status, search, pageable)
+    fun getAllRecipesForAdmin(status: RecipeStatus?, search: String?, page: Int, size: Int, categoryId: Long? = null, difficulty: com.geovannycode.verdemango.recipes.domain.RecipeDifficulty? = null): PageResponse<RecipeListResponse> {
+        if (page < 0 || size !in 1..100) throw com.geovannycode.verdemango.common.domain.ValidationException("Paginación inválida")
+        val spec = org.springframework.data.jpa.domain.Specification<Recipe> { root, _, cb ->
+            val filters = mutableListOf<jakarta.persistence.criteria.Predicate>()
+            status?.let { filters += cb.equal(root.get<RecipeStatus>("status"), it) }
+            search?.takeIf { it.isNotBlank() }?.let { filters += cb.like(cb.lower(root.get("title")), "%${it.trim().lowercase()}%") }
+            categoryId?.let { filters += cb.equal(root.get<Any>("category").get<Long>("id"), it) }
+            difficulty?.let { filters += cb.equal(root.get<Any>("difficulty"), it) }
+            cb.and(*filters.toTypedArray())
+        }
+        val recipePage = recipeRepository.findAll(spec, org.springframework.data.domain.PageRequest.of(page, size,
+            org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "updatedAt", "id")))
 
         return PageResponse.of(
             content = recipePage.content.map { RecipeListResponse.from(it) },
@@ -169,9 +178,10 @@ class RecipeService(
     }
 
     @Transactional
-    @CacheEvict(value = ["recipes"], allEntries = true)
+    @CacheEvict(value = ["recipes", "recipeCategories"], allEntries = true)
     fun createRecipe(request: CreateRecipeRequest, authorId: Long?, authorName: String?): RecipeResponse {
-        val slug = slugGenerator.generateUnique(request.title) { recipeRepository.existsBySlug(it) }
+        val slug = request.slug ?: slugGenerator.generateUnique(request.title) { recipeRepository.existsBySlug(it) }
+        if (recipeRepository.existsBySlug(slug)) throw com.geovannycode.verdemango.common.domain.ResourceAlreadyExistsException("Receta", "slug", slug)
 
         val category = request.categoryId?.let { catId ->
             categoryRepository.findById(catId)
@@ -203,7 +213,7 @@ class RecipeService(
         )
 
         // Agregar pasos
-        request.steps.forEach { stepReq ->
+        request.steps.sortedBy { it.stepNumber }.forEach { stepReq ->
             recipe.addStep(
                 instruction = stepReq.instruction,
                 tip = stepReq.tip,
@@ -212,7 +222,7 @@ class RecipeService(
         }
 
         // Agregar ingredientes
-        request.ingredients.forEach { ingReq ->
+        request.ingredients.sortedBy { it.displayOrder }.forEach { ingReq ->
             recipe.addIngredient(
                 name = ingReq.name,
                 quantity = ingReq.quantity,
@@ -220,7 +230,7 @@ class RecipeService(
                 group = ingReq.ingredientGroup,
                 optional = ingReq.optional,
                 productId = ingReq.productId
-            )
+            ).also { it.preparationNotes = ingReq.preparationNotes }
         }
 
         // Agregar tags
@@ -229,24 +239,31 @@ class RecipeService(
             tags.forEach { recipe.addTag(it) }
         }
 
-        val saved = recipeRepository.save(recipe)
+        val saved = recipeRepository.saveAndFlush(recipe)
         logger.info("Receta creada: ${saved.title} (${saved.slug})")
 
         return RecipeResponse.from(saved)
     }
 
     @Transactional
-    @CacheEvict(value = ["recipes"], allEntries = true)
+    @CacheEvict(value = ["recipes", "recipeCategories"], allEntries = true)
     fun updateRecipe(id: Long, request: UpdateRecipeRequest): RecipeResponse {
         val recipe = recipeRepository.findByIdWithDetails(id)
             .orElseThrow { ResourceNotFoundException("Receta", "id", id) }
 
         // Actualizar campos básicos
-        request.title?.let {
-            recipe.title = it
-            recipe.slug = slugGenerator.generateUnique(it) { slug ->
-                recipeRepository.existsBySlug(slug) && recipe.slug != slug
-            }
+        request.title?.let { recipe.title = it }
+        request.slug?.let { slug ->
+            if (slug != recipe.slug && recipeRepository.existsBySlug(slug))
+                throw com.geovannycode.verdemango.common.domain.ResourceAlreadyExistsException("Receta", "slug", slug)
+            recipe.slug = slug
+        }
+        if (request.replaceNutrition) {
+            recipe.calories = request.calories
+            recipe.proteinGrams = request.proteinGrams
+            recipe.carbsGrams = request.carbsGrams
+            recipe.fatGrams = request.fatGrams
+            recipe.fiberGrams = request.fiberGrams
         }
         request.description?.let { recipe.description = it }
         request.introduction?.let { recipe.introduction = it }
@@ -256,7 +273,7 @@ class RecipeService(
         request.servings?.let { recipe.servings = it }
         request.servingsUnit?.let { recipe.servingsUnit = it }
         request.difficulty?.let { recipe.difficulty = it }
-        request.primaryImageUrl?.let { recipe.primaryImageUrl = it }
+        request.primaryImageUrl?.let { recipe.primaryImageUrl = it.takeIf { value -> value.isNotBlank() } }
         request.metaTitle?.let { recipe.metaTitle = it }
         request.metaDescription?.let { recipe.metaDescription = it }
         request.calories?.let { recipe.calories = it }
@@ -267,14 +284,20 @@ class RecipeService(
 
         // Actualizar categoría
         request.categoryId?.let { catId ->
-            recipe.category = categoryRepository.findById(catId)
+            val nextCategory = categoryRepository.findById(catId)
                 .orElseThrow { ResourceNotFoundException("Categoría", "id", catId) }
+            if (recipe.isPublished && recipe.category?.id != catId) {
+                recipe.category?.decrementRecipeCount()
+                nextCategory.incrementRecipeCount()
+            }
+            recipe.category = nextCategory
         }
 
         // Actualizar pasos (reemplazar todos)
         request.steps?.let { newSteps ->
             recipe.steps.clear()
-            newSteps.forEach { stepReq ->
+            recipeRepository.flush()
+            newSteps.sortedBy { it.stepNumber }.forEach { stepReq ->
                 recipe.addStep(stepReq.instruction, stepReq.tip, stepReq.imageUrl)
                     .also { it.estimatedTime = stepReq.estimatedTime }
             }
@@ -283,8 +306,11 @@ class RecipeService(
 
         // Actualizar ingredientes (reemplazar todos)
         request.ingredients?.let { newIngredients ->
+            val linkedProducts = recipe.ingredients.filter { it.productId != null }
+                .associate { it.productId to (it.productName to it.productSlug) }
             recipe.ingredients.clear()
-            newIngredients.forEach { ingReq ->
+            recipeRepository.flush()
+            newIngredients.sortedBy { it.displayOrder }.forEach { ingReq ->
                 recipe.addIngredient(
                     name = ingReq.name,
                     quantity = ingReq.quantity,
@@ -292,7 +318,13 @@ class RecipeService(
                     group = ingReq.ingredientGroup,
                     optional = ingReq.optional,
                     productId = ingReq.productId
-                )
+                ).also {
+                    it.preparationNotes = ingReq.preparationNotes
+                    linkedProducts[ingReq.productId]?.let { product ->
+                        it.productName = product.first
+                        it.productSlug = product.second
+                    }
+                }
             }
         }
 
@@ -303,29 +335,32 @@ class RecipeService(
             tags.forEach { recipe.addTag(it) }
         }
 
-        val saved = recipeRepository.save(recipe)
+        val saved = recipeRepository.saveAndFlush(recipe)
         logger.info("Receta actualizada: ${saved.title}")
 
         return RecipeResponse.from(saved)
     }
 
     @Transactional
-    @CacheEvict(value = ["recipes"], allEntries = true)
+    @CacheEvict(value = ["recipes", "recipeCategories"], allEntries = true)
     fun publishRecipe(id: Long): RecipeResponse {
         val recipe = recipeRepository.findByIdWithDetails(id)
             .orElseThrow { ResourceNotFoundException("Receta", "id", id) }
 
-        recipe.publish()
-        recipe.category?.incrementRecipeCount()
+        if (recipe.steps.isEmpty() || recipe.ingredients.isEmpty()) throw BusinessRuleException("La receta debe tener al menos un paso y un ingrediente")
+        if (!recipe.isPublished) {
+            recipe.publish()
+            recipe.category?.incrementRecipeCount()
+        }
 
-        val saved = recipeRepository.save(recipe)
+        val saved = recipeRepository.saveAndFlush(recipe)
         logger.info("Receta publicada: ${saved.title}")
 
         return RecipeResponse.from(saved)
     }
 
     @Transactional
-    @CacheEvict(value = ["recipes"], allEntries = true)
+    @CacheEvict(value = ["recipes", "recipeCategories"], allEntries = true)
     fun unpublishRecipe(id: Long): RecipeResponse {
         val recipe = recipeRepository.findById(id)
             .orElseThrow { ResourceNotFoundException("Receta", "id", id) }
@@ -335,14 +370,14 @@ class RecipeService(
         }
 
         recipe.unpublish()
-        val saved = recipeRepository.save(recipe)
+        val saved = recipeRepository.saveAndFlush(recipe)
         logger.info("Receta despublicada: ${saved.title}")
 
         return RecipeResponse.from(saved)
     }
 
     @Transactional
-    @CacheEvict(value = ["recipes"], allEntries = true)
+    @CacheEvict(value = ["recipes", "recipeCategories"], allEntries = true)
     fun featureRecipe(id: Long, featured: Boolean): RecipeResponse {
         val recipe = recipeRepository.findById(id)
             .orElseThrow { ResourceNotFoundException("Receta", "id", id) }
@@ -353,12 +388,12 @@ class RecipeService(
             recipe.unfeature()
         }
 
-        val saved = recipeRepository.save(recipe)
+        val saved = recipeRepository.saveAndFlush(recipe)
         return RecipeResponse.from(saved)
     }
 
     @Transactional
-    @CacheEvict(value = ["recipes"], allEntries = true)
+    @CacheEvict(value = ["recipes", "recipeCategories"], allEntries = true)
     fun deleteRecipe(id: Long) {
         val recipe = recipeRepository.findById(id)
             .orElseThrow { ResourceNotFoundException("Receta", "id", id) }

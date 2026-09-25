@@ -139,6 +139,14 @@ class GlobalExceptionHandler {
             .body(ErrorResponse.of(ex.message, ex.errorCode, request.requestURI))
     }
 
+    @ExceptionHandler(com.geovannycode.verdemango.common.domain.OrderTransitionConflict::class,
+        org.springframework.orm.ObjectOptimisticLockingFailureException::class)
+    fun handleOrderConflict(ex: Exception, request: HttpServletRequest): ResponseEntity<ErrorResponse> =
+        ResponseEntity.status(HttpStatus.CONFLICT).body(ErrorResponse.of(
+            if (ex is com.geovannycode.verdemango.common.domain.OrderTransitionConflict) ex.message
+            else "La orden cambió mientras la editabas. Actualiza el detalle.",
+            "ORDER_TRANSITION_CONFLICT", request.requestURI))
+
     @ExceptionHandler(Exception::class)
     fun handleGeneral(
         ex: Exception,

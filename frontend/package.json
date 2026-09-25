@@ -15,6 +15,8 @@
     "gen:api-types": "openapi-typescript http://localhost:8080/api-docs -o src/api/openapi.gen.d.ts"
   },
   "dependencies": {
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
     "@hookform/resolvers": "^5.4.3",
     "@tanstack/react-query": "^5.101.4",
     "axios": "^1.18.1",

@@ -23,6 +23,7 @@ import java.util.Locale
 @Service
 class OrderService(
     private val orderRepository: OrderRepository,
+    private val adminRead: com.geovannycode.verdemango.orders.repository.AdminOrderReadRepository,
     private val orderEventPublisher: OrderEventPublisher,
     @Value("\${order.cancellation-window-hours:2}")
     private val cancellationWindowHours: Long
@@ -81,17 +82,14 @@ class OrderService(
 
     @Transactional(readOnly = true)
     fun getAllOrders(params: OrderFilterParams): PageResponse<OrderListResponse> {
-        val pageable = PageRequest.of(params.page, params.size)
-
-        val orderPage = orderRepository.findWithFilters(
-            status = params.status, userId = params.userId, search = params.search,
-            fromDate = params.fromDate, toDate = params.toDate, pageable = pageable
-        )
-
-        return PageResponse.of(
-            content = orderPage.content.map { OrderListResponse.from(it) },
-            page = params.page, size = params.size, totalElements = orderPage.totalElements
-        )
+        val (ids, count) = adminRead.page(params)
+        val records = orderRepository.findAllById(ids).associateBy { it.id }
+        val metadata = adminRead.metadata(ids)
+        return PageResponse.of(content = ids.map { id ->
+            val info = metadata.getValue(id)
+            OrderListResponse.from(records.getValue(id)).copy(customerName = info.name,
+                customerEmail = info.email, paymentStatus = info.payment?.status)
+        }, page = params.page, size = params.size, totalElements = count)
     }
 
     @Transactional(readOnly = true)
@@ -99,7 +97,13 @@ class OrderService(
         val order = orderRepository.findByIdWithItems(id)
             .orElseThrow { ResourceNotFoundException("Orden", "id", id) }
         orderRepository.findByIdWithStatusHistory(id)
-        return OrderResponse.from(order)
+        return adminResponse(order)
+    }
+
+    private fun adminResponse(order: com.geovannycode.verdemango.orders.domain.Order): OrderResponse {
+        val info = adminRead.metadata(listOf(order.id)).getValue(order.id)
+        return OrderResponse.from(order).copy(customerName = info.name, customerEmail = info.email,
+            customerPhone = info.phone, customerDocument = info.document, payment = info.payment)
     }
 
     @Transactional
@@ -107,23 +111,25 @@ class OrderService(
         val order = orderRepository.findById(id)
             .orElseThrow { ResourceNotFoundException("Orden", "id", id) }
 
+        if (!order.status.canTransitionTo(request.status)) throw com.geovannycode.verdemango.common.domain.OrderTransitionConflict(
+            "Transición de estado inválida: ${order.status} -> ${request.status}")
         when (request.status) {
             OrderStatus.SHIPPED -> {
-                order.markAsShipped(request.trackingNumber, request.carrier, adminId)
+                order.markAsShipped(request.trackingNumber, request.carrier, adminId, request.comment)
             }
             OrderStatus.DELIVERED -> {
-                order.markAsDelivered(adminId)
+                order.markAsDelivered(adminId, request.comment)
             }
             else -> {
                 order.updateStatus(request.status, request.comment, adminId, "ADMIN")
             }
         }
 
-        val savedOrder = orderRepository.save(order)
+        val savedOrder = orderRepository.saveAndFlush(order)
         orderEventPublisher.publishOrderStatusChanged(savedOrder)
 
         logger.info("Orden ${order.orderNumber} actualizada a ${request.status} por admin $adminId")
-        return OrderResponse.from(savedOrder)
+        return adminResponse(savedOrder)
     }
 
     @Transactional(readOnly = true)

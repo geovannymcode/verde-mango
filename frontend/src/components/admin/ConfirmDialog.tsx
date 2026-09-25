@@ -9,6 +9,7 @@ interface ConfirmDialogProps {
   confirmText?: string
   requiredText?: string
   pending?: boolean
+  confirmDisabled?: boolean
   error?: string
   errorAction?: ReactNode
   children?: ReactNode
@@ -21,7 +22,10 @@ function ConfirmationContent({
   confirmText = 'Confirmar',
   requiredText,
   pending,
-  error, errorAction, children,
+  confirmDisabled,
+  error,
+  errorAction,
+  children,
   onConfirm,
   onCancel,
 }: Omit<ConfirmDialogProps, 'open'>) {
@@ -60,7 +64,9 @@ function ConfirmationContent({
           Cancelar
         </Button>
         <Button
-          disabled={pending || (requiredText !== undefined && value !== requiredText)}
+          disabled={
+            pending || confirmDisabled || (requiredText !== undefined && value !== requiredText)
+          }
           onClick={onConfirm}
         >
           {pending ? 'Procesando…' : confirmText}

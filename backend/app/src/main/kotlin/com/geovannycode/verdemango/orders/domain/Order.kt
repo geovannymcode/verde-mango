@@ -208,17 +208,17 @@ class Order(
         updateStatus(OrderStatus.CANCELLED, reason, cancelledBy, if (cancelledBy != null) "USER" else "SYSTEM")
     }
 
-    fun markAsShipped(trackingNumber: String?, carrier: String?, shippedBy: Long) {
+    fun markAsShipped(trackingNumber: String?, carrier: String?, shippedBy: Long, note: String? = null) {
         check(status == OrderStatus.PROCESSING) { "La orden no está en procesamiento" }
         this.trackingNumber = trackingNumber
         this.carrier = carrier
         val comment = "Enviado" + (carrier?.let { " via $it" } ?: "") + (trackingNumber?.let { " - Tracking: $it" } ?: "")
-        updateStatus(OrderStatus.SHIPPED, comment, shippedBy, "ADMIN")
+        updateStatus(OrderStatus.SHIPPED, note?.takeIf { it.isNotBlank() } ?: comment, shippedBy, "ADMIN")
     }
 
-    fun markAsDelivered(deliveredBy: Long) {
+    fun markAsDelivered(deliveredBy: Long, note: String? = null) {
         check(status == OrderStatus.SHIPPED) { "La orden no ha sido enviada" }
-        updateStatus(OrderStatus.DELIVERED, "Entregado al destinatario", deliveredBy, "ADMIN")
+        updateStatus(OrderStatus.DELIVERED, note?.takeIf { it.isNotBlank() } ?: "Entregado al destinatario", deliveredBy, "ADMIN")
     }
 
     fun refund(amount: Long, refundedBy: Long) {

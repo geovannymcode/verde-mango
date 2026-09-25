@@ -118,3 +118,5 @@ class ServiceUnavailableException(
     errorCode = "SERVICE_UNAVAILABLE",
     cause = cause
 )
+
+class OrderTransitionConflict(message: String) : VerdeMangException(message, "ORDER_TRANSITION_CONFLICT")

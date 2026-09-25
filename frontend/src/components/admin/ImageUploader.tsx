@@ -8,6 +8,9 @@ export type AdminImage = Pick<ProductImageResponse, 'url' | 'altText'> & { key: 
 interface ImageUploaderProps {
   images: readonly AdminImage[]
   onChange: (images: AdminImage[]) => void
+  maxImages?: number
+  title?: string
+  description?: string
   disabled?: boolean
   onBusyChange?: (busy: boolean) => void
 }
@@ -32,7 +35,15 @@ function ImagePreview({ url, alt }: { url: string; alt: string }) {
   )
 }
 /** URL-only fallback: no upload endpoint exists. Changes are local until the parent saves. */
-export function ImageUploader({ images, onChange, disabled, onBusyChange }: ImageUploaderProps) {
+export function ImageUploader({
+  images,
+  onChange,
+  disabled,
+  onBusyChange,
+  maxImages = 10,
+  title = 'Imágenes',
+  description,
+}: ImageUploaderProps) {
   const id = useId()
   const [url, setUrl] = useState('')
   const [error, setError] = useState<string>()
@@ -48,8 +59,8 @@ export function ImageUploader({ images, onChange, disabled, onBusyChange }: Imag
       setError('Esta imagen ya está en la lista.')
       return
     }
-    if (images.length >= 10) {
-      setError('Máximo 10 imágenes.')
+    if (images.length >= maxImages) {
+      setError(`Máximo ${maxImages} imágenes.`)
       return
     }
     setChecking(true)
@@ -84,13 +95,12 @@ export function ImageUploader({ images, onChange, disabled, onBusyChange }: Imag
     onChange(next)
   }
   return (
-    <section className="space-y-4" aria-label="Imágenes">
+    <section className="space-y-4" aria-label={title}>
       <div>
-        <h2 className="font-bold">Imágenes</h2>
+        <h2 className="font-bold">{title}</h2>
         <p className="mt-1 text-sm text-vm-muted">
-          Agrega una URL pública de imagen. La primera será la principal al guardar. No se admiten
-          archivos en este momento. En edición solo se guarda la elección de la principal; el orden
-          de las demás lo define el servidor.
+          {description ??
+            'Agrega una URL pública de imagen. La primera será la principal al guardar. No se admiten           archivos en este momento. En edición solo se guarda la elección de la principal; el orden           de las demás lo define el servidor.'}
         </p>
       </div>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end">

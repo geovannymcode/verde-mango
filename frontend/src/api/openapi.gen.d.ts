@@ -1246,6 +1246,8 @@ export interface components {
         };
         UpdateRecipeRequest: {
             title?: string;
+            slug?: string;
+            replaceNutrition: boolean;
             description?: string;
             introduction?: string;
             tips?: string;
@@ -1595,6 +1597,15 @@ export interface components {
             instructions?: string;
             formatted: string;
         };
+        AdminPaymentSummary: {
+            reference: string;
+            transactionId?: string;
+            method?: string;
+            status: string;
+            gateway: string;
+            /** Format: date-time */
+            processedAt?: string;
+        };
         ApiResponseOrderResponse: {
             success: boolean;
             message?: string;
@@ -1664,6 +1675,11 @@ export interface components {
             createdAt: string;
             /** Format: date-time */
             updatedAt: string;
+            customerName?: string;
+            customerEmail?: string;
+            customerPhone?: string;
+            customerDocument?: string;
+            payment?: components["schemas"]["AdminPaymentSummary"];
         };
         OrderStatusHistoryResponse: {
             /** Format: int64 */
@@ -1676,6 +1692,8 @@ export interface components {
             changedByType: string;
             /** Format: date-time */
             createdAt: string;
+            /** Format: int64 */
+            changedByUserId?: number;
         };
         AddressRequest: {
             recipientName: string;
@@ -1814,6 +1832,7 @@ export interface components {
         };
         CreateRecipeRequest: {
             title: string;
+            slug?: string;
             description: string;
             introduction?: string;
             tips?: string;
@@ -1969,6 +1988,8 @@ export interface components {
             featured: boolean;
             /** Format: date-time */
             publishedAt?: string;
+            /** @enum {string} */
+            status: "DRAFT" | "PUBLISHED" | "ARCHIVED";
         };
         ApiResponseListRecipeListResponse: {
             success: boolean;
@@ -2136,6 +2157,9 @@ export interface components {
             paidAt?: string;
             /** Format: date-time */
             deliveredAt?: string;
+            customerName?: string;
+            customerEmail?: string;
+            paymentStatus?: string;
         };
         PageResponseOrderListResponse: {
             content: components["schemas"]["OrderListResponse"][];
@@ -3014,6 +3038,8 @@ export interface operations {
             query?: {
                 status?: "DRAFT" | "PUBLISHED" | "ARCHIVED";
                 search?: string;
+                categoryId?: number;
+                difficulty?: "EASY" | "MEDIUM" | "HARD";
                 page?: number;
                 size?: number;
             };
@@ -4114,6 +4140,10 @@ export interface operations {
         parameters: {
             query?: {
                 status?: "PENDING" | "CONFIRMED" | "PROCESSING" | "SHIPPED" | "DELIVERED" | "CANCELLED" | "REFUNDED";
+                statuses?: ("PENDING" | "CONFIRMED" | "PROCESSING" | "SHIPPED" | "DELIVERED" | "CANCELLED" | "REFUNDED")[];
+                paymentStatus?: string;
+                sortBy?: string;
+                sortDir?: string;
                 userId?: number;
                 search?: string;
                 fromDate?: string;

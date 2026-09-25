@@ -12,6 +12,7 @@ it('uses only the real admin list/stats contracts', async () => {
   await getAdminOrders({ status: 'SHIPPED', size: 1 })
   expect(get).toHaveBeenLastCalledWith('/api/v1/admin/orders', {
     params: { status: 'SHIPPED', size: 1, page: 0 },
+    paramsSerializer: { indexes: null },
   })
   await getAdminOrderStats()
   expect(get).toHaveBeenLastCalledWith('/api/v1/admin/orders/stats', { params: {} })

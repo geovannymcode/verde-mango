@@ -38,10 +38,12 @@ class AdminRecipeController(
     fun getAllRecipes(
         @RequestParam(required = false) status: RecipeStatus?,
         @RequestParam(required = false) search: String?,
+        @RequestParam(required = false) categoryId: Long?,
+        @RequestParam(required = false) difficulty: com.geovannycode.verdemango.recipes.domain.RecipeDifficulty?,
         @RequestParam(defaultValue = "0") page: Int,
         @RequestParam(defaultValue = "20") size: Int
     ): ResponseEntity<ApiResponse<PageResponse<RecipeListResponse>>> {
-        val recipes = recipeService.getAllRecipesForAdmin(status, search, page, size)
+        val recipes = recipeService.getAllRecipesForAdmin(status, search, page, size, categoryId, difficulty)
         return ResponseEntity.ok(ApiResponse.success(recipes))
     }
 

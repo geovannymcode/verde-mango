@@ -26,6 +26,7 @@ interface DataTableProps<T, K extends string> {
   isFetching?: boolean
   error?: unknown
   onRetry?: () => void
+  onRowClick?: (row: T) => void
   emptyAction?: ReactNode
   rowClassName?: (row: T) => string
   emptyMessage?: string
@@ -44,6 +45,7 @@ export function DataTable<T, K extends string = string>({
   isFetching,
   error,
   onRetry,
+  onRowClick,
   emptyAction,
   rowClassName,
   emptyMessage = 'No hay registros para mostrar.',
@@ -146,7 +148,18 @@ export function DataTable<T, K extends string = string>({
               rows.map((row) => (
                 <tr
                   key={rowKey(row)}
-                  className={`border-b border-vm-line last:border-0 hover:bg-stone-50 ${rowClassName?.(row) ?? ''}`}
+                  onClick={
+                    onRowClick
+                      ? (event) => {
+                          if (!(
+                            event.target instanceof Element &&
+                            event.target.closest('a,button,input,select')
+                          ))
+                            onRowClick(row)
+                        }
+                      : undefined
+                  }
+                  className={`border-b border-vm-line last:border-0 hover:bg-stone-50 ${onRowClick ? 'cursor-pointer' : ''} ${rowClassName?.(row) ?? ''}`}
                 >
                   {columns.map((column) => (
                     <td key={column.id} className={`px-4 py-4 ${column.className ?? ''}`}>

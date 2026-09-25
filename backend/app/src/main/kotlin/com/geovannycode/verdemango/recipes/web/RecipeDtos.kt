@@ -10,6 +10,7 @@ import jakarta.validation.Valid
 import jakarta.validation.constraints.Min
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Size
+import jakarta.validation.constraints.Pattern
 import java.math.BigDecimal
 import java.time.Instant
 
@@ -19,6 +20,10 @@ data class CreateRecipeRequest(
     @field:NotBlank(message = "El título es requerido")
     @field:Size(max = 200)
     val title: String,
+
+    @field:Pattern(regexp = "[a-z0-9]+(?:-[a-z0-9]+)*")
+    @field:Size(max = 250)
+    val slug: String? = null,
 
     @field:NotBlank(message = "La descripción es requerida")
     val description: String,
@@ -65,6 +70,13 @@ data class CreateRecipeRequest(
 data class UpdateRecipeRequest(
     @field:Size(max = 200)
     val title: String? = null,
+
+    @field:Pattern(regexp = "[a-z0-9]+(?:-[a-z0-9]+)*")
+    @field:Size(max = 250)
+    val slug: String? = null,
+
+    // Replace the five nullable nutrition fields together, including clearing all of them.
+    val replaceNutrition: Boolean = false,
 
     val description: String? = null,
     val introduction: String? = null,
@@ -222,7 +234,8 @@ data class RecipeListResponse(
     val ratingAverage: BigDecimal,
     val ratingCount: Int,
     val featured: Boolean,
-    val publishedAt: Instant?
+    val publishedAt: Instant?,
+    val status: RecipeStatus
 ) {
     companion object {
         fun from(recipe: Recipe) = RecipeListResponse(
@@ -239,7 +252,8 @@ data class RecipeListResponse(
             ratingAverage = recipe.ratingAverage,
             ratingCount = recipe.ratingCount,
             featured = recipe.featured,
-            publishedAt = recipe.publishedAt
+            publishedAt = recipe.publishedAt,
+            status = recipe.status
         )
     }
 }

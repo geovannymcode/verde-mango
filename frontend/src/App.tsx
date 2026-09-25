@@ -1,3 +1,5 @@
+import { listenForOrderChanges } from '@/features/admin/orders/sync'
+import { listenForRecipeChanges } from '@/features/admin/recipes/sync'
 import { useEffect } from 'react'
 import { listenForCatalogChanges } from '@/features/admin/catalogSync'
 import { QueryClientProvider } from '@tanstack/react-query'
@@ -10,6 +12,8 @@ import { SplashScreen } from '@/components/layout/SplashScreen'
 
 function App() {
   useAuthBootstrap()
+  useEffect(() => listenForRecipeChanges(queryClient), [])
+  useEffect(() => listenForOrderChanges(queryClient), [])
   useEffect(() => listenForCatalogChanges(queryClient), [])
   const status = useAuthStore((state) => state.status)
 

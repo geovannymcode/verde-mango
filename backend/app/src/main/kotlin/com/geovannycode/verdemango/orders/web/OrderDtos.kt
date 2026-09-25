@@ -32,7 +32,11 @@ data class OrderFilterParams(
     val fromDate: Instant? = null,
     val toDate: Instant? = null,
     val page: Int = 0,
-    val size: Int = 20
+    val size: Int = 20,
+    val statuses: List<OrderStatus>? = null,
+    val paymentStatus: String? = null,
+    val sortBy: String = "createdAt",
+    val sortDir: String = "desc"
 )
 
 // ==================== RESPONSE DTOs ====================
@@ -66,7 +70,12 @@ data class OrderResponse(
     val statusHistory: List<OrderStatusHistoryResponse>,
     val canBeCancelled: Boolean,
     val createdAt: Instant,
-    val updatedAt: Instant
+    val updatedAt: Instant,
+    val customerName: String? = null,
+    val customerEmail: String? = null,
+    val customerPhone: String? = null,
+    val customerDocument: String? = null,
+    val payment: AdminPaymentSummary? = null
 ) {
     companion object {
         fun from(order: Order) = OrderResponse(
@@ -113,7 +122,10 @@ data class OrderListResponse(
     val totalFormatted: String,
     val createdAt: Instant,
     val paidAt: Instant?,
-    val deliveredAt: Instant?
+    val deliveredAt: Instant?,
+    val customerName: String? = null,
+    val customerEmail: String? = null,
+    val paymentStatus: String? = null
 ) {
     companion object {
         fun from(order: Order) = OrderListResponse(
@@ -193,7 +205,8 @@ data class OrderStatusHistoryResponse(
     val toStatus: OrderStatus,
     val comment: String?,
     val changedByType: String,
-    val createdAt: Instant
+    val createdAt: Instant,
+    val changedByUserId: Long? = null
 ) {
     companion object {
         fun from(history: OrderStatusHistory) = OrderStatusHistoryResponse(
@@ -202,6 +215,7 @@ data class OrderStatusHistoryResponse(
             toStatus = history.toStatus,
             comment = history.comment,
             changedByType = history.changedByType,
+            changedByUserId = history.changedByUserId,
             createdAt = history.createdAt
         )
     }
@@ -227,3 +241,13 @@ fun OrderStatus.toLabel(): String = when (this) {
     OrderStatus.CANCELLED -> "Cancelada"
     OrderStatus.REFUNDED -> "Reembolsada"
 }
+
+/** Only persisted payment metadata; never expose gateway_response or card fields. */
+data class AdminPaymentSummary(
+    val reference: String,
+    val transactionId: String?,
+    val method: String?,
+    val status: String,
+    val gateway: String,
+    val processedAt: Instant?
+)

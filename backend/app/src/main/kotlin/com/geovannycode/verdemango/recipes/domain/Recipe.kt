@@ -179,7 +179,7 @@ class Recipe(
         get() = if (ratingCount > 0) "$ratingAverage ($ratingCount)" else "Sin calificaciones"
 
     val hasNutritionInfo: Boolean
-        get() = calories != null || proteinGrams != null
+        get() = calories != null || proteinGrams != null || carbsGrams != null || fatGrams != null || fiberGrams != null
 
     // ==================== Métodos de negocio ====================
 

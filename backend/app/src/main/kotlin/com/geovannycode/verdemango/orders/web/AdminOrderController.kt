@@ -36,6 +36,10 @@ class AdminOrderController(
     @Operation(summary = "Listar todas las órdenes")
     fun getAllOrders(
         @RequestParam(required = false) status: OrderStatus?,
+        @RequestParam(required = false) statuses: List<OrderStatus>?,
+        @RequestParam(required = false) paymentStatus: String?,
+        @RequestParam(defaultValue = "createdAt") sortBy: String,
+        @RequestParam(defaultValue = "desc") sortDir: String,
         @RequestParam(required = false) userId: Long?,
         @RequestParam(required = false) search: String?,
         @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) fromDate: Instant?,
@@ -43,7 +47,7 @@ class AdminOrderController(
         @RequestParam(defaultValue = "0") page: Int,
         @RequestParam(defaultValue = "20") size: Int
     ): ResponseEntity<ApiResponse<PageResponse<OrderListResponse>>> {
-        val params = OrderFilterParams(status, userId, search, fromDate, toDate, page, size)
+        val params = OrderFilterParams(status, userId, search, fromDate, toDate, page, size, statuses, paymentStatus, sortBy, sortDir)
         val orders = orderService.getAllOrders(params)
         return ResponseEntity.ok(ApiResponse.success(orders))
     }

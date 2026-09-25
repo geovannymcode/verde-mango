@@ -25,6 +25,10 @@ import { AdminLayout } from '@/components/admin/AdminLayout'
 import { ProductsPage } from '@/pages/admin/ProductsPage'
 import { ProductFormPage } from '@/pages/admin/ProductFormPage'
 import { CategoriesPage } from '@/pages/admin/CategoriesPage'
+import { OrdersPage } from '@/pages/admin/OrdersPage'
+import { AdminOrderDetailPage } from '@/pages/admin/AdminOrderDetailPage'
+import { AdminRecipesPage } from '@/pages/admin/RecipesPage'
+import { RecipeFormPage } from '@/pages/admin/RecipeFormPage'
 import { DashboardPage } from '@/pages/admin/DashboardPage'
 
 export const router = createBrowserRouter([
@@ -41,6 +45,11 @@ export const router = createBrowserRouter([
       { path: 'productos/nuevo', element: <ProductFormPage /> },
       { path: 'productos/:id/editar', element: <ProductFormPage /> },
       { path: 'categorias', element: <CategoriesPage /> },
+      { path: 'recetas', element: <AdminRecipesPage /> },
+      { path: 'recetas/nueva', element: <RecipeFormPage /> },
+      { path: 'recetas/:id/editar', element: <RecipeFormPage /> },
+      { path: 'ordenes', element: <OrdersPage /> },
+      { path: 'ordenes/:id', element: <AdminOrderDetailPage /> },
       { path: '*', element: <NotFoundPage /> },
     ],
   },
@@ -72,6 +81,9 @@ export const router = createBrowserRouter([
         ),
         children: [
           { index: true, element: <ProfilePage /> },
+          { path: 'recetas', element: <AdminRecipesPage /> },
+          { path: 'recetas/nueva', element: <RecipeFormPage /> },
+          { path: 'recetas/:id/editar', element: <RecipeFormPage /> },
           { path: 'ordenes', element: <OrdersListPage /> },
           { path: 'ordenes/:orderNumber', element: <OrderDetailPage /> },
         ],

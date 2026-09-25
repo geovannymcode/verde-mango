@@ -24,10 +24,10 @@ interface RecipeRepository : JpaRepository<Recipe, Long>, JpaSpecificationExecut
 
     fun existsBySlug(slug: String): Boolean
 
-    @Query("SELECT r FROM Recipe r LEFT JOIN FETCH r.steps LEFT JOIN FETCH r.ingredients LEFT JOIN FETCH r.images WHERE r.slug = :slug")
+    @Query("SELECT r FROM Recipe r LEFT JOIN FETCH r.category WHERE r.slug = :slug")
     fun findBySlugWithDetails(slug: String): Optional<Recipe>
 
-    @Query("SELECT r FROM Recipe r LEFT JOIN FETCH r.steps LEFT JOIN FETCH r.ingredients LEFT JOIN FETCH r.images LEFT JOIN FETCH r.tags WHERE r.id = :id")
+    @Query("SELECT r FROM Recipe r LEFT JOIN FETCH r.category WHERE r.id = :id")
     fun findByIdWithDetails(@Param("id") id: Long): Optional<Recipe>
 
     // ==================== Listados públicos ====================
