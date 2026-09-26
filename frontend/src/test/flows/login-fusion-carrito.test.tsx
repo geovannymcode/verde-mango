@@ -129,8 +129,8 @@ async function login(context: ReturnType<typeof setup>) {
   })
 }
 describe('login y fusión de carrito', () => {
-  // BUG-9B-02: merge omite X-Session-Id tras autenticar; pendiente de decisión.
-  it.skip('envía sessionId, limpia invitado, muestra ítems fusionados y vuelve a returnTo', async () => {
+  // BUG-9B-02: regresión del header de fusión autenticada.
+  it('envía sessionId, limpia invitado, muestra ítems fusionados y vuelve a returnTo', async () => {
     const context = setup()
     await login(context)
     expect(context.requests[1]).toMatchObject({ session: 'guest-merge-test' })

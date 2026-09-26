@@ -110,3 +110,15 @@ no certificarán un pago real ni un webhook inexistente.
 
 Contenido editorial pendiente: teléfono/email/redes/equipo/historia y confirmar pin de Maps.
 La dirección proporcionada ya está incorporada. Estos pendientes no son gaps del OpenAPI.
+
+## Verificación de carrito en 9b (2026-09-26)
+
+- `/api-docs` descargado del backend activo en localhost:8080: `POST /api/v1/cart/merge`
+  declara respuesta `ApiResponseCartResponse`, sin parameters ni requestBody.
+- **Degradado: documentación incompleta.** El controlador real
+  `orders/web/CartController.kt:mergeCart` lee `request.getHeader("X-Session-Id")`.
+  No se envía en body ni query. Sin header, devuelve carrito autenticado sin fusionar.
+- BUG-9B-02 corregido en frontend: merge envía el identificador invitado existente junto con
+  Authorization. No genera un invitado nuevo si no hay carrito previo. El interceptor ya
+  adjuntaba X-Session-Id a todas las operaciones de carrito sin autenticar; no se modificó.
+- Pendiente documentar ese header en OpenAPI; no se modificó backend en esta corrección.

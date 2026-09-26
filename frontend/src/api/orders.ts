@@ -1,4 +1,5 @@
 import { httpClient, unwrap } from './client'
+import { useCartStore } from '@/store/cartStore'
 import type { ApiResponse, PageResponse } from './types'
 import type {
   AddToCartRequest,
@@ -48,7 +49,16 @@ export async function clearCart(): Promise<CartResponse> {
 }
 
 export async function mergeCart(): Promise<CartResponse> {
-  const response = await httpClient.post<ApiResponse<CartResponse>>('/api/v1/cart/merge')
+  // Unlike guest operations, merge runs after authentication and needs both identities.
+  // CartController reads X-Session-Id; OpenAPI currently omits this header.
+  const sessionId = useCartStore.getState().guestSessionId
+  const response = await httpClient.post<ApiResponse<CartResponse>>(
+    '/api/v1/cart/merge',
+    undefined,
+    {
+      headers: sessionId ? { 'X-Session-Id': sessionId } : undefined,
+    },
+  )
   return unwrap(response)
 }
 
