@@ -2,7 +2,7 @@ import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 import { useMemo } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { CheckCircle2, Clock, XCircle } from 'lucide-react'
-import { useOrder } from '@/features/cart/hooks'
+import { usePaymentResult } from '@/features/payment/usePaymentResult'
 import { parseWompiReturnParams } from '@/api/payment'
 import { formatCurrency } from '@/lib/formatters'
 import { SectionTitle } from '@/components/layout/SectionTitle'
@@ -23,10 +23,7 @@ export function CheckoutResultPage() {
   const wompiParams = useMemo(() => parseWompiReturnParams(searchParams), [searchParams])
   const orderNumber = wompiParams.reference ?? searchParams.get('reference') ?? undefined
 
-  const orderQuery = useOrder(orderNumber, {
-    refetchInterval: (query) =>
-      query.state.data && PENDING_STATUSES.has(query.state.data.status) ? 3000 : false,
-  })
+  const orderQuery = usePaymentResult(orderNumber)
 
   if (!orderNumber) {
     return (
@@ -75,7 +72,12 @@ export function CheckoutResultPage() {
         <>
           <Clock size={56} className="text-vm-orange" />
           <SectionTitle eyebrow="pago" title="Estamos confirmando tu pago" align="center" />
-          <p className="text-vm-muted">Esto puede tardar unos segundos. No cierres esta página.</p>
+          <p className="text-vm-muted">Estamos confirmando tu pago con la pasarela</p>
+          {orderQuery.isEnabled === false &&
+            !orderQuery.isFetching &&
+            document.visibilityState !== 'hidden' && (
+              <Button onClick={orderQuery.verifyAgain}>Verificar de nuevo</Button>
+            )}
         </>
       )}
 

@@ -78,18 +78,68 @@ it('el rechazo del backend prevalece sobre status=APPROVED en la URL', async () 
   expect(s.requests).toHaveLength(1)
   s.assertRequests()
 })
-it('limita consultas ante PENDING persistente (umbral diagnóstico, pendiente de política de producto)', async () => {
-  // The requirement specifies a maximum but no number. 20 is an observation boundary for
-  // reproducing the missing guard, NOT a proposed production maximum. No limit exists in source.
-  const observationLimit = 20
+it('corta tras 10 consultas pendientes y no vuelve a consultar automáticamente', async () => {
   const s = setup(['PENDING'])
   await screen.findByRole('heading', { name: 'Estamos confirmando tu pago' })
-  for (let count = 2; count <= observationLimit; count++) await s.tick(count)
-  s.assertRequests()
+  for (let count = 2; count <= 10; count++) await s.tick(count)
+  await screen.findByRole('button', { name: 'Verificar de nuevo' })
+  expect(screen.getByText('Estamos confirmando tu pago con la pasarela')).toBeInTheDocument()
+  s.rerender(<CheckoutResultPage />)
   await act(async () => {
-    await vi.advanceTimersByTimeAsync(3000)
+    await vi.advanceTimersByTimeAsync(60_000)
   })
-  await waitFor(() => expect(s.queryClient.isFetching()).toBe(0))
-  expect(screen.getByRole('heading', { name: 'Estamos confirmando tu pago' })).toBeInTheDocument()
-  expect(s.requests).toHaveLength(observationLimit)
+  expect(s.requests).toHaveLength(10)
+  s.assertRequests()
+})
+it('Verificar de nuevo inicia un ciclo nuevo de diez intentos', async () => {
+  const s = setup(['PENDING'])
+  await screen.findByRole('heading', { name: 'Estamos confirmando tu pago' })
+  for (let count = 2; count <= 10; count++) await s.tick(count)
+  await s.user.click(await screen.findByRole('button', { name: 'Verificar de nuevo' }))
+  await waitFor(() => expect(s.requests).toHaveLength(11))
+  await screen.findByRole('heading', { name: 'Estamos confirmando tu pago' })
+  for (let count = 12; count <= 20; count++) await s.tick(count)
+  await screen.findByRole('button', { name: 'Verificar de nuevo' })
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(30_000)
+  })
+  expect(s.requests).toHaveLength(20)
+  s.assertRequests()
+})
+it('detiene un rechazo final antes del intento diez', async () => {
+  const s = setup(['PENDING', 'CANCELLED'])
+  await screen.findByRole('heading', { name: 'Estamos confirmando tu pago' })
+  await s.tick(2)
+  await screen.findByRole('heading', { name: 'No pudimos procesar tu pago' })
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(30_000)
+  })
+  expect(s.requests).toHaveLength(2)
+  expect(screen.queryByRole('button', { name: 'Verificar de nuevo' })).not.toBeInTheDocument()
+  s.assertRequests()
+})
+it('pausa en background, conserva intentos al volver y cancela polling al desmontar', async () => {
+  let visibility: DocumentVisibilityState = 'visible'
+  vi.spyOn(document, 'visibilityState', 'get').mockImplementation(() => visibility)
+  const s = setup(['PENDING'])
+  await screen.findByRole('heading', { name: 'Estamos confirmando tu pago' })
+  await act(async () => {
+    visibility = 'hidden'
+    document.dispatchEvent(new Event('visibilitychange'))
+  })
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(30_000)
+  })
+  expect(s.requests).toHaveLength(1)
+  await act(async () => {
+    visibility = 'visible'
+    document.dispatchEvent(new Event('visibilitychange'))
+  })
+  await s.tick(2)
+  s.unmount()
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(30_000)
+  })
+  expect(s.requests).toHaveLength(2)
+  s.assertRequests()
 })

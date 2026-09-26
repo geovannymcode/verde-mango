@@ -90,8 +90,11 @@ export async function getOrders(
   return unwrap(response)
 }
 
-export async function getOrder(orderNumber: string): Promise<OrderResponse> {
-  const response = await httpClient.get<ApiResponse<OrderResponse>>(`/api/v1/orders/${orderNumber}`)
+export async function getOrder(orderNumber: string, signal?: AbortSignal): Promise<OrderResponse> {
+  const response = await httpClient.get<ApiResponse<OrderResponse>>(
+    `/api/v1/orders/${orderNumber}`,
+    { signal },
+  )
   return unwrap(response)
 }
 
