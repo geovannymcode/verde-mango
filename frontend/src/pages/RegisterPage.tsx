@@ -2,7 +2,7 @@ import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { useRegister } from '@/features/auth/hooks'
 import { registerSchema, type RegisterFormValues } from '@/lib/validators'
 import { resolveReturnTo } from '@/lib/returnTo'
@@ -28,7 +28,6 @@ export function RegisterPage() {
     'Crear cuenta',
     'Crea tu cuenta de Verde Mango para comprar y compartir tus valoraciones.',
   )
-  const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const registerAccount = useRegister()
   const [formError, setFormError] = useState<string | null>(null)
@@ -61,9 +60,6 @@ export function RegisterPage() {
         phone: values.phone || undefined,
       },
       {
-        onSuccess: () => {
-          navigate(resolveReturnTo(searchParams.get('returnTo')), { replace: true })
-        },
         onError: (error) => {
           if (error instanceof ApiError && error.fieldErrors) {
             let mappedToField = false
@@ -140,7 +136,14 @@ export function RegisterPage() {
 
         <p className="text-center text-sm text-vm-muted">
           ¿Ya tienes cuenta?{' '}
-          <Link to="/login" className="font-semibold text-vm-orange hover:underline">
+          <Link
+            to={
+              searchParams.has('returnTo')
+                ? `/login?${new URLSearchParams({ returnTo: resolveReturnTo(searchParams.get('returnTo')) })}`
+                : '/login'
+            }
+            className="font-semibold text-vm-orange hover:underline"
+          >
             Inicia sesión
           </Link>
         </p>

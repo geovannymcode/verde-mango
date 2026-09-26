@@ -2,7 +2,7 @@ import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { useLogin } from '@/features/auth/hooks'
 import { loginSchema, type LoginFormValues } from '@/lib/validators'
 import { resolveReturnTo } from '@/lib/returnTo'
@@ -19,7 +19,6 @@ export function LoginPage() {
     'Iniciar sesión',
     'Accede a tu cuenta de Verde Mango para consultar tus pedidos y completar tus compras.',
   )
-  const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const login = useLogin()
   const [formError, setFormError] = useState<string | null>(null)
@@ -37,9 +36,6 @@ export function LoginPage() {
   function submit(values: LoginFormValues) {
     setFormError(null)
     login.mutate(values, {
-      onSuccess: () => {
-        navigate(resolveReturnTo(searchParams.get('returnTo')), { replace: true })
-      },
       onError: (error) => {
         if (error instanceof ApiError && error.fieldErrors) {
           let mappedToField = false
@@ -99,7 +95,14 @@ export function LoginPage() {
 
         <p className="text-center text-sm text-vm-muted">
           ¿No tienes cuenta?{' '}
-          <Link to="/registro" className="font-semibold text-vm-orange hover:underline">
+          <Link
+            to={
+              searchParams.has('returnTo')
+                ? `/registro?${new URLSearchParams({ returnTo: resolveReturnTo(searchParams.get('returnTo')) })}`
+                : '/registro'
+            }
+            className="font-semibold text-vm-orange hover:underline"
+          >
             Regístrate
           </Link>
         </p>
