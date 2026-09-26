@@ -60,18 +60,10 @@ const addressSchema = z.object({
   instructions: z.string().max(300).optional().or(z.literal('')),
 })
 
-export const checkoutSchema = z
-  .object({
-    shippingAddress: addressSchema,
-    billingSameAsShipping: z.boolean(),
-    billingAddress: addressSchema.optional(),
-    billingTaxId: z.string().max(50).optional().or(z.literal('')),
-    customerNotes: z.string().max(500).optional().or(z.literal('')),
-    paymentMethod: z.string().min(1, 'Selecciona un método de pago'),
-  })
-  .refine((values) => values.billingSameAsShipping || !!values.billingAddress, {
-    message: 'La dirección de facturación es requerida',
-    path: ['billingAddress'],
-  })
+export const checkoutSchema = z.object({
+  shippingAddress: addressSchema,
+  customerNotes: z.string().max(500).optional().or(z.literal('')),
+  paymentMethod: z.string().min(1, 'Selecciona un método de pago'),
+})
 
 export type CheckoutFormValues = z.infer<typeof checkoutSchema>

@@ -50,21 +50,15 @@ export function CheckoutPage() {
   const {
     register,
     handleSubmit,
-    watch,
     formState: { errors },
   } = useForm<CheckoutFormValues>({
     resolver: zodResolver(checkoutSchema),
     defaultValues: {
       shippingAddress: emptyAddress,
-      billingSameAsShipping: true,
-      billingAddress: emptyAddress,
-      billingTaxId: '',
       customerNotes: '',
       paymentMethod: 'CARD',
     },
   })
-
-  const billingSameAsShipping = watch('billingSameAsShipping')
 
   if (cartQuery.data && cartQuery.data.items.length === 0) {
     return (
@@ -81,9 +75,7 @@ export function CheckoutPage() {
     checkout.mutate(
       {
         shippingAddress: values.shippingAddress,
-        billingSameAsShipping: values.billingSameAsShipping,
-        billingAddress: values.billingSameAsShipping ? undefined : values.billingAddress,
-        billingTaxId: values.billingTaxId || undefined,
+        billingSameAsShipping: true,
         customerNotes: values.customerNotes || undefined,
         paymentMethod: values.paymentMethod,
       },
@@ -151,6 +143,7 @@ export function CheckoutPage() {
             <Input
               label="Apartamento / referencia (opcional)"
               {...register('shippingAddress.apartment')}
+              error={errors.shippingAddress?.apartment?.message}
             />
             <div className="grid grid-cols-2 gap-4">
               <Input
@@ -158,10 +151,18 @@ export function CheckoutPage() {
                 {...register('shippingAddress.city')}
                 error={errors.shippingAddress?.city?.message}
               />
-              <Input label="Departamento" {...register('shippingAddress.state')} />
+              <Input
+                label="Departamento"
+                {...register('shippingAddress.state')}
+                error={errors.shippingAddress?.state?.message}
+              />
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <Input label="Código postal" {...register('shippingAddress.postalCode')} />
+              <Input
+                label="Código postal"
+                {...register('shippingAddress.postalCode')}
+                error={errors.shippingAddress?.postalCode?.message}
+              />
               <Input
                 label="País"
                 {...register('shippingAddress.country')}
@@ -171,64 +172,34 @@ export function CheckoutPage() {
             <Input
               label="Instrucciones de entrega (opcional)"
               {...register('shippingAddress.instructions')}
-            />
-          </fieldset>
-
-          <fieldset className="flex flex-col gap-4">
-            <legend className="mb-1 font-bold text-vm-ink">Facturación</legend>
-            <label className="flex items-center gap-2 text-sm text-vm-ink">
-              <input type="checkbox" {...register('billingSameAsShipping')} />
-              La dirección de facturación es la misma que la de envío
-            </label>
-
-            {!billingSameAsShipping && (
-              <div className="flex flex-col gap-4">
-                <Input
-                  label="Nombre del destinatario"
-                  {...register('billingAddress.recipientName')}
-                  error={errors.billingAddress?.recipientName?.message}
-                />
-                <Input
-                  label="Teléfono"
-                  {...register('billingAddress.phone')}
-                  error={errors.billingAddress?.phone?.message}
-                />
-                <Input
-                  label="Dirección"
-                  {...register('billingAddress.streetAddress')}
-                  error={errors.billingAddress?.streetAddress?.message}
-                />
-                <div className="grid grid-cols-2 gap-4">
-                  <Input
-                    label="Ciudad"
-                    {...register('billingAddress.city')}
-                    error={errors.billingAddress?.city?.message}
-                  />
-                  <Input
-                    label="País"
-                    {...register('billingAddress.country')}
-                    error={errors.billingAddress?.country?.message}
-                  />
-                </div>
-              </div>
-            )}
-
-            <Input
-              label="NIT / documento de facturación (opcional)"
-              {...register('billingTaxId')}
+              error={errors.shippingAddress?.instructions?.message}
             />
           </fieldset>
 
           <fieldset className="flex flex-col gap-4">
             <legend className="mb-1 font-bold text-vm-ink">Pago</legend>
-            <Select label="Método de pago" {...register('paymentMethod')}>
+            <Select
+              label="Método de pago"
+              {...register('paymentMethod')}
+              aria-invalid={!!errors.paymentMethod}
+              aria-describedby={errors.paymentMethod ? 'paymentMethod-error' : undefined}
+            >
               {PAYMENT_METHODS.map((method) => (
                 <option key={method.value} value={method.value}>
                   {method.label}
                 </option>
               ))}
             </Select>
-            <Input label="Notas para el pedido (opcional)" {...register('customerNotes')} />
+            {errors.paymentMethod && (
+              <p id="paymentMethod-error" role="alert">
+                {errors.paymentMethod.message}
+              </p>
+            )}
+            <Input
+              label="Notas para el pedido (opcional)"
+              {...register('customerNotes')}
+              error={errors.customerNotes?.message}
+            />
           </fieldset>
         </div>
 
