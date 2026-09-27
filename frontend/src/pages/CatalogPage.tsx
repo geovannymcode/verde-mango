@@ -79,7 +79,7 @@ export function CatalogPage() {
   return (
     <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
       <Breadcrumbs items={[{ label: 'Inicio', to: '/' }, { label: 'Tienda' }]} className="mb-4" />
-      <SectionTitle eyebrow="tienda" title="Todos nuestros productos" />
+      <SectionTitle as="h1" eyebrow="tienda" title="Todos nuestros productos" />
 
       <div className="mt-8 grid gap-8 lg:grid-cols-[260px_1fr]">
         <CatalogSidebar

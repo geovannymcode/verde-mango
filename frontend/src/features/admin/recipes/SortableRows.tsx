@@ -76,7 +76,7 @@ export function SortableRow({
     isDragging,
   } = useSortable({ id })
   return (
-    <div
+    <fieldset
       ref={setNodeRef}
       style={{
         transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
@@ -84,6 +84,9 @@ export function SortableRow({
       }}
       className={`rounded-lg border border-vm-line bg-white p-4 ${isDragging ? 'relative z-20 shadow-xl' : ''}`}
     >
+      <legend className="sr-only">
+        {label} {index + 1}
+      </legend>
       <div className="mb-3 flex items-center gap-3">
         <button
           type="button"
@@ -102,12 +105,12 @@ export function SortableRow({
         >
           <GripVertical size={18} />
         </button>
-        <strong>
+        <strong aria-hidden="true">
           {label} {index + 1}
         </strong>
         <span className="text-xs text-vm-muted">Arrastra o usa ↑ ↓</span>
       </div>
       {children}
-    </div>
+    </fieldset>
   )
 }

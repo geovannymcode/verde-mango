@@ -67,7 +67,7 @@ export function LoginPage() {
           <span className="font-hand text-sm text-vm-green">vegan wonders</span>
         </Link>
 
-        <SectionTitle align="center" eyebrow="bienvenido" title="Iniciar sesión" />
+        <SectionTitle as="h1" align="center" eyebrow="bienvenido" title="Iniciar sesión" />
 
         <form onSubmit={handleSubmit(submit)} className="flex flex-col gap-4" noValidate>
           {formError && (

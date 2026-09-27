@@ -1,3 +1,5 @@
+import { FormField } from './FormField'
+import { useFieldAccessibility } from '@/hooks/useFieldAccessibility'
 import { forwardRef, type InputHTMLAttributes } from 'react'
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
@@ -6,31 +8,19 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
-  { label, error, id, className = '', ...props },
+  { label, error, id, className = '', 'aria-describedby': describedBy, ...props },
   ref,
 ) {
-  const inputId = id ?? props.name
+  const field = useFieldAccessibility(id, error, describedBy)
 
   return (
-    <div className="flex flex-col gap-1.5">
-      {label && (
-        <label htmlFor={inputId} className="text-sm font-medium text-vm-ink">
-          {label}
-        </label>
-      )}
+    <FormField id={field.id} label={label} error={error}>
       <input
-        ref={ref}
-        id={inputId}
-        aria-invalid={!!error}
-        aria-describedby={error ? `${inputId}-error` : undefined}
-        className={`h-11 rounded-vm-md border border-vm-line bg-vm-white px-4 text-sm text-vm-ink placeholder:text-vm-muted focus-visible:border-vm-orange focus-visible:outline-none ${error ? 'border-red-400' : ''} ${className}`}
         {...props}
+        ref={ref}
+        {...field}
+        className={`h-11 rounded-vm-md border border-vm-line bg-vm-white px-4 text-sm text-vm-ink placeholder:text-vm-muted focus-visible:border-vm-orange focus-visible:outline-none ${error ? 'border-red-400' : ''} ${className}`}
       />
-      {error && (
-        <span id={`${inputId}-error`} className="text-xs text-red-500">
-          {error}
-        </span>
-      )}
-    </div>
+    </FormField>
   )
 })

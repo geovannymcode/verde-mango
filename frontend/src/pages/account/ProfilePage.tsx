@@ -20,6 +20,7 @@ export function ProfilePage() {
 
   return (
     <div className="flex flex-col gap-6">
+      <h1 className="text-2xl font-bold">Mi perfil</h1>
       <div className="flex items-center justify-between gap-3 rounded-vm-md bg-amber-50 px-4 py-3 text-sm text-amber-800">
         <AlertTriangle size={18} className="shrink-0" />
         <p>

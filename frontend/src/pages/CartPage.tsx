@@ -22,7 +22,7 @@ export function CartPage() {
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
-      <SectionTitle eyebrow="carrito" title="Tu carrito de compras" />
+      <SectionTitle as="h1" eyebrow="carrito" title="Tu carrito de compras" />
 
       {cartQuery.isLoading ? (
         <div className="mt-8 flex flex-col gap-4">

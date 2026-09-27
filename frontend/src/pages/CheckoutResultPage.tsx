@@ -28,7 +28,12 @@ export function CheckoutResultPage() {
   if (!orderNumber) {
     return (
       <div className="mx-auto flex max-w-2xl flex-col items-center gap-4 px-4 py-20 text-center sm:px-6">
-        <SectionTitle eyebrow="pago" title="No pudimos identificar tu pedido" align="center" />
+        <SectionTitle
+          as="h1"
+          eyebrow="pago"
+          title="No pudimos identificar tu pedido"
+          align="center"
+        />
         <p className="text-vm-muted">
           Falta el parámetro <code>reference</code> en la URL de retorno.
         </p>
@@ -50,7 +55,7 @@ export function CheckoutResultPage() {
   if (orderQuery.isError || !orderQuery.data) {
     return (
       <div className="mx-auto flex max-w-2xl flex-col items-center gap-4 px-4 py-20 text-center sm:px-6">
-        <SectionTitle eyebrow="pago" title="No encontramos tu pedido" align="center" />
+        <SectionTitle as="h1" eyebrow="pago" title="No encontramos tu pedido" align="center" />
         <p className="text-vm-muted">
           No pudimos consultar el pedido <strong>{orderNumber}</strong>.
         </p>
@@ -71,7 +76,7 @@ export function CheckoutResultPage() {
       {isPending && (
         <>
           <Clock size={56} className="text-vm-orange" />
-          <SectionTitle eyebrow="pago" title="Estamos confirmando tu pago" align="center" />
+          <SectionTitle as="h1" eyebrow="pago" title="Estamos confirmando tu pago" align="center" />
           <p className="text-vm-muted">Estamos confirmando tu pago con la pasarela</p>
           {orderQuery.isEnabled === false &&
             !orderQuery.isFetching &&
@@ -84,7 +89,12 @@ export function CheckoutResultPage() {
       {isApproved && (
         <>
           <CheckCircle2 size={56} className="text-vm-green" />
-          <SectionTitle eyebrow="pago aprobado" title="¡Gracias por tu compra!" align="center" />
+          <SectionTitle
+            as="h1"
+            eyebrow="pago aprobado"
+            title="¡Gracias por tu compra!"
+            align="center"
+          />
           <p className="text-vm-muted">
             Tu pedido <strong>{order.orderNumber}</strong> fue confirmado por{' '}
             {formatCurrency(order.totalAmount)}.
@@ -96,6 +106,7 @@ export function CheckoutResultPage() {
         <>
           <XCircle size={56} className="text-red-500" />
           <SectionTitle
+            as="h1"
             eyebrow="pago rechazado"
             title="No pudimos procesar tu pago"
             align="center"
@@ -109,7 +120,7 @@ export function CheckoutResultPage() {
 
       {!isPending && !isApproved && !isRejected && (
         <>
-          <SectionTitle eyebrow="pago" title={order.statusLabel} align="center" />
+          <SectionTitle as="h1" eyebrow="pago" title={order.statusLabel} align="center" />
           <p className="text-vm-muted">
             Pedido <strong>{order.orderNumber}</strong>.
           </p>

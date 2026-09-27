@@ -16,6 +16,7 @@ export function AccountLayout() {
   return (
     <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6">
       <SectionTitle
+        as="p"
         eyebrow="mi cuenta"
         title={user ? `Hola, ${user.firstName}` : 'Tu cuenta'}
         className="mb-8"

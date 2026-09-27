@@ -57,6 +57,7 @@ export function FormShell({
           </p>
         )}
         <fieldset disabled={isSubmitting} className="min-w-0 space-y-6">
+          <legend className="sr-only">{title}</legend>
           {children}
         </fieldset>
         <div className="flex flex-wrap justify-end gap-3 border-t border-vm-line pt-5">

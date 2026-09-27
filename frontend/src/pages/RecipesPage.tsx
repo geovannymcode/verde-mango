@@ -34,6 +34,7 @@ export function RecipesPage() {
     <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
       <Breadcrumbs items={[{ label: 'Inicio', to: '/' }, { label: 'Recetas' }]} className="mb-4" />
       <SectionTitle
+        as="h1"
         eyebrow="recetas"
         title="Cocina con Verde Mango"
         description="Ideas para disfrutar los ingredientes de la huerta."

@@ -81,7 +81,7 @@ export function HomePage() {
               >
                 <img
                   src={category.imageUrl ?? '/placeholder-product.svg'}
-                  alt={category.name}
+                  alt=""
                   loading="lazy"
                   className="h-20 w-20 rounded-vm-full object-cover transition-transform group-hover:scale-105"
                 />

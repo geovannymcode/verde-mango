@@ -1,4 +1,5 @@
 interface SectionTitleProps {
+  as?: 'h1' | 'h2' | 'h3' | 'p'
   eyebrow?: string
   title: string
   description?: string
@@ -7,6 +8,7 @@ interface SectionTitleProps {
 }
 
 export function SectionTitle({
+  as: Heading = 'h2',
   eyebrow,
   title,
   description,
@@ -21,7 +23,7 @@ export function SectionTitle({
           className="mb-3 h-1.5 w-12 rounded-vm-full bg-gradient-to-r from-vm-orange to-vm-green"
         />
         {eyebrow && <p className="font-hand text-xl text-vm-orange">{eyebrow}</p>}
-        <h2 className="text-2xl font-bold text-vm-ink sm:text-3xl">{title}</h2>
+        <Heading className="text-2xl font-bold text-vm-ink sm:text-3xl">{title}</Heading>
         {description && (
           <p className="mt-2 max-w-2xl text-sm text-vm-muted sm:text-base">{description}</p>
         )}
@@ -37,7 +39,7 @@ export function SectionTitle({
       />
       <div>
         {eyebrow && <p className="font-hand text-xl text-vm-orange">{eyebrow}</p>}
-        <h2 className="text-2xl font-bold text-vm-ink sm:text-3xl">{title}</h2>
+        <Heading className="text-2xl font-bold text-vm-ink sm:text-3xl">{title}</Heading>
         {description && (
           <p className="mt-2 max-w-2xl text-sm text-vm-muted sm:text-base">{description}</p>
         )}

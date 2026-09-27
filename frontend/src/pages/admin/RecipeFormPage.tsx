@@ -222,7 +222,11 @@ function RecipeForm({ recipe }: { recipe?: Recipe }) {
               error={errors.description?.message}
             />
           </div>
-          <Select label="Categoría" {...form.register('categoryId', { valueAsNumber: true })}>
+          <Select
+            error={errors.categoryId?.message}
+            label="Categoría"
+            {...form.register('categoryId', { valueAsNumber: true })}
+          >
             <option value="0">Selecciona una categoría</option>
             {categoryOptions.map((c) => (
               <option key={c.id} value={c.id}>
@@ -233,11 +237,6 @@ function RecipeForm({ recipe }: { recipe?: Recipe }) {
               <option value={recipe.category.id}>{recipe.category.name}</option>
             )}
           </Select>
-          {errors.categoryId && (
-            <p role="alert" className="text-sm text-red-700">
-              {errors.categoryId.message}
-            </p>
-          )}
           <Select label="Dificultad" {...form.register('difficulty')}>
             <option value="EASY">Fácil</option>
             <option value="MEDIUM">Media</option>

@@ -19,6 +19,7 @@ export function OrdersListPage() {
   if (ordersQuery.isLoading) {
     return (
       <div className="flex flex-col gap-3">
+        <h1 className="text-2xl font-bold text-vm-ink">Mis órdenes</h1>
         <Skeleton className="h-20 w-full" />
         <Skeleton className="h-20 w-full" />
         <Skeleton className="h-20 w-full" />
@@ -29,6 +30,7 @@ export function OrdersListPage() {
   if (!data || data.content.length === 0) {
     return (
       <div className="flex flex-col items-center gap-3 rounded-vm-lg border border-vm-line py-16 text-center text-vm-muted">
+        <h1 className="text-2xl font-bold text-vm-ink">Mis órdenes</h1>
         <p>Todavía no tienes pedidos.</p>
         <Link to="/tienda">
           <Button variant="outline">Ir a la tienda</Button>
@@ -39,6 +41,7 @@ export function OrdersListPage() {
 
   return (
     <div className="flex flex-col gap-4">
+      <h1 className="text-2xl font-bold text-vm-ink">Mis órdenes</h1>
       <ul className="flex flex-col gap-3">
         {data.content.map((order) => (
           <li key={order.orderNumber}>

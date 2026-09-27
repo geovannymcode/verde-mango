@@ -102,10 +102,11 @@ export function AdminOrderDetailPage() {
           aria-label="Ítems históricos"
         >
           <table className="w-full text-left text-sm">
+            <caption className="sr-only">Ítems de la orden</caption>
             <thead>
               <tr>
                 {['Producto', 'Cantidad', 'Precio unitario histórico', 'Subtotal'].map((t) => (
-                  <th key={t} className="p-4">
+                  <th scope="col" key={t} className="p-4">
                     {t}
                   </th>
                 ))}

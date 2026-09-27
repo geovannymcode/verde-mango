@@ -63,7 +63,7 @@ export function CheckoutPage() {
   if (cartQuery.data && cartQuery.data.items.length === 0) {
     return (
       <div className="mx-auto flex max-w-2xl flex-col items-center gap-4 px-4 py-20 text-center sm:px-6">
-        <SectionTitle eyebrow="pago" title="Tu carrito está vacío" align="center" />
+        <SectionTitle as="h1" eyebrow="pago" title="Tu carrito está vacío" align="center" />
         <Link to="/tienda">
           <Button variant="outline">Ir a la tienda</Button>
         </Link>
@@ -105,7 +105,7 @@ export function CheckoutPage() {
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
-      <SectionTitle eyebrow="pago" title="Finalizar compra" />
+      <SectionTitle as="h1" eyebrow="pago" title="Finalizar compra" />
 
       {validationQuery.data && !validationQuery.data.valid && (
         <div className="mt-6 flex items-start gap-3 rounded-vm-lg border border-red-200 bg-red-50 p-4 text-sm text-red-600">
@@ -181,8 +181,7 @@ export function CheckoutPage() {
             <Select
               label="Método de pago"
               {...register('paymentMethod')}
-              aria-invalid={!!errors.paymentMethod}
-              aria-describedby={errors.paymentMethod ? 'paymentMethod-error' : undefined}
+              error={errors.paymentMethod?.message}
             >
               {PAYMENT_METHODS.map((method) => (
                 <option key={method.value} value={method.value}>
@@ -190,11 +189,6 @@ export function CheckoutPage() {
                 </option>
               ))}
             </Select>
-            {errors.paymentMethod && (
-              <p id="paymentMethod-error" role="alert">
-                {errors.paymentMethod.message}
-              </p>
-            )}
             <Input
               label="Notas para el pedido (opcional)"
               {...register('customerNotes')}

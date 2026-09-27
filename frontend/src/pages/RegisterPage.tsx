@@ -92,7 +92,7 @@ export function RegisterPage() {
           <span className="font-hand text-sm text-vm-green">vegan wonders</span>
         </Link>
 
-        <SectionTitle align="center" eyebrow="únete" title="Crear cuenta" />
+        <SectionTitle as="h1" align="center" eyebrow="únete" title="Crear cuenta" />
 
         <form onSubmit={handleSubmit(submit)} className="flex flex-col gap-4" noValidate>
           {formError && (

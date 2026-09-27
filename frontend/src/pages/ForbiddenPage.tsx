@@ -8,6 +8,7 @@ export function ForbiddenPage() {
   return (
     <div className="mx-auto flex min-h-[50vh] max-w-6xl flex-col items-center justify-center gap-6 px-4 py-20 text-center sm:px-6">
       <SectionTitle
+        as="h1"
         align="center"
         eyebrow="403"
         title="No tienes permiso para ver esta página"

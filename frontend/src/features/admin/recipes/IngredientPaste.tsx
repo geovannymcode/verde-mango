@@ -43,7 +43,7 @@ export function IngredientPaste({ onApply }: { onApply: (rows: IngredientValues[
                   <Input
                     key={key}
                     id={`paste-${index}-${key}`}
-                    label={`${key === 'quantity' ? 'Cantidad' : key === 'unit' ? 'Unidad' : 'Nombre'} ${index + 1}`}
+                    label={`${key === 'quantity' ? 'Cantidad' : key === 'unit' ? 'Unidad' : 'Nombre'} de la revisión ${index + 1}`}
                     value={row[key]}
                     onChange={(e) => change(index, key, e.target.value)}
                   />

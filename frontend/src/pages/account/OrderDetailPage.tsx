@@ -1,3 +1,4 @@
+import { Textarea } from '@/components/ui/Textarea'
 import { orderStatusLabels } from '@/features/admin/orders/transitions'
 import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 import { useState } from 'react'
@@ -185,7 +186,8 @@ export function OrderDetailPage() {
           <p className="text-sm text-vm-muted">
             Cuéntanos por qué quieres cancelar la orden {order.orderNumber}.
           </p>
-          <textarea
+          <Textarea
+            label="Motivo de la cancelación"
             value={reason}
             onChange={(event) => setReason(event.target.value)}
             rows={3}

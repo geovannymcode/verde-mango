@@ -142,8 +142,7 @@ function ProductForm({ product }: { product?: ProductResponse }) {
           <Select
             label="Categoría"
             {...form.register('categoryId', { valueAsNumber: true })}
-            aria-invalid={!!fields.categoryId}
-            aria-describedby={fields.categoryId ? 'categoryId-error' : undefined}
+            error={fields.categoryId?.message}
           >
             <option value="0">Selecciona una categoría</option>
             {categories.data?.map((category) => (
@@ -153,11 +152,6 @@ function ProductForm({ product }: { product?: ProductResponse }) {
               </option>
             ))}
           </Select>
-          {fields.categoryId && (
-            <p id="categoryId-error" className="mt-1 text-xs text-red-600">
-              {fields.categoryId.message}
-            </p>
-          )}
           {categories.error && (
             <div role="alert">
               {adminErrorMessage(categories.error)}
