@@ -1,7 +1,7 @@
-import { useEffect, useRef, type ReactNode } from 'react'
+import { useRef, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { X } from 'lucide-react'
-import { useFocusTrap } from '@/lib/useFocusTrap'
+import { useFocusTrap } from '@/hooks/useFocusTrap'
 
 interface ModalProps {
   open: boolean
@@ -13,23 +13,7 @@ interface ModalProps {
 export function Modal({ open, onClose, title, children }: ModalProps) {
   const dialogRef = useRef<HTMLDivElement>(null)
 
-  useEffect(() => {
-    if (!open) return
-
-    function onKeyDown(event: KeyboardEvent) {
-      if (event.key === 'Escape') onClose()
-    }
-
-    document.addEventListener('keydown', onKeyDown)
-    return () => document.removeEventListener('keydown', onKeyDown)
-  }, [open, onClose])
-
-  // Initial focus belongs to opening, not to changes in the Escape callback.
-  useEffect(() => {
-    if (open) dialogRef.current?.focus()
-  }, [open])
-
-  useFocusTrap(dialogRef, open)
+  useFocusTrap(dialogRef, open, onClose)
 
   if (!open) return null
 
