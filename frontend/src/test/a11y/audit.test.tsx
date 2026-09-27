@@ -115,11 +115,8 @@ it.each(cases)('registra axe sin corregir ni ocultar hallazgos: %s', async (entr
       html: node.outerHTML,
     })),
   })
-  // Group 2 regression: Rating semantics is the only pending axe finding (Group 3).
-  for (const violation of results.violations.filter(({ id }) => id === 'aria-prohibited-attr')) {
-    for (const node of violation.nodes) expect(node.html).toContain('aria-label="Calificación"')
-  }
-  expect(results.violations.filter(({ id }) => id !== 'aria-prohibited-attr')).toEqual([])
+  // Groups 2–3: no outstanding automatic violations in these states.
+  expect(results.violations).toEqual([])
   expect(document.querySelectorAll('h1')).toHaveLength(1)
   const levels = Array.from(document.querySelectorAll('h1,h2,h3,h4,h5,h6')).map((node) =>
     Number(node.tagName.slice(1)),

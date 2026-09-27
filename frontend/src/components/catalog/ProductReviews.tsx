@@ -50,8 +50,12 @@ export function ProductReviews({ productId }: ProductReviewsProps) {
     <div className="flex flex-col gap-8">
       {statsQuery.data && statsQuery.data.totalRatings > 0 && (
         <div className="flex items-center gap-3">
-          <Rating value={statsQuery.data.averageRating ?? 0} size={20} />
-          <span className="text-sm text-vm-muted">
+          <Rating
+            value={statsQuery.data.averageRating ?? 0}
+            count={statsQuery.data.totalRatings}
+            size={20}
+          />
+          <span aria-hidden="true" className="text-sm text-vm-muted">
             {statsQuery.data.averageRating?.toFixed(1)} de 5 · {statsQuery.data.totalRatings}{' '}
             reseñas
           </span>

@@ -47,7 +47,7 @@ export function RecipeRatings({
           value={stats.data?.averageRating ?? average}
           count={stats.data?.totalRatings ?? count}
         />
-        <span>
+        <span aria-hidden="true">
           {(stats.data?.averageRating ?? average).toFixed(1)} de 5 ·{' '}
           {stats.data?.totalRatings ?? count} valoraciones
         </span>
@@ -85,14 +85,15 @@ export function RecipeRatings({
             name="rating"
             control={form.control}
             render={({ field }) => (
-              <Rating value={field.value} onChange={field.onChange} size={24} />
+              <Rating
+                label="Calificación de la receta"
+                error={form.formState.errors.rating?.message}
+                value={field.value}
+                onChange={field.onChange}
+                size={24}
+              />
             )}
           />
-          {form.formState.errors.rating && (
-            <p role="alert" className="text-sm text-red-600">
-              {form.formState.errors.rating.message}
-            </p>
-          )}
           <label className="block">
             Tu comentario
             <textarea
