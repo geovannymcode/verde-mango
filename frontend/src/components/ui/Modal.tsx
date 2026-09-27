@@ -21,9 +21,13 @@ export function Modal({ open, onClose, title, children }: ModalProps) {
     }
 
     document.addEventListener('keydown', onKeyDown)
-    dialogRef.current?.focus()
     return () => document.removeEventListener('keydown', onKeyDown)
   }, [open, onClose])
+
+  // Initial focus belongs to opening, not to changes in the Escape callback.
+  useEffect(() => {
+    if (open) dialogRef.current?.focus()
+  }, [open])
 
   useFocusTrap(dialogRef, open)
 
