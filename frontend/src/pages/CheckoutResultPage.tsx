@@ -127,7 +127,7 @@ export function CheckoutResultPage() {
         </>
       )}
 
-      <div className="flex gap-3">
+      <div className="vm-action-group w-full max-w-lg">
         <Link to="/cuenta">
           <Button variant="outline">Ver mis pedidos</Button>
         </Link>

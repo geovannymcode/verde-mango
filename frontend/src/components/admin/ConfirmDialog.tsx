@@ -59,7 +59,7 @@ function ConfirmationContent({
         </p>
       )}
       {errorAction}
-      <div className="mt-6 flex flex-wrap justify-end gap-3">
+      <div className="vm-action-group mt-6">
         <Button variant="outline" disabled={pending} onClick={onCancel}>
           Cancelar
         </Button>

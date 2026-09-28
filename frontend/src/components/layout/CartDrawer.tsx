@@ -93,16 +93,18 @@ export function CartDrawer() {
                 {formatCurrency(cartQuery.data?.subtotal ?? 0)}
               </span>
             </div>
-            <Link to="/carrito" onClick={closeDrawer}>
-              <Button variant="outline" size="md" className="w-full">
-                Ver carrito
-              </Button>
-            </Link>
-            <Link to="/checkout" onClick={closeDrawer}>
-              <Button variant="solid-orange" size="md" className="w-full">
-                Finalizar compra
-              </Button>
-            </Link>
+            <div className="vm-action-group vm-action-group--stacked">
+              <Link to="/carrito" onClick={closeDrawer}>
+                <Button variant="outline" size="md" className="w-full">
+                  Ver carrito
+                </Button>
+              </Link>
+              <Link to="/checkout" onClick={closeDrawer}>
+                <Button variant="solid-orange" size="md" className="w-full">
+                  Finalizar compra
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       )}

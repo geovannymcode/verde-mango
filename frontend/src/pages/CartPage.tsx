@@ -102,19 +102,21 @@ export function CartPage() {
                 {formatCurrency(cartQuery.data?.subtotal ?? 0)}
               </span>
             </div>
-            <Link to="/checkout">
-              <Button variant="solid-orange" className="w-full">
-                Finalizar compra
+            <div className="vm-action-group vm-action-group--stacked">
+              <Link to="/checkout">
+                <Button variant="solid-orange" className="w-full">
+                  Finalizar compra
+                </Button>
+              </Link>
+              <Button
+                variant="ghost"
+                size="sm"
+                disabled={clearCart.isPending}
+                onClick={() => clearCart.mutate()}
+              >
+                Vaciar carrito
               </Button>
-            </Link>
-            <Button
-              variant="ghost"
-              size="sm"
-              disabled={clearCart.isPending}
-              onClick={() => clearCart.mutate()}
-            >
-              Vaciar carrito
-            </Button>
+            </div>
           </div>
         </div>
       )}
