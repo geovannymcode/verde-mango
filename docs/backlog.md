@@ -96,3 +96,9 @@ No se añadieron dependencias ni funcionalidad. Se aplicaron únicamente correcc
 - **Contraste restante (prioridad media):** verde y gris de texto, bordes esenciales de controles, blanco pequeño del contador del carrito y números de pasos. Fuera de los cambios de botones/crema aprobados; conservar evidencia del informe de 9c y decidir sus colores.
 - **Accesibilidad restante (prioridad media):** skip link público/orientación de foco al navegar, enlaces con Button anidado en CartDrawer y patrón Tabs; no fueron corregidos por los grupos aprobados. Verificar con VoiceOver/NVDA antes de declarar conformidad completa.
 - **9d:** abordar el aviso de chunk >500 kB, división por rutas y análisis del bundle. Esta entrega cierra los cambios autorizados de 9c; no ejecuta todavía la subentrega 9d.
+
+## Higiene 9d-3
+
+- **Prioridad baja — reubicar utilidades compartidas de admin.** Hay 2.56 kB de listeners de sincronización, query keys, estados y StatusBadge bajo `src/features/admin` / `src/components/admin`, consumidos por el sitio público. No es un problema de peso: deberían vivir en `src/lib` o `src/components/ui` (y una ubicación compartida apropiada para las claves). Un import futuro desde esas carpetas podría arrastrar código administrativo pesado al bundle inicial sin que nadie lo advierta. Conservar la comprobación del grafo de chunks al moverlos.
+- **Antes de publicar — contenido provisional confirmado en dist.** Home incluye dos imágenes picsum; Nosotros mantiene tres nombres de equipo por confirmar, retratos de stock y dos hitos con año por confirmar; Contáctenos mantiene teléfono/correo pendientes. Sustituir con datos y assets aprobados por el propietario; los placeholders de imagen ante una respuesta sin foto son fallbacks, no fixtures de API.
+- **Configuración de despliegue:** el build auditado usa `http://localhost:8080` como URL de API por defecto. No es un secreto, pero debe reemplazarse por el origen productivo antes de desplegar.
