@@ -156,3 +156,32 @@ backend define `paymentMethod` como texto libre sin enum (`orders/web/CheckoutDt
 - Precios en pesos colombianos: `Intl.NumberFormat('es-CO')`.
 - El advisory de seguridad de `react-router` sobre "RSC Mode CSRF" no aplica: este proyecto usa
   el modo declarativo estándar (`createBrowserRouter`), no React Server Components.
+
+## Naranja y contraste (9c, Grupo 4)
+
+| Uso                                      | Token CSS / utilidad Tailwind                            | Regla                                                                                      |
+| ---------------------------------------- | -------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| Texto pequeño, enlaces y estados activos | `--vm-orange-text: #C73C20` / `text-vm-orange-text`      | 5.127:1 sobre blanco; 4.700:1 sobre `--color-vm-cream`. Incluye hover y badges.            |
+| Texto grande sobre blanco                | `--vm-orange: #FF5B3B` / `text-vm-orange`                | Desde 24 px regular o 19 px en bold (700 o superior); 3.083:1, supera el mínimo 3:1.       |
+| Fondos de marca y decoración             | `--vm-orange` / `bg-vm-orange`, `border-vm-orange`, etc. | Conservar identidad visual; la legibilidad del texto superpuesto se verifica por separado. |
+
+Los aliases Tailwind `--color-vm-orange` y `--color-vm-orange-text` apuntan a esos tokens en
+`src/index.css`. No sustituir globalmente un naranja por otro. Por debajo de 24 px regular o
+19 px bold se exige 4.5:1; texto grande exige 3:1. Los precios ya oscuros (`vm-ink`) no deben
+volverse naranjas. El precio de detalle de 24 px bold y los años de Nosotros de 30 px conservan
+el naranja original sobre blanco.
+
+**Pendiente de decisión de marca:** blanco sobre `#FF5B3B` da **3.083:1**, por tanto los botones
+con texto pequeño no cumplen AA. También afecta números pequeños blancos en fondos naranjas
+(paginación, contador del carrito y pasos). No se cambiaron esos fondos en este grupo. El hover
+al 90% sobre blanco baja a aproximadamente **2.806:1**.
+
+El naranja original sobre crema da **2.826:1**, insuficiente incluso en texto grande: los
+encabezados manuscritos grandes sobre crema se conservaron por la restricción de alcance y
+requieren una decisión posterior. Sobre un fondo teñido al 10% de naranja, el texto oscuro debe
+volver a verificarse: el contraste depende del fondo que queda detrás.
+
+`src/test/a11y/contrast.test.ts` lee los valores reales de CSS y comprueba los pares aprobados
+con luminancia sRGB. No pretende sustituir una medición de cada elemento renderizado ni hacer
+pasar como conformes los pares pendientes (botones, verde y gris de la auditoría). Axe en jsdom
+no mide contraste; sus pruebas siguen cubriendo la semántica de las páginas con precios.

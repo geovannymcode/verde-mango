@@ -7,7 +7,7 @@ interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
 }
 
 const variantClasses: Record<BadgeVariant, string> = {
-  orange: 'bg-vm-orange/10 text-vm-orange',
+  orange: 'bg-vm-orange/10 text-vm-orange-text',
   green: 'bg-vm-green/15 text-vm-green',
   neutral: 'bg-vm-cream text-vm-muted',
   danger: 'bg-red-50 text-red-500',

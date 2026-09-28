@@ -17,7 +17,7 @@ const rightLinks = [
 
 function linkClass({ isActive }: { isActive: boolean }) {
   return `text-sm font-semibold uppercase tracking-wide transition-colors ${
-    isActive ? 'text-vm-orange' : 'text-vm-ink hover:text-vm-orange'
+    isActive ? 'text-vm-orange-text' : 'text-vm-ink hover:text-vm-orange-text'
   }`
 }
 

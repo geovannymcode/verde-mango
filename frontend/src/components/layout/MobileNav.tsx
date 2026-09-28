@@ -26,7 +26,7 @@ export function MobileNav() {
             onClick={closeMobileNav}
             className={({ isActive }) =>
               `rounded-vm-md px-3 py-2.5 text-sm font-semibold uppercase tracking-wide ${
-                isActive ? 'bg-vm-orange/10 text-vm-orange' : 'text-vm-ink hover:bg-vm-cream'
+                isActive ? 'bg-vm-orange/10 text-vm-orange-text' : 'text-vm-ink hover:bg-vm-cream'
               }`
             }
           >

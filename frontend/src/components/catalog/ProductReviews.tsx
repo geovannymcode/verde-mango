@@ -98,7 +98,7 @@ export function ProductReviews({ productId }: ProductReviewsProps) {
       ) : (
         <div className="rounded-vm-lg border border-vm-line bg-vm-cream p-5 text-center">
           <p className="text-sm text-vm-ink">
-            <Link to="/login" className="font-semibold text-vm-orange hover:underline">
+            <Link to="/login" className="font-semibold text-vm-orange-text hover:underline">
               Inicia sesión
             </Link>{' '}
             para dejar tu reseña.

@@ -23,7 +23,7 @@ function AdminNavigation({ onNavigate }: { onNavigate?: () => void }) {
         end
         onClick={onNavigate}
         className={({ isActive }) =>
-          `flex items-center gap-3 rounded-md px-3 py-3 text-sm font-semibold ${isActive ? 'bg-vm-orange/10 text-vm-orange' : 'hover:bg-stone-50'}`
+          `flex items-center gap-3 rounded-md px-3 py-3 text-sm font-semibold ${isActive ? 'bg-vm-orange/10 text-vm-orange-text' : 'hover:bg-stone-50'}`
         }
       >
         <LayoutDashboard size={18} />
@@ -40,7 +40,7 @@ function AdminNavigation({ onNavigate }: { onNavigate?: () => void }) {
           to={`/admin/${path}`}
           onClick={onNavigate}
           className={({ isActive }) =>
-            `flex items-center gap-3 rounded-md px-3 py-3 text-sm font-semibold ${isActive ? 'bg-vm-orange/10 text-vm-orange' : 'hover:bg-stone-50'}`
+            `flex items-center gap-3 rounded-md px-3 py-3 text-sm font-semibold ${isActive ? 'bg-vm-orange/10 text-vm-orange-text' : 'hover:bg-stone-50'}`
           }
         >
           <Icon size={18} />

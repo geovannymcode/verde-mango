@@ -16,7 +16,7 @@ export function CategoryFilterList({ categories, activeSlug, onSelect }: Categor
             type="button"
             onClick={() => onSelect(undefined)}
             className={`w-full rounded-vm-md px-3 py-2 text-left text-sm font-medium transition-colors ${
-              !activeSlug ? 'bg-vm-orange/10 text-vm-orange' : 'text-vm-ink hover:bg-vm-cream'
+              !activeSlug ? 'bg-vm-orange/10 text-vm-orange-text' : 'text-vm-ink hover:bg-vm-cream'
             }`}
           >
             Todas
@@ -29,7 +29,7 @@ export function CategoryFilterList({ categories, activeSlug, onSelect }: Categor
               onClick={() => onSelect(category.slug)}
               className={`flex w-full items-center justify-between rounded-vm-md px-3 py-2 text-left text-sm font-medium transition-colors ${
                 activeSlug === category.slug
-                  ? 'bg-vm-orange/10 text-vm-orange'
+                  ? 'bg-vm-orange/10 text-vm-orange-text'
                   : 'text-vm-ink hover:bg-vm-cream'
               }`}
             >

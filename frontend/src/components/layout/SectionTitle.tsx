@@ -22,7 +22,7 @@ export function SectionTitle({
           aria-hidden
           className="mb-3 h-1.5 w-12 rounded-vm-full bg-gradient-to-r from-vm-orange to-vm-green"
         />
-        {eyebrow && <p className="font-hand text-xl text-vm-orange">{eyebrow}</p>}
+        {eyebrow && <p className="font-hand text-xl text-vm-orange-text">{eyebrow}</p>}
         <Heading className="text-2xl font-bold text-vm-ink sm:text-3xl">{title}</Heading>
         {description && (
           <p className="mt-2 max-w-2xl text-sm text-vm-muted sm:text-base">{description}</p>
@@ -38,7 +38,7 @@ export function SectionTitle({
         className="mt-1 h-12 w-1.5 shrink-0 rounded-vm-full bg-gradient-to-b from-vm-orange to-vm-green"
       />
       <div>
-        {eyebrow && <p className="font-hand text-xl text-vm-orange">{eyebrow}</p>}
+        {eyebrow && <p className="font-hand text-xl text-vm-orange-text">{eyebrow}</p>}
         <Heading className="text-2xl font-bold text-vm-ink sm:text-3xl">{title}</Heading>
         {description && (
           <p className="mt-2 max-w-2xl text-sm text-vm-muted sm:text-base">{description}</p>

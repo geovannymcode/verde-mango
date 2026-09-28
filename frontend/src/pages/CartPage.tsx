@@ -59,11 +59,11 @@ export function CartPage() {
                   <div className="flex flex-1 flex-col gap-1">
                     <Link
                       to={`/tienda/${item.productSlug}`}
-                      className="font-semibold text-vm-ink hover:text-vm-orange"
+                      className="font-semibold text-vm-ink hover:text-vm-orange-text"
                     >
                       {item.productName}
                     </Link>
-                    <span className="text-sm font-bold text-vm-orange">
+                    <span className="text-sm font-bold text-vm-orange-text">
                       {formatCurrency(item.unitPrice)}
                     </span>
                     <div className="mt-2 flex flex-wrap items-center justify-between gap-3">

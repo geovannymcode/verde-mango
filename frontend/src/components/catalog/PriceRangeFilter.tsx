@@ -55,7 +55,7 @@ export function PriceRangeFilter({
   return (
     <div className="flex flex-col gap-3">
       <p className="text-sm font-bold uppercase tracking-wide text-vm-ink">Precio</p>
-      <p className="text-sm font-semibold text-vm-orange">
+      <p className="text-sm font-semibold text-vm-orange-text">
         PRECIO: {formatCurrency(draftMin)} — {formatCurrency(draftMax)}
       </p>
       <div className="relative flex h-5 items-center">

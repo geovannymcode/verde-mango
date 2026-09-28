@@ -55,11 +55,11 @@ export function CartDrawer() {
                     <Link
                       to={`/tienda/${item.productSlug}`}
                       onClick={closeDrawer}
-                      className="line-clamp-2 text-sm font-semibold text-vm-ink hover:text-vm-orange"
+                      className="line-clamp-2 text-sm font-semibold text-vm-ink hover:text-vm-orange-text"
                     >
                       {item.productName}
                     </Link>
-                    <span className="text-sm font-bold text-vm-orange">
+                    <span className="text-sm font-bold text-vm-orange-text">
                       {formatCurrency(item.unitPrice)}
                     </span>
                     <div className="mt-1 flex items-center justify-between">

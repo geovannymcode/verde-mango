@@ -28,7 +28,7 @@ export function Tabs({ tabs, defaultTabId, className = '' }: TabsProps) {
             onClick={() => setActiveId(tab.id)}
             className={`-mb-px border-b-2 px-1 py-3 text-sm font-semibold uppercase tracking-wide transition-colors ${
               tab.id === activeTab?.id
-                ? 'border-vm-orange text-vm-orange'
+                ? 'border-vm-orange text-vm-orange-text'
                 : 'border-transparent text-vm-muted hover:text-vm-ink'
             }`}
           >

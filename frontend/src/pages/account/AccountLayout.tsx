@@ -31,7 +31,7 @@ export function AccountLayout() {
               end={end}
               className={({ isActive }) =>
                 `flex items-center gap-2 whitespace-nowrap rounded-vm-md px-3 py-2.5 text-sm font-semibold ${
-                  isActive ? 'bg-vm-orange/10 text-vm-orange' : 'text-vm-ink hover:bg-vm-cream'
+                  isActive ? 'bg-vm-orange/10 text-vm-orange-text' : 'text-vm-ink hover:bg-vm-cream'
                 }`
               }
             >

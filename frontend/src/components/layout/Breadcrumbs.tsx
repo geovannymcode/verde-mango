@@ -22,7 +22,7 @@ export function Breadcrumbs({ items, className = '' }: BreadcrumbsProps) {
           <Fragment key={`${item.label}-${index}`}>
             {index > 0 && <ChevronRight size={14} className="text-vm-muted" aria-hidden />}
             {item.to && !isLast ? (
-              <Link to={item.to} className="text-vm-muted hover:text-vm-orange">
+              <Link to={item.to} className="text-vm-muted hover:text-vm-orange-text">
                 {item.label}
               </Link>
             ) : (

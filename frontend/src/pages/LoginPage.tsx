@@ -101,7 +101,7 @@ export function LoginPage() {
                 ? `/registro?${new URLSearchParams({ returnTo: resolveReturnTo(searchParams.get('returnTo')) })}`
                 : '/registro'
             }
-            className="font-semibold text-vm-orange hover:underline"
+            className="font-semibold text-vm-orange-text hover:underline"
           >
             Regístrate
           </Link>

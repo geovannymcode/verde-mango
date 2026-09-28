@@ -51,7 +51,7 @@ export function RecipeSidebar({ filters }: { filters: ReturnType<typeof useUrlFi
           <li>
             <button
               onClick={() => updateParams({ categoria: undefined })}
-              className={!searchParams.has('categoria') ? 'font-bold text-vm-orange' : ''}
+              className={!searchParams.has('categoria') ? 'font-bold text-vm-orange-text' : ''}
             >
               Todas las categorías
             </button>
@@ -62,7 +62,7 @@ export function RecipeSidebar({ filters }: { filters: ReturnType<typeof useUrlFi
                 aria-pressed={searchParams.get('categoria') === category.slug}
                 className={
                   searchParams.get('categoria') === category.slug
-                    ? 'font-bold text-vm-orange'
+                    ? 'font-bold text-vm-orange-text'
                     : 'hover:text-vm-green'
                 }
                 onClick={() => updateParams({ categoria: category.slug })}
@@ -131,7 +131,7 @@ export function RecipeSidebar({ filters }: { filters: ReturnType<typeof useUrlFi
                 className="aspect-square h-16 w-16 rounded-vm-md object-cover"
               />
               <div>
-                <h3 className="font-bold hover:text-vm-orange">{recipe.title}</h3>
+                <h3 className="font-bold hover:text-vm-orange-text">{recipe.title}</h3>
                 {recipe.publishedAt && (
                   <time className="text-xs text-vm-muted" dateTime={recipe.publishedAt}>
                     {formatRecipeDate(recipe.publishedAt)}

@@ -24,10 +24,10 @@ export function RecentProductsList({ products }: RecentProductsListProps) {
                 className="h-14 w-14 shrink-0 rounded-vm-md bg-vm-cream object-cover"
               />
               <div className="flex flex-col gap-1">
-                <span className="line-clamp-2 text-sm font-semibold text-vm-ink group-hover:text-vm-orange">
+                <span className="line-clamp-2 text-sm font-semibold text-vm-ink group-hover:text-vm-orange-text">
                   {product.name}
                 </span>
-                <span className="text-sm font-bold text-vm-orange">
+                <span className="text-sm font-bold text-vm-orange-text">
                   {formatCurrency(product.price)}
                 </span>
                 <Rating value={product.rating ?? 0} size={12} />

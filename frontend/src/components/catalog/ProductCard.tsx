@@ -58,7 +58,7 @@ export function ProductCard({ product }: ProductCardProps) {
         )}
         <Link
           to={`/tienda/${product.slug}`}
-          className="line-clamp-2 font-bold text-vm-ink hover:text-vm-orange"
+          className="line-clamp-2 font-bold text-vm-ink hover:text-vm-orange-text"
         >
           {product.name}
         </Link>

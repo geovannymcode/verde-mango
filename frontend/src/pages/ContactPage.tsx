@@ -109,7 +109,7 @@ export function ContactPage() {
                   {value && (
                     <p className="mt-2 break-words text-sm leading-relaxed text-vm-muted">
                       {href ? (
-                        <a href={href} className="hover:text-vm-orange">
+                        <a href={href} className="hover:text-vm-orange-text">
                           {value}
                         </a>
                       ) : (
@@ -249,7 +249,7 @@ export function ContactPage() {
             href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(contactContent.address)}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-sm font-semibold text-vm-ink underline underline-offset-4 hover:text-vm-orange"
+            className="text-sm font-semibold text-vm-ink underline underline-offset-4 hover:text-vm-orange-text"
           >
             Ver nuestra dirección en Google Maps
           </a>

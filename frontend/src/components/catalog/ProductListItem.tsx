@@ -56,7 +56,7 @@ export function ProductListItem({ product }: ProductListItemProps) {
             {product.category}
           </p>
         )}
-        <Link to={`/tienda/${product.slug}`} className="font-bold text-vm-ink hover:text-vm-orange">
+        <Link to={`/tienda/${product.slug}`} className="font-bold text-vm-ink hover:text-vm-orange-text">
           {product.name}
         </Link>
         <Rating value={product.rating ?? 0} count={product.reviewCount} size={14} />

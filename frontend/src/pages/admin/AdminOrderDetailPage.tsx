@@ -43,7 +43,7 @@ export function AdminOrderDetailPage() {
   const payment = order.payment
   return (
     <div className="space-y-8">
-      <Link className="text-vm-orange" to="/admin/ordenes">
+      <Link className="text-vm-orange-text" to="/admin/ordenes">
         ← Órdenes
       </Link>
       <header className="space-y-3">

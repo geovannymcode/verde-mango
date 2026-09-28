@@ -30,7 +30,7 @@ export function SetupStatusPage() {
         {isLoading && (
           <p className="text-vm-muted">Consultando {env.apiBaseUrl}/actuator/health…</p>
         )}
-        {isError && <p className="text-vm-orange">No fue posible conectar con el backend.</p>}
+        {isError && <p className="text-vm-orange-text">No fue posible conectar con el backend.</p>}
         {data && <p className="text-vm-green">{data.status}</p>}
       </div>
     </main>

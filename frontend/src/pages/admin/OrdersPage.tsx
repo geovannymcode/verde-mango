@@ -28,7 +28,7 @@ export function OrdersPage() {
       id: 'number',
       header: 'Orden',
       cell: (row) => (
-        <Link className="font-semibold text-vm-orange" to={`/admin/ordenes/${row.id}`}>
+        <Link className="font-semibold text-vm-orange-text" to={`/admin/ordenes/${row.id}`}>
           {row.orderNumber}
         </Link>
       ),

@@ -142,7 +142,7 @@ export function RegisterPage() {
                 ? `/login?${new URLSearchParams({ returnTo: resolveReturnTo(searchParams.get('returnTo')) })}`
                 : '/login'
             }
-            className="font-semibold text-vm-orange hover:underline"
+            className="font-semibold text-vm-orange-text hover:underline"
           >
             Inicia sesión
           </Link>

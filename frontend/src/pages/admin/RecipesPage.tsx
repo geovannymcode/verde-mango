@@ -53,7 +53,7 @@ export function AdminRecipesPage() {
       id: 'title',
       header: 'Título',
       cell: (r) => (
-        <Link to={`/admin/recetas/${r.id}/editar`} className="font-semibold text-vm-orange">
+        <Link to={`/admin/recetas/${r.id}/editar`} className="font-semibold text-vm-orange-text">
           {r.title}
         </Link>
       ),
@@ -156,7 +156,7 @@ export function AdminRecipesPage() {
         onRetry={() => void query.refetch()}
         emptyMessage="No hay recetas con estos filtros."
         emptyAction={
-          <Link to="/admin/recetas/nueva" className="text-vm-orange">
+          <Link to="/admin/recetas/nueva" className="text-vm-orange-text">
             Crear receta
           </Link>
         }

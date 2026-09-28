@@ -13,7 +13,7 @@ function FooterColumn({ title, links }: { title: string; links: FooterLink[] }) 
       <ul className="mt-3 flex flex-col gap-2">
         {links.map((link) => (
           <li key={link.to}>
-            <Link to={link.to} className="text-sm text-vm-muted hover:text-vm-orange">
+            <Link to={link.to} className="text-sm text-vm-muted hover:text-vm-orange-text">
               {link.label}
             </Link>
           </li>
