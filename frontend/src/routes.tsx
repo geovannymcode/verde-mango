@@ -1,3 +1,18 @@
+import {
+  CheckoutPage,
+  CheckoutResultPage,
+  RecipeDetailPage,
+  AdminLayout,
+  ProductsPage,
+  ProductFormPage,
+  CategoriesPage,
+  OrdersPage,
+  AdminOrderDetailPage,
+  AdminRecipesPage,
+  RecipeFormPage,
+  DashboardPage,
+} from '@/components/routing/LazyPages'
+import { RouteBoundary } from '@/components/routing/RouteBoundary'
 import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { RootLayout } from '@/components/layout/RootLayout'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
@@ -7,10 +22,7 @@ import { HomePage } from '@/pages/HomePage'
 import { CatalogPage } from '@/pages/CatalogPage'
 import { ProductDetailPage } from '@/pages/ProductDetailPage'
 import { CartPage } from '@/pages/CartPage'
-import { CheckoutPage } from '@/pages/CheckoutPage'
-import { CheckoutResultPage } from '@/pages/CheckoutResultPage'
 import { RecipesPage } from '@/pages/RecipesPage'
-import { RecipeDetailPage } from '@/pages/RecipeDetailPage'
 import { AccountLayout } from '@/pages/account/AccountLayout'
 import { ProfilePage } from '@/pages/account/ProfilePage'
 import { OrdersListPage } from '@/pages/account/OrdersListPage'
@@ -21,35 +33,98 @@ import { AboutPage } from '@/pages/AboutPage'
 import { ContactPage } from '@/pages/ContactPage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
 import { SetupStatusPage } from '@/pages/SetupStatusPage'
-import { AdminLayout } from '@/components/admin/AdminLayout'
-import { ProductsPage } from '@/pages/admin/ProductsPage'
-import { ProductFormPage } from '@/pages/admin/ProductFormPage'
-import { CategoriesPage } from '@/pages/admin/CategoriesPage'
-import { OrdersPage } from '@/pages/admin/OrdersPage'
-import { AdminOrderDetailPage } from '@/pages/admin/AdminOrderDetailPage'
-import { AdminRecipesPage } from '@/pages/admin/RecipesPage'
-import { RecipeFormPage } from '@/pages/admin/RecipeFormPage'
-import { DashboardPage } from '@/pages/admin/DashboardPage'
 
 export const router = createBrowserRouter([
   {
     path: '/admin',
     element: (
       <AdminRoute>
-        <AdminLayout />
+        <RouteBoundary>
+          <AdminLayout />
+        </RouteBoundary>
       </AdminRoute>
     ),
     children: [
-      { index: true, element: <DashboardPage /> },
-      { path: 'productos', element: <ProductsPage /> },
-      { path: 'productos/nuevo', element: <ProductFormPage /> },
-      { path: 'productos/:id/editar', element: <ProductFormPage /> },
-      { path: 'categorias', element: <CategoriesPage /> },
-      { path: 'recetas', element: <AdminRecipesPage /> },
-      { path: 'recetas/nueva', element: <RecipeFormPage /> },
-      { path: 'recetas/:id/editar', element: <RecipeFormPage /> },
-      { path: 'ordenes', element: <OrdersPage /> },
-      { path: 'ordenes/:id', element: <AdminOrderDetailPage /> },
+      {
+        index: true,
+        element: (
+          <RouteBoundary>
+            <DashboardPage />
+          </RouteBoundary>
+        ),
+      },
+      {
+        path: 'productos',
+        element: (
+          <RouteBoundary>
+            <ProductsPage />
+          </RouteBoundary>
+        ),
+      },
+      {
+        path: 'productos/nuevo',
+        element: (
+          <RouteBoundary>
+            <ProductFormPage />
+          </RouteBoundary>
+        ),
+      },
+      {
+        path: 'productos/:id/editar',
+        element: (
+          <RouteBoundary>
+            <ProductFormPage />
+          </RouteBoundary>
+        ),
+      },
+      {
+        path: 'categorias',
+        element: (
+          <RouteBoundary>
+            <CategoriesPage />
+          </RouteBoundary>
+        ),
+      },
+      {
+        path: 'recetas',
+        element: (
+          <RouteBoundary>
+            <AdminRecipesPage />
+          </RouteBoundary>
+        ),
+      },
+      {
+        path: 'recetas/nueva',
+        element: (
+          <RouteBoundary>
+            <RecipeFormPage />
+          </RouteBoundary>
+        ),
+      },
+      {
+        path: 'recetas/:id/editar',
+        element: (
+          <RouteBoundary>
+            <RecipeFormPage />
+          </RouteBoundary>
+        ),
+      },
+      {
+        path: 'ordenes',
+        element: (
+          <RouteBoundary>
+            <OrdersPage />
+          </RouteBoundary>
+        ),
+      },
+      {
+        path: 'ordenes/:id',
+        element: (
+          <RouteBoundary>
+            <AdminOrderDetailPage />
+          </RouteBoundary>
+        ),
+      },
       { path: '*', element: <NotFoundPage /> },
     ],
   },
@@ -65,13 +140,29 @@ export const router = createBrowserRouter([
         path: 'checkout',
         element: (
           <ProtectedRoute>
-            <CheckoutPage />
+            <RouteBoundary>
+              <CheckoutPage />
+            </RouteBoundary>
           </ProtectedRoute>
         ),
       },
-      { path: 'checkout/resultado', element: <CheckoutResultPage /> },
+      {
+        path: 'checkout/resultado',
+        element: (
+          <RouteBoundary>
+            <CheckoutResultPage />
+          </RouteBoundary>
+        ),
+      },
       { path: 'recetas', element: <RecipesPage /> },
-      { path: 'recetas/:slug', element: <RecipeDetailPage /> },
+      {
+        path: 'recetas/:slug',
+        element: (
+          <RouteBoundary>
+            <RecipeDetailPage />
+          </RouteBoundary>
+        ),
+      },
       {
         path: 'cuenta',
         element: (

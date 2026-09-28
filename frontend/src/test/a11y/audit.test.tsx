@@ -69,7 +69,11 @@ it.each(cases)('registra axe sin corregir ni ocultar hallazgos: %s', async (entr
       <RouterProvider router={router} />
     </QueryClientProvider>,
   )
-  await waitFor(() => expect(client.isFetching()).toBe(0))
+  await waitFor(() => {
+    expect(screen.queryByRole('status', { name: 'Cargando página' })).not.toBeInTheDocument()
+    expect(document.querySelectorAll('h1')).toHaveLength(1)
+    expect(client.isFetching()).toBe(0)
+  })
   const errors = client
     .getQueryCache()
     .getAll()
