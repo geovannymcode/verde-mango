@@ -86,7 +86,10 @@ export function AdminRecipesPage() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <h1 className="text-3xl font-bold">Recetas</h1>
-        <Link className="rounded-md bg-vm-orange px-5 py-3 text-white" to="/admin/recetas/nueva">
+        <Link
+          className="rounded-md bg-vm-orange px-5 py-3 text-[19px] font-bold text-white"
+          to="/admin/recetas/nueva"
+        >
           Crear receta
         </Link>
       </div>

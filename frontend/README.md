@@ -157,31 +157,27 @@ backend define `paymentMethod` como texto libre sin enum (`orders/web/CheckoutDt
 - El advisory de seguridad de `react-router` sobre "RSC Mode CSRF" no aplica: este proyecto usa
   el modo declarativo estándar (`createBrowserRouter`), no React Server Components.
 
-## Naranja y contraste (9c, Grupo 4)
+## Naranja y contraste (cierre 9c)
 
-| Uso                                      | Token CSS / utilidad Tailwind                            | Regla                                                                                      |
-| ---------------------------------------- | -------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
-| Texto pequeño, enlaces y estados activos | `--vm-orange-text: #C73C20` / `text-vm-orange-text`      | 5.127:1 sobre blanco; 4.700:1 sobre `--color-vm-cream`. Incluye hover y badges.            |
-| Texto grande sobre blanco                | `--vm-orange: #FF5B3B` / `text-vm-orange`                | Desde 24 px regular o 19 px en bold (700 o superior); 3.083:1, supera el mínimo 3:1.       |
-| Fondos de marca y decoración             | `--vm-orange` / `bg-vm-orange`, `border-vm-orange`, etc. | Conservar identidad visual; la legibilidad del texto superpuesto se verifica por separado. |
+| Uso | Token / utilidad | Regla |
+| --- | --- | --- |
+| Texto pequeño, enlaces, estados activos | `--vm-orange-text: #C73C20` / `text-vm-orange-text` | Mínimo 4.5:1: blanco **5.127:1**, crema **4.700:1**. |
+| Cualquier texto sobre crema | `--vm-orange-text` | Prohibido el naranja original a cualquier tamaño, incluidos eyebrows, años y texto de marca. |
+| Texto grande sobre blanco | `--vm-orange: #FF5B3B` / `text-vm-orange` | Desde 24px regular o 19px bold (700+): **3.083:1**, mínimo 3:1. |
+| Botón sólido naranja con texto blanco | `bg-vm-orange` | Texto **19px bold**, también en hover. 16px bold **no** alcanza AA. Si un diseño no admite crecer, usar `bg-vm-orange-text` (5.127:1) y documentar la excepción. |
+| Fondos y decoración | `--vm-orange` | Se conserva la marca. No reducir opacidad del botón en hover: blanco sobre naranja al 90% cae a 2.806:1. |
 
-Los aliases Tailwind `--color-vm-orange` y `--color-vm-orange-text` apuntan a esos tokens en
-`src/index.css`. No sustituir globalmente un naranja por otro. Por debajo de 24 px regular o
-19 px bold se exige 4.5:1; texto grande exige 3:1. Los precios ya oscuros (`vm-ink`) no deben
-volverse naranjas. El precio de detalle de 24 px bold y los años de Nosotros de 30 px conservan
-el naranja original sobre blanco.
+Aliases Tailwind: `--color-vm-orange` y `--color-vm-orange-text`, definidos en `src/index.css`.
+Los sólidos usan altura mínima para admitir texto envuelto sin recortarlo. El hover usa sombra,
+sin aclarar el fondo. No hay excepciones de fondo oscuro aplicadas en botones en este cierre.
+Los precios ya oscuros (`vm-ink`) se conservan.
 
-**Pendiente de decisión de marca:** blanco sobre `#FF5B3B` da **3.083:1**, por tanto los botones
-con texto pequeño no cumplen AA. También afecta números pequeños blancos en fondos naranjas
-(paginación, contador del carrito y pasos). No se cambiaron esos fondos en este grupo. El hover
-al 90% sobre blanco baja a aproximadamente **2.806:1**.
+Inventario completo de botones, tamaños anteriores y resultantes: [botones-9c.md](../docs/botones-9c.md).
+`src/test/a11y/contrast.test.ts` lee los tokens reales y comprueba pares aprobados mediante
+luminancia sRGB; no sustituye un examen visual del layout. Axe en jsdom comprueba semántica,
+no contraste. Sobre un tinte naranja al 10% en blanco, el texto oscuro alcanza 4.580:1;
+sobre ese tinte en crema baja a 4.222:1: no usar esa combinación para texto pequeño.
 
-El naranja original sobre crema da **2.826:1**, insuficiente incluso en texto grande: los
-encabezados manuscritos grandes sobre crema se conservaron por la restricción de alcance y
-requieren una decisión posterior. Sobre un fondo teñido al 10% de naranja, el texto oscuro debe
-volver a verificarse: el contraste depende del fondo que queda detrás.
-
-`src/test/a11y/contrast.test.ts` lee los valores reales de CSS y comprueba los pares aprobados
-con luminancia sRGB. No pretende sustituir una medición de cada elemento renderizado ni hacer
-pasar como conformes los pares pendientes (botones, verde y gris de la auditoría). Axe en jsdom
-no mide contraste; sus pruebas siguen cubriendo la semántica de las páginas con precios.
+Persisten hallazgos de la auditoría fuera de estas decisiones (verde/gris, límites de controles,
+contador del carrito y números de pasos). El cierre de la subentrega no certifica conformidad AA
+de toda la aplicación. Véase el backlog.

@@ -1,6 +1,7 @@
 /// <reference types="node" />
 import { readFileSync } from 'node:fs'
 import { expect, it } from 'vitest'
+import { buttonClasses } from '@/lib/buttonClasses'
 
 const css = readFileSync('src/index.css', 'utf8')
 function token(name: string): string {
@@ -67,3 +68,17 @@ it('el mapeo Tailwind conserva los dos tokens de marca aprobados', () => {
   expect(token('--color-vm-orange-text').toLowerCase()).toBe('#c73c20')
   expect(token('--color-vm-orange').toLowerCase()).toBe('#ff5b3b')
 })
+
+it.each(['sm', 'md', 'lg'] as const)(
+  'botón naranja %s: tipografía y fondo cumplen AA también en hover',
+  (size) => {
+    const classes = buttonClasses('solid-orange', size)
+    expect(classes).toContain('font-bold')
+    expect(classes).not.toContain('hover:bg-vm-orange/90')
+    expect(classes).toContain('text-[19px]')
+    expect(classes).toContain('bg-vm-orange ')
+    expect(
+      contrast(rgb(token('--color-vm-white')), rgb(token('--color-vm-orange'))),
+    ).toBeGreaterThanOrEqual(3)
+  },
+)

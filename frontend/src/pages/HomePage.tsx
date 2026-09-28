@@ -29,7 +29,7 @@ export function HomePage() {
       <section className="bg-vm-cream">
         <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 py-14 sm:px-6 md:grid-cols-2 md:py-20">
           <div className="flex flex-col items-center gap-4 text-center md:items-start md:text-left">
-            <p className="font-hand text-2xl text-vm-orange">frescura de la huerta</p>
+            <p className="font-hand text-2xl text-vm-orange-text">frescura de la huerta</p>
             <h1 className="text-3xl font-extrabold leading-tight text-vm-ink sm:text-4xl md:text-5xl">
               Fermentos, veg-quesos y recetas 100% veganas
             </h1>

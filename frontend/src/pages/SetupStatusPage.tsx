@@ -19,7 +19,7 @@ export function SetupStatusPage() {
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center gap-4 bg-vm-cream px-4 text-center">
-      <p className="font-hand text-2xl text-vm-orange">— est. 1998 —</p>
+      <p className="font-hand text-2xl text-vm-orange-text">— est. 1998 —</p>
       <h1 className="text-4xl text-vm-ink">Verde Mango</h1>
       <p className="max-w-md text-vm-muted">
         Fase 1 completada: Vite + React 19 + TypeScript, Tailwind CSS, TanStack Query, Zustand y el

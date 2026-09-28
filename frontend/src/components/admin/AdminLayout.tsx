@@ -83,6 +83,8 @@ export function AdminLayout() {
               onClick={() => setMenuOpen(true)}
               aria-label="Abrir navegación del panel"
               aria-expanded={menuOpen}
+              aria-controls={menuOpen ? 'admin-navigation' : undefined}
+              aria-haspopup="dialog"
               className="rounded-md p-2 md:hidden"
             >
               <Menu size={22} />
@@ -106,7 +108,13 @@ export function AdminLayout() {
           <Outlet />
         </main>
       </div>
-      <Drawer open={menuOpen} onClose={() => setMenuOpen(false)} side="left" title="Administración">
+      <Drawer
+        id="admin-navigation"
+        open={menuOpen}
+        onClose={() => setMenuOpen(false)}
+        side="left"
+        title="Administración"
+      >
         <AdminNavigation onNavigate={() => setMenuOpen(false)} />
         <Link
           to="/"

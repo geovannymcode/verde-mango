@@ -4,6 +4,7 @@ import { X } from 'lucide-react'
 import { useFocusTrap } from '@/hooks/useFocusTrap'
 
 interface DrawerProps {
+  id?: string
   open: boolean
   onClose: () => void
   title?: string
@@ -11,7 +12,7 @@ interface DrawerProps {
   children: ReactNode
 }
 
-export function Drawer({ open, onClose, title, side = 'right', children }: DrawerProps) {
+export function Drawer({ id, open, onClose, title, side = 'right', children }: DrawerProps) {
   const panelRef = useRef<HTMLDivElement>(null)
 
   useFocusTrap(panelRef, open, onClose)
@@ -21,6 +22,7 @@ export function Drawer({ open, onClose, title, side = 'right', children }: Drawe
   return createPortal(
     <div className="fixed inset-0 z-50 flex bg-vm-ink/40" onClick={onClose}>
       <div
+        id={id}
         ref={panelRef}
         role="dialog"
         aria-modal="true"

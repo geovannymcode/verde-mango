@@ -103,7 +103,7 @@ export function ProductsPage() {
   const create = (
     <Link
       to="/admin/productos/nuevo"
-      className="inline-flex rounded-md bg-vm-orange px-4 py-3 text-sm font-semibold text-white"
+      className="inline-flex rounded-md bg-vm-orange px-4 py-3 text-[19px] font-bold text-white"
     >
       Crear producto
     </Link>

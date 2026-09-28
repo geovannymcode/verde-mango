@@ -26,7 +26,7 @@ export function AboutPage() {
           <Leaf size={150} strokeWidth={1} className="-rotate-45" />
           <Leaf size={100} strokeWidth={1} className="ml-8 rotate-12" />
         </div>
-        <p className="font-hand text-3xl text-vm-orange">{aboutContent.eyebrow}</p>
+        <p className="font-hand text-3xl text-vm-orange-text">{aboutContent.eyebrow}</p>
         <h1 className="mt-3 text-4xl font-extrabold sm:text-6xl">{aboutContent.title}</h1>
         <p className="mx-auto mt-6 max-w-xl whitespace-pre-line text-base leading-relaxed text-vm-muted sm:text-lg">
           {aboutContent.subtitle}
@@ -44,7 +44,7 @@ export function AboutPage() {
                 aria-hidden="true"
                 className="timeline-dot absolute left-0 top-2 h-4 w-4 rounded-full border-2 border-vm-green bg-white lg:left-1/2 lg:top-0 lg:-translate-x-1/2"
               />
-              <p className="font-hand text-3xl italic text-vm-orange">{milestone.year}</p>
+              <p className="font-hand text-3xl italic text-vm-orange-text">{milestone.year}</p>
               <h2 className="mt-2 text-xl font-bold">{milestone.title}</h2>
               <p className="mt-3 text-sm leading-7 text-vm-muted">{milestone.description}</p>
             </li>

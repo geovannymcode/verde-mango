@@ -2,7 +2,7 @@ export type ButtonVariant = 'solid-orange' | 'solid-green' | 'outline' | 'ghost'
 export type ButtonSize = 'sm' | 'md' | 'lg'
 
 const variantClasses: Record<ButtonVariant, string> = {
-  'solid-orange': 'bg-vm-orange text-vm-white border border-transparent hover:bg-vm-orange/90',
+  'solid-orange': 'bg-vm-orange text-vm-white border border-transparent hover:shadow-md',
   'solid-green': 'bg-vm-green text-vm-ink border border-transparent hover:bg-vm-green/90',
   outline: 'bg-transparent text-vm-ink border border-vm-line hover:border-vm-ink',
   ghost: 'bg-transparent text-vm-ink border border-transparent hover:bg-vm-cream',
@@ -19,5 +19,15 @@ export function buttonClasses(
   size: ButtonSize = 'md',
   className = '',
 ): string {
-  return `inline-flex items-center justify-center gap-2 rounded-vm-full font-semibold transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-50 ${variantClasses[variant]} ${sizeClasses[size]} ${className}`
+  const solid = variant === 'solid-orange' || variant === 'solid-green'
+  const typography = solid
+    ? variant === 'solid-orange'
+      ? 'text-[19px] font-bold'
+      : 'text-base font-bold'
+    : 'font-semibold'
+  const dimensions = solid
+    ? sizeClasses[size].replace(/text-\S+/g, '').replace(/\bh-/, 'min-h-') + ' py-2 text-center'
+    : sizeClasses[size]
+  const colors = variantClasses[variant]
+  return `inline-flex items-center justify-center gap-2 rounded-vm-full ${typography} transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-50 ${colors} ${dimensions} ${className}`
 }

@@ -62,7 +62,7 @@ export function LoginPage() {
       <div className="flex w-full max-w-md flex-col gap-8 rounded-vm-lg bg-vm-white p-8 shadow-sm">
         <Link to="/" className="flex flex-col items-center self-center leading-none">
           <span className="text-xl font-extrabold text-vm-ink">
-            Verde<span className="text-vm-orange">Mango</span>
+            Verde<span className="text-vm-orange-text">Mango</span>
           </span>
           <span className="font-hand text-sm text-vm-green">vegan wonders</span>
         </Link>

@@ -40,6 +40,7 @@ const cases = [
   '/admin/ordenes',
   '/admin/recetas',
   '/admin',
+  '/admin?overlay=admin-menu',
   '/admin/recetas/1/editar',
   '/admin/productos/1/editar',
   '/checkout?invalid=1',
@@ -74,6 +75,22 @@ it.each(cases)('registra axe sin corregir ni ocultar hallazgos: %s', async (entr
     .getAll()
     .filter((query) => query.state.status === 'error')
   expect(errors.map((query) => query.state.error)).toEqual([])
+  const overlayTriggerName = entry.includes('overlay=admin-menu')
+    ? 'Abrir navegación del panel'
+    : entry.includes('overlay=mobile')
+      ? 'Abrir menú'
+      : entry.includes('overlay=cart')
+        ? 'Abrir carrito'
+        : undefined
+  const overlayTrigger = overlayTriggerName
+    ? screen.getByRole('button', { name: overlayTriggerName })
+    : undefined
+  if (overlayTrigger) {
+    expect(overlayTrigger).toHaveAttribute('aria-expanded', 'false')
+    overlayTrigger.focus()
+  }
+  if (entry.includes('overlay=admin-menu'))
+    fireEvent.click(screen.getByRole('button', { name: 'Abrir navegación del panel' }))
   if (entry.includes('overlay=cart'))
     fireEvent.click(screen.getByRole('button', { name: 'Abrir carrito' }))
   if (entry.includes('overlay=mobile'))
@@ -81,6 +98,12 @@ it.each(cases)('registra axe sin corregir ni ocultar hallazgos: %s', async (entr
   if (entry.includes('overlay=confirm'))
     fireEvent.click(screen.getByRole('button', { name: /Eliminar/ }))
   if (entry.includes('overlay=')) await screen.findByRole('dialog')
+  if (overlayTrigger) {
+    expect(overlayTrigger).toHaveAttribute('aria-expanded', 'true')
+    expect(document.getElementById(overlayTrigger.getAttribute('aria-controls')!)).toBe(
+      screen.getByRole('dialog'),
+    )
+  }
   if (entry.includes('invalid=1')) {
     const name = entry.startsWith('/checkout')
       ? 'Pagar con Wompi'
@@ -138,6 +161,12 @@ it.each(cases)('registra axe sin corregir ni ocultar hallazgos: %s', async (entr
   }
   // Keep the full raw report for outstanding groups.
   expect(results.passes.length).toBeGreaterThan(0)
+  if (overlayTrigger) {
+    fireEvent.keyDown(document, { key: 'Escape' })
+    expect(overlayTrigger).toHaveAttribute('aria-expanded', 'false')
+    expect(overlayTrigger).not.toHaveAttribute('aria-controls')
+    expect(overlayTrigger).toHaveFocus()
+  }
   view.unmount()
   router.dispose()
   useCartStore.getState().closeDrawer()

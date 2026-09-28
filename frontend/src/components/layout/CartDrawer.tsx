@@ -19,7 +19,7 @@ export function CartDrawer() {
   const items = cartQuery.data?.items ?? []
 
   return (
-    <Drawer open={drawerOpen} onClose={closeDrawer} title="Tu carrito">
+    <Drawer id="cart-drawer" open={drawerOpen} onClose={closeDrawer} title="Tu carrito">
       {cartQuery.isLoading ? (
         <div className="flex flex-col gap-4">
           <Skeleton className="h-20 w-full" />

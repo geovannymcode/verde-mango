@@ -16,7 +16,13 @@ export function MobileNav() {
   const closeMobileNav = useUiStore((state) => state.closeMobileNav)
 
   return (
-    <Drawer open={mobileNavOpen} onClose={closeMobileNav} title="Menú" side="left">
+    <Drawer
+      id="mobile-navigation"
+      open={mobileNavOpen}
+      onClose={closeMobileNav}
+      title="Menú"
+      side="left"
+    >
       <nav className="flex flex-col gap-1">
         {links.map((link) => (
           <NavLink

@@ -80,7 +80,7 @@ export function ContactPage() {
     <div>
       <div className="mx-auto max-w-6xl px-6 py-14 sm:py-20">
         <div className="mb-14 text-center">
-          <p className="font-hand text-2xl text-vm-orange">— conversemos —</p>
+          <p className="font-hand text-2xl text-vm-orange-text">— conversemos —</p>
           <h1 className="mt-2 text-4xl font-extrabold sm:text-5xl">{contactContent.title}</h1>
           <p className="mx-auto mt-4 max-w-xl leading-relaxed text-vm-muted">
             {contactContent.description}

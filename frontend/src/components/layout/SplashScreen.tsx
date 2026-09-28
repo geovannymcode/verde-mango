@@ -4,7 +4,7 @@ export function SplashScreen() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-vm-cream">
       <span className="text-2xl font-extrabold text-vm-ink">
-        Verde<span className="text-vm-orange">Mango</span>
+        Verde<span className="text-vm-orange-text">Mango</span>
       </span>
       <div
         role="status"

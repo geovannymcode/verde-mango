@@ -89,3 +89,10 @@ P0 = bloquea pagos reales; P1 = importante antes de publicar; P2 = mejora/limita
 - 9e: README frontend/raíz, instrucciones de despliegue, SPA fallback, entorno/CORS y backlog final.
 
 No se añadieron dependencias ni funcionalidad. Se aplicaron únicamente correcciones/refactors autorizados y las seis pruebas de seguridad. 9b todavía no comenzó.
+
+## Pendientes al cierre de 9c
+
+- **M03 — anuncio de reordenamiento (prioridad baja, diferido por el usuario).** Afecta solo al formulario de recetas del panel. Hacerlo bien exige cuidar que la live region no sea ruidosa al reordenar varias veces seguidas; agrupar/anular anuncios obsoletos y probar secuencias rápidas con teclado. Estimación: 1–2 h más verificación con lector de pantalla.
+- **Contraste restante (prioridad media):** verde y gris de texto, bordes esenciales de controles, blanco pequeño del contador del carrito y números de pasos. Fuera de los cambios de botones/crema aprobados; conservar evidencia del informe de 9c y decidir sus colores.
+- **Accesibilidad restante (prioridad media):** skip link público/orientación de foco al navegar, enlaces con Button anidado en CartDrawer y patrón Tabs; no fueron corregidos por los grupos aprobados. Verificar con VoiceOver/NVDA antes de declarar conformidad completa.
+- **9d:** abordar el aviso de chunk >500 kB, división por rutas y análisis del bundle. Esta entrega cierra los cambios autorizados de 9c; no ejecuta todavía la subentrega 9d.

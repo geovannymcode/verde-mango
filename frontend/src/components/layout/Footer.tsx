@@ -29,7 +29,7 @@ export function Footer() {
       <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 sm:px-6 md:grid-cols-4">
         <div>
           <p className="text-xl font-extrabold text-vm-ink">
-            Verde<span className="text-vm-orange">Mango</span>
+            Verde<span className="text-vm-orange-text">Mango</span>
           </p>
           <p className="mt-3 text-sm text-vm-muted">
             Fermentos, veg-quesos, frutas, verduras y recetas 100% veganas, hechas con cariño.

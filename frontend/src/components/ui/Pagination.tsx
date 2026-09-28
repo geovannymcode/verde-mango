@@ -29,7 +29,7 @@ export function Pagination({ page, totalPages, onPageChange, className = '' }: P
           type="button"
           aria-current={p === page ? 'page' : undefined}
           onClick={() => onPageChange(p)}
-          className={`flex h-9 w-9 items-center justify-center rounded-vm-full text-sm font-semibold transition-colors ${
+          className={`flex h-9 w-9 items-center justify-center rounded-vm-full text-[19px] font-bold transition-colors ${
             p === page ? 'bg-vm-orange text-vm-white' : 'text-vm-ink hover:bg-vm-cream'
           }`}
         >

@@ -22,6 +22,8 @@ function linkClass({ isActive }: { isActive: boolean }) {
 }
 
 export function Header() {
+  const mobileNavOpen = useUiStore((state) => state.mobileNavOpen)
+  const cartOpen = useCartStore((state) => state.drawerOpen)
   const openMobileNav = useUiStore((state) => state.openMobileNav)
   const openCartDrawer = useCartStore((state) => state.openDrawer)
   const cartQuery = useCart()
@@ -33,6 +35,9 @@ export function Header() {
         <button
           type="button"
           aria-label="Abrir menú"
+          aria-expanded={mobileNavOpen}
+          aria-controls={mobileNavOpen ? 'mobile-navigation' : undefined}
+          aria-haspopup="dialog"
           onClick={openMobileNav}
           className="flex h-10 w-10 items-center justify-center rounded-vm-full text-vm-ink hover:bg-vm-cream lg:hidden"
         >
@@ -77,6 +82,9 @@ export function Header() {
           <button
             type="button"
             aria-label="Abrir carrito"
+            aria-expanded={cartOpen}
+            aria-controls={cartOpen ? 'cart-drawer' : undefined}
+            aria-haspopup="dialog"
             onClick={openCartDrawer}
             className="relative flex h-10 w-10 items-center justify-center rounded-vm-full text-vm-ink hover:bg-vm-cream"
           >
