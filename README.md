@@ -58,6 +58,7 @@ verde-mango/
 │           └── resources/
 │               ├── application.yaml
 │               └── db/migration/     # Migraciones Flyway (V1..V7)
+├── frontend/                        # Sitio público y panel React/TypeScript (npm)
 ├── infrastructure/
 │   ├── docker-compose.yml            # Postgres + Redis
 │   └── init-databases.sql
@@ -177,3 +178,16 @@ Ver `@/Users/geovanny/Documents/Developer/Kotlin/verde-mango/postman/README.md` 
 - Comunicación entre módulos únicamente vía eventos de dominio (`ApplicationEventPublisher`), nunca importando clases internas de otro módulo.
 - DTOs de request con validación Bean Validation (`jakarta.validation`); DTOs de response inmutables (`data class`) con factory `from(...)`.
 - Inyección de dependencias por constructor con propiedades `val`/`private final`.
+
+## Frontend web
+
+El sitio público y el panel de administración viven en `frontend/`, con React, TypeScript y Vite. Se ejecutan por separado del build Gradle. Con el backend anterior activo:
+
+```bash
+cd frontend
+npm ci
+cp .env.example .env.local
+npm run dev -- --port 5173 --strictPort
+```
+
+Abrir http://localhost:5173. Requisitos, variables, tests, sandbox y reglas de diseño: [README del frontend](frontend/README.md). Preparación de producción: [guía de despliegue](docs/despliegue.md). La integración real de Wompi sigue pendiente; el estado verificable y las adaptaciones se documentan en [gaps de API](docs/api-gaps.md).

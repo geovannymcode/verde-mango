@@ -4,16 +4,17 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { RouterProvider } from 'react-router-dom'
 import { httpClient } from '@/api/client'
 import { useAuthStore } from '@/store/authStore'
-import { makeCart, makeCartItem, makeUser } from '../msw/factories'
+import { makeCart, makeCartItem, makeOrder, makeUser } from '../msw/factories'
 import { apiResponse } from '../msw/responses'
 import { auditData } from './data'
 import '@/index.css'
 const start = new URLSearchParams(location.search).get('route') ?? '/'
-let cart = makeCart()
+let cart = makeCart({ items: [makeCartItem()] })
 httpClient.defaults.adapter = async (config) => {
   const path = new URL(config.url!, location.origin).pathname
   let data: unknown
-  if (path === '/api/v1/cart') data = cart
+  if (path === '/api/v1/orders/VM-AUDIT-PENDING') data = makeOrder({ status: 'PENDING' })
+  else if (path === '/api/v1/cart') data = cart
   else if (path === '/api/v1/cart/items' && config.method === 'post') {
     cart = makeCart({ items: [makeCartItem()] })
     data = cart

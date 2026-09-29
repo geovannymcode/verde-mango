@@ -1,171 +1,142 @@
 # Verde Mango — Frontend
 
-Frontend web de Verde Mango (fermentos, veg-quesos, frutas, verduras y recetas veganas). Proyecto
-npm independiente, hermano del backend Kotlin (`../backend/app`). No forma parte del build de
-Gradle.
+Sitio público y panel de administración en React 19, TypeScript estricto, Vite 8, React Router, TanStack Query, Zustand y Tailwind 4. Aplicación npm independiente del backend Kotlin/Gradle.
 
-## Stack
+**Estado de entrega:** build y pruebas frontend disponibles; **no habilitado para cobrar dinero real**. El backend de pagos aún simula confirmaciones y checkout devuelve `paymentUrl=null`. Contacto tampoco envía mensajes. Consulta [gaps de API](../docs/api-gaps.md), [backlog](../docs/backlog.md) y [despliegue](../docs/despliegue.md).
 
-| Área | Tecnología |
-|---|---|
-| Base | React 19 + TypeScript (strict) + Vite |
-| Ruteo | React Router v7 |
-| Estado servidor | TanStack Query v5 |
-| Estado cliente | Zustand |
-| HTTP | Axios (instancia central + interceptores) |
-| Estilos | Tailwind CSS v4 |
-| Formularios | React Hook Form + Zod |
-| Iconos | lucide-react |
-| Testing | Vitest + Testing Library |
-| Lint/format | ESLint + Prettier |
+## Requisitos e instalación
 
-## Requisitos
+- Node **22.12 o superior de la rama 22** recomendado; verificado con 22.16.0. Vite admite `^20.19.0 || >=22.12.0`; Node 20.0 no basta.
+- npm **11** (verificado 11.4.2), con `package-lock.json` versionado.
+- Para datos reales: Java 25 mediante SDKMAN, Docker Desktop abierto y backend de este repositorio. Los tests frontend no requieren backend ni Docker.
 
-- Node.js 20+ (probado con Node 22)
-- Backend corriendo en `http://localhost:8080` (levanta Postgres/Redis vía Docker Compose)
-
-## Cómo levantar el proyecto
+Desde la raíz, en dos terminales:
 
 ```bash
-# terminal 1 — backend (desde la raíz del repo)
+# Terminal 1: backend; Docker debe estar abierto
+sdk env
 ./gradlew :backend:app:bootRun
+```
 
-# terminal 2 — frontend
+Spring Boot levanta PostgreSQL/Redis con infrastructure/docker-compose.yml. La API escucha en http://localhost:8080; contrato en http://localhost:8080/api-docs y Swagger en http://localhost:8080/swagger-ui.html.
+
+```bash
+# Terminal 2: frontend
 cd frontend
-npm install
-npm run dev
-```
-
-La app queda en `http://localhost:5173`.
-
-## Variables de entorno
-
-Copia `.env.example` a `.env.local` (este último no se commitea):
-
-```bash
+npm ci
 cp .env.example .env.local
+npm run dev -- --port 5173 --strictPort
 ```
 
-| Variable | Descripción | Default |
-|---|---|---|
-| `VITE_API_BASE_URL` | URL base del backend. Solo se usa en el **build de producción**; en desarrollo las peticiones a `/api/**` pasan por el proxy de Vite hacia `http://localhost:8080` (evita problemas de CORS). | `http://localhost:8080` |
-| `VITE_WOMPI_PUBLIC_KEY` | Llave pública del widget de Wompi (sandbox). Nunca poner llaves privadas aquí. | — |
+Abrir http://localhost:5173. Registrarse en `/registro` crea una cuenta de cliente para probar el flujo. El panel `/admin` exige ADMIN/SUPER_ADMIN; el administrador precargado del backend no tiene una contraseña en texto plano documentada: aprovisionar una credencial propia según la política del entorno, no inventar una contraseña ni elevar roles desde el navegador.
 
-## Scripts
+Si el backend usa otro puerto: `API_PROXY_TARGET=http://localhost:8082 npm run dev`. En desarrollo Vite redirige `/api` y `/actuator` al backend. `npm run preview` **no** tiene ese proxy; usa las variables con las que se construyó dist y la estrategia de origen/CORS descrita en despliegue.
+
+## Variables
+
+| Variable                | Qué hace                                                                                                                                               | Desarrollo                   |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------- |
+| `VITE_API_BASE_URL`     | Base HTTP de producción, sin `/api` final. Ignorada por el cliente en modo dev, que usa rutas relativas y proxy. Incrustada al compilar.               | `http://localhost:8080`      |
+| `VITE_WOMPI_PUBLIC_KEY` | Reservada; se lee en env.ts pero no hay consumidor de widget. No habilita pagos. Solo puede contener llave pública.                                    | Vacía                        |
+| `API_PROXY_TARGET`      | Variable del proceso que ejecuta Vite, no del bundle. Destino del proxy dev. Pasarla antes del comando; no confiar en `.env.local` para esta variable. | `http://localhost:8080`      |
+| `ANALYZE`               | Activa visualizer, manifest y sourcemaps ocultos en build. El script de análisis la establece.                                                         | Sin definir; `1` al analizar |
+
+Nunca colocar secretos en `VITE_*`. `.env.local` no se versiona. Para mismo origen productivo se puede compilar con `VITE_API_BASE_URL=` (cadena vacía explícita, no omitirla). Cualquier cambio requiere reconstruir dist.
+
+## Comandos
+
+Ejecutar desde frontend/:
 
 ```bash
-npm run dev             # servidor de desarrollo (Vite)
-npm run build           # type-check (tsc -b) + build de producción
-npm run preview         # sirve el build de producción localmente
+npm test                 # 189 tests: Vitest + Testing Library + MSW v2
+npm run test:watch       # desarrollo de tests
+npm run test:coverage    # cobertura por carpeta en coverage/, sin umbral artificial
 npm run lint            # ESLint
-npm run format          # Prettier (escribe)
-npm run format:check    # Prettier (solo verifica)
-npm run test            # Vitest (una corrida)
-npm run test:watch      # Vitest en modo watch
-npm run gen:api-types   # regenera src/api/openapi.gen.d.ts desde el OpenAPI real del backend
+npm run format:check    # Prettier sin escribir
+npm run format          # Prettier; revisar el diff antes de commitear
+npm run build           # tsc -b y Vite -> dist/
+npm run preview         # inspección del build, no servidor de producción
+npm run build:analyze   # visualizer y verificación de separación admin/dnd-kit
+npm run build           # reconstruir sin sourcemaps antes de publicar
+node scripts/audit-production.mjs  # requiere stats del análisis; revisa dist actual
+npm run gen:api-types   # backend activo en localhost:8080/api-docs
 ```
 
-## Contrato con el backend
+Análisis: `coverage/bundle/stats.html`, `stats.json`, `summary.json`. El script verifica que Home/tienda permanezcan iniciales y que el panel y dnd-kit queden diferidos. No publicar coverage, src/test ni los mapas generados por el análisis. El escáner guarda términos/conteos sin imprimir posibles valores secretos; `token` puede ser un identificador legítimo y necesita revisión, no equivale a una credencial filtrada.
 
-Todas las respuestas del backend vienen envueltas en:
-
-```ts
-type ApiResponse<T> = { success: boolean; message: string | null; data: T }
-type PageResponse<T> = { content: T[]; page: number; size: number; totalElements: number; totalPages: number; last: boolean; ... }
-```
-
-Estos tipos genéricos y el helper `unwrap<T>()` viven en `src/api/client.ts`. Los tipos concretos
-(`ProductResponse`, `OrderResponse`, etc.) **no se escriben a mano**: se generan desde el OpenAPI
-real del backend (`http://localhost:8080/api-docs`) con `openapi-typescript` hacia
-`src/api/openapi.gen.d.ts`. Re-exports convenientes están en `src/api/schema.ts`.
-
-Para regenerar los tipos después de un cambio en el backend, con el backend corriendo:
-
-```bash
-npm run gen:api-types
-```
-
-Documentación viva de la API: `http://localhost:8080/swagger-ui.html` y `http://localhost:8080/api-docs`.
-
-Endpoints pedidos por el diseño pero **inexistentes** en el backend actual (ej. favoritos/wishlist)
-están documentados en `../docs/api-gaps.md`.
-
-## Autenticación
-
-- Access token en memoria (`src/store/authStore.ts`, Zustand). Refresh token en `localStorage`
-  (`src/lib/storage.ts`).
-- El interceptor de request (`src/api/client.ts`) agrega `Authorization: Bearer <access>`.
-- El interceptor de response, ante un 401, intenta un refresh una sola vez, encola las peticiones
-  concurrentes y las reintenta; si el refresh falla, limpia la sesión y redirige a `/login`.
+Tests: MSW responde con ApiResponse y PageResponse reales; factories derivadas de OpenAPI. El setup resetea handlers, stores y QueryClient entre casos. Los siete flujos cubren filtros, carrito/rollback, login/fusión, refresh concurrente, checkout/stock, polling y estados admin. Son integración con API simulada, **no certificación de Wompi ni E2E contra Kotlin**. Axe cubre semántica; no sustituye navegador ni lector de pantalla. `src/test/a11y/manual.html` es una entrada de auditoría con fixtures y sesión ficticia, nunca una vía para acceder al backend ni parte del build normal.
 
 ## Estructura
 
+```text
+public/                 SVG estáticos y fallback de producto.
+openapi/                Snapshot del contrato backend; no se consulta en cada build.
+scripts/                Análisis de chunks y auditoría de dist.
+src/api/                Cliente HTTP, funciones de API y tipos OpenAPI generados.
+src/components/ui/      Primitivas accesibles (Button, Rating, Modal, Drawer…).
+src/components/layout/  Header, Footer, navegación y CartDrawer.
+src/components/catalog/ Tarjetas, filtros, galería y reseñas de productos.
+src/components/recipes/ Tarjetas, ingredientes, pasos y sidebar de recetas.
+src/components/cart/    Controles compartidos del carrito.
+src/components/admin/   Tablas, formularios y confirmaciones del panel.
+src/components/auth/    Guards de sesión y roles.
+src/components/routing/ Lazy routes, skeletons y recuperación de errores de chunks.
+src/features/           Queries, mutations, keys y validaciones por módulo; incluye admin/.
+src/hooks/              Hooks compartidos de URL, título, foco y protección de salida.
+src/lib/                Entorno, formateo, adaptadores, storage y helpers.
+src/lib/content/        Historia, equipo y contacto editables; TODO editoriales explícitos.
+src/pages/              Rutas públicas; account/ para cuenta y admin/ para administración.
+src/store/              Estado Zustand de autenticación, carrito y UI.
+src/types/              Declaraciones auxiliares TypeScript.
+src/test/               Setup, utilidades, MSW, flujos críticos y auditorías de accesibilidad.
 ```
-frontend/
-├── public/
-├── openapi/             # copia local del OpenAPI exportado (referencia, no se regenera en build)
-├── src/
-│   ├── api/             client.ts, types.ts, openapi.gen.d.ts (generado), schema.ts, auth.ts, ...
-│   ├── components/
-│   │   ├── ui/          Button, Input, Select, Badge, Rating, Pagination, Modal, Drawer, Skeleton, Toast
-│   │   ├── layout/      Header, Footer, MobileNav, CartDrawer, SectionTitle
-│   │   ├── catalog/     ProductCard, ProductGrid, ProductFilters, PriceRange, ReviewList
-│   │   └── recipes/     RecipeCard, RecipeSidebar, IngredientList, StepList
-│   ├── features/        hooks de TanStack Query por módulo (auth, catalog, orders, payment, recipes)
-│   ├── hooks/
-│   ├── pages/
-│   ├── store/           authStore.ts, cartStore.ts, uiStore.ts
-│   ├── lib/              formatters, validators zod, env, storage, queryClient
-│   ├── routes.tsx
-│   └── main.tsx
-├── .env.example
-├── vite.config.ts        proxy /api -> http://localhost:8080, alias @ -> src/
-└── vitest.config.ts
-```
 
-## Carrito, checkout y pagos (Wompi)
+`src/routes.tsx` declara las rutas; `src/main.tsx` inicia la app; `src/index.css` contiene tokens y estilos compartidos. El panel y el formulario de recetas se cargan por separado; Home y tienda permanecen en la carga inicial.
 
-- **Carrito**: invitados se identifican con el header `X-Session-Id` (UUID generado y persistido en
-  `localStorage`, ver `src/store/cartStore.ts` y el interceptor en `src/api/client.ts`). Al iniciar
-  sesión o registrarse (`src/features/auth/hooks.ts`) se llama automáticamente a
-  `POST /api/v1/cart/merge` para fusionar el carrito de invitado con el del usuario.
-- **Checkout** (`/checkout`, `src/pages/CheckoutPage.tsx`) requiere sesión iniciada (protegido por
-  `src/components/auth/RequireAuth.tsx`, redirige a `/login` y vuelve tras autenticar). Antes de
-  mostrar el formulario se valida el carrito con `POST /api/v1/checkout/validate` (stock/precio por
-  ítem); si hay errores se muestran y se bloquea el botón de pago.
-- **Resultado del pago** (`/checkout/resultado`, `src/pages/CheckoutResultPage.tsx`): lee el query
-  param `reference` (el `orderNumber`) y hace *polling* contra `GET /api/v1/orders/{orderNumber}`
-  cada 3s mientras el pedido esté en `PENDING`, hasta que quede `CONFIRMED`/`PROCESSING`/etc.
-  (aprobado) o `CANCELLED`/`REFUNDED` (rechazado).
+## Contrato y autenticación
 
-**Importante — no probable de punta a punta hoy**: el backend actual (`payment/PaymentApi.kt`) es
-un stub que simula el pago y **siempre** devuelve `paymentUrl = null` en la respuesta de
-`POST /api/v1/checkout`. No existe `WompiController`/webhook real. El frontend está construido
-asumiendo el contrato típico del Web Checkout de Wompi (si `paymentUrl` viene poblado, se hace
-`window.location.href = paymentUrl`), pero contra este backend el botón "Pagar con Wompi" siempre
-mostrará un error después de crear la orden real. Detalle completo, incluyendo el nombre asumido de
-los query params de retorno, en `../docs/api-gaps.md`.
+Los DTO concretos se generan en `src/api/openapi.gen.d.ts` y se reexportan desde `schema.ts`. `ApiResponse<T>`/`PageResponse<T>` están en `api/types.ts`; `unwrap` en `api/client.ts`. Existe una excepción temporal para ratings de catálogo por colisión de schemas documentada en los gaps.
 
-Los "métodos de pago" del selector en `/checkout` (`CARD`, `PSE`, `NEQUI`) son una suposición: el
-backend define `paymentMethod` como texto libre sin enum (`orders/web/CheckoutDtos.kt`).
+Access token en memoria, refresh token en localStorage. Refresh concurrente coordinado y returnTo restringido a rutas internas. Carrito invitado usa `X-Session-Id`; la fusión autenticada conserva ese header. El backend sigue siendo responsable de autorización. Logout revoca todos los refresh tokens del usuario.
 
-## Notas
+## Probar una compra y Wompi sandbox
 
-- No se usan librerías de componentes pesadas (MUI, Ant, Chakra); los componentes de `ui/` se
-  construyen a mano con Tailwind.
-- Precios en pesos colombianos: `Intl.NumberFormat('es-CO')`.
-- El advisory de seguridad de `react-router` sobre "RSC Mode CSRF" no aplica: este proyecto usa
-  el modo declarativo estándar (`createBrowserRouter`), no React Server Components.
+### Qué puede probarse hoy
+
+1. Arrancar los servicios, entrar a `/tienda`, abrir un producto con stock y agregar cantidad.
+2. Comprobar contador y Drawer; abrir carrito, iniciar sesión/registrarse y volver a checkout.
+3. Completar envío; el frontend valida carrito mediante POST `/api/v1/checkout/validate` y envía POST `/api/v1/checkout`. El DTO incluye `billingSameAsShipping=true`; no solicita facturación duplicada.
+4. **Límite actual:** se crea una orden real en la BD de desarrollo, pero no se abre Wompi porque no hay paymentUrl. El backend publica un evento simulado de pago. No repetir el envío como si fuera inocuo ni interpretar la confirmación como cobro.
+5. Consultar `/cuenta/ordenes`. Las pruebas automatizadas de redirección usan MSW; no generan pagos.
+
+### Prueba completa cuando el backend cierre el gap de pagos
+
+1. Configurar en el servidor las llaves sandbox auténticas del comercio, firma de integridad y recepción de eventos HTTPS; nunca usar los valores de ejemplo del YAML.
+2. El backend debe devolver una URL de checkout válida y vincular transacción con orden. Repetir el flujo anterior hasta redirigir a la pasarela.
+3. En el checkout de Wompi usar estas tarjetas de prueba (no tarjetas reales):
+
+| Número                | Resultado esperado |
+| --------------------- | ------------------ |
+| `4242 4242 4242 4242` | APPROVED           |
+| `4111 1111 1111 1111` | DECLINED           |
+
+Fecha futura y CVC de tres dígitos. Fuente: [datos oficiales de sandbox de Wompi Colombia](https://docs.wompi.co/docs/colombia/datos-de-prueba-en-sandbox/), revisada el 28-09-2026.
+
+4. Verificar recepción/autenticidad del evento, actualización persistida e idempotencia ante duplicados. Volver a `/checkout/resultado` con identificación de la orden: hoy la landing exige `reference=orderNumber`. Wompi documenta retorno con `id` de transacción; el backend debe resolver esa relación o preservar la referencia en el redirect. No asumir que Wompi agrega reference/status. [Contrato Web Checkout](https://docs.wompi.co/docs/colombia/widget-checkout-web/).
+5. Comprobar aprobado, rechazado y pendiente; consultar estado del servidor, nunca confiar en un status de URL. El polling actual es cada 3s, máximo 10 consultas, con corte final, pausa en background y reinicio solo con «Verificar de nuevo».
+6. Validar stock insuficiente y doble clic sin duplicar orden/cobro. No habilitar producción hasta completar también la conciliación cuando el usuario no vuelve al sitio.
+
+El selector CARD/PSE/NEQUI es una adaptación del frontend al paymentMethod libre actual; falta confirmar el contrato de pasarela. La landing actual interpreta estado de orden, que un admin puede cambiar: debe apoyarse en una fuente de pago verificada antes de certificar cobros.
 
 ## Naranja y contraste (cierre 9c)
 
-| Uso | Token / utilidad | Regla |
-| --- | --- | --- |
-| Texto pequeño, enlaces, estados activos | `--vm-orange-text: #C73C20` / `text-vm-orange-text` | Mínimo 4.5:1: blanco **5.127:1**, crema **4.700:1**. |
-| Cualquier texto sobre crema | `--vm-orange-text` | Prohibido el naranja original a cualquier tamaño, incluidos eyebrows, años y texto de marca. |
-| Texto grande sobre blanco | `--vm-orange: #FF5B3B` / `text-vm-orange` | Desde 24px regular o 19px bold (700+): **3.083:1**, mínimo 3:1. |
-| Botón sólido naranja con texto blanco | `bg-vm-orange` | Texto **19px bold**, también en hover. 16px bold **no** alcanza AA. Si un diseño no admite crecer, usar `bg-vm-orange-text` (5.127:1) y documentar la excepción. |
-| Fondos y decoración | `--vm-orange` | Se conserva la marca. No reducir opacidad del botón en hover: blanco sobre naranja al 90% cae a 2.806:1. |
+| Uso                                     | Token / utilidad                                    | Regla                                                                                                                                                            |
+| --------------------------------------- | --------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Texto pequeño, enlaces, estados activos | `--vm-orange-text: #C73C20` / `text-vm-orange-text` | Mínimo 4.5:1: blanco **5.127:1**, crema **4.700:1**.                                                                                                             |
+| Cualquier texto sobre crema             | `--vm-orange-text`                                  | Prohibido el naranja original a cualquier tamaño, incluidos eyebrows, años y texto de marca.                                                                     |
+| Texto grande sobre blanco               | `--vm-orange: #FF5B3B` / `text-vm-orange`           | Desde 24px regular o 19px bold (700+): **3.083:1**, mínimo 3:1.                                                                                                  |
+| Botón sólido naranja con texto blanco   | `bg-vm-orange`                                      | Texto **19px bold**, también en hover. 16px bold **no** alcanza AA. Si un diseño no admite crecer, usar `bg-vm-orange-text` (5.127:1) y documentar la excepción. |
+| Fondos y decoración                     | `--vm-orange`                                       | Se conserva la marca. No reducir opacidad del botón en hover: blanco sobre naranja al 90% cae a 2.806:1.                                                         |
 
 Aliases Tailwind: `--color-vm-orange` y `--color-vm-orange-text`, definidos en `src/index.css`.
 Los sólidos usan altura mínima para admitir texto envuelto sin recortarlo. El hover usa sombra,
@@ -181,3 +152,9 @@ sobre ese tinte en crema baja a 4.222:1: no usar esa combinación para texto peq
 Persisten hallazgos de la auditoría fuera de estas decisiones (verde/gris, límites de controles,
 contador del carrito y números de pasos). El cierre de la subentrega no certifica conformidad AA
 de toda la aplicación. Véase el backlog.
+
+## Tipografía y grupos de acciones
+
+Quicksand carga normal 400/500/600/700, todos usados; las clases 800 no cargan una cara adicional. Caveat carga solo 400; la cursiva de la línea de tiempo se sintetiza. `display=swap` y preconnect a Google Fonts permanecen activos. Archivos latinos medidos: 75,39 KiB en total, sin contar CSS/cabeceras; otros subconjuntos dependen del texto.
+
+Para pares de acciones usa `vm-action-group`, y `vm-action-group--stacked` si van apiladas. Iguala alturas con contenido envuelto y conserva mínimo de 48px, también con enlaces envolventes. No restablecer h-11 individual en ese grupo. Ver [corrección V9D5-01](../docs/fix-v9d5-01.md).
